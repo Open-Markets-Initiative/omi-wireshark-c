@@ -1,0 +1,45 @@
+Copyright (c) 2026 Open Markets Initiative and William Tegel.
+All rights reserved.
+
+These files are generated Wireshark dissectors. They are published so that you
+can read your own captures with them.
+
+
+What you may do
+
+You may use, copy and modify these files, and you may compile them into a
+Wireshark that you build and run yourself, for your own use, without charge
+and without asking.
+
+
+What is reserved
+
+Only the Open Markets Initiative and William Tegel may place this code
+into the Wireshark build. That means:
+
+  - submitting it to the Wireshark project, at wireshark/wireshark or elsewhere
+  - including it in a Wireshark distribution, package, image or installer
+  - distributing any Wireshark binary built with it
+
+Those rights are reserved by the copyright holders and are not granted here.
+Publishing this code is not an offer of it to the Wireshark project.
+
+
+Wireshark's own license
+
+Wireshark is licensed GPL-2.0-or-later. A dissector compiled into Wireshark
+forms a combined work with it, and Wireshark's license governs what you may
+do when you distribute that combined work. Nothing here restricts a build you
+make for yourself and do not distribute, which is what these files are for.
+The reservation above is on placing this code into builds given to others; it
+does not purport to add conditions to Wireshark itself.
+
+
+No warranty
+
+These files are provided "as is", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose and noninfringement. In no event shall the
+authors or copyright holders be liable for any claim, damages or other
+liability, whether in an action of contract, tort or otherwise, arising from,
+out of or in connection with these files or their use.

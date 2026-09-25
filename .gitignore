@@ -1,0 +1,28 @@
+# Every tracked file here is generated. What follows is what a build run in
+# place leaves behind, and what an editor or an operating system drops beside it.
+
+# Build output
+build/
+cmake-build-*/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+
+# Editors
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+
+# Operating system
+.DS_Store
+Thumbs.db
