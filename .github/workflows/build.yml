@@ -37,9 +37,11 @@ jobs:
 
       # The build list names the dissectors, so it goes in beside them and
       # Wireshark picks them up without a patch to its own CMakeLists
+      # Each protocol has a directory of its own here; wireshark wants every
+      # dissector flat in epan/dissectors, which is what the build list names
       - name: Add the dissectors to the build
         run: |
-          cp dissectors/*.c wireshark/epan/dissectors/
+          cp $(find dissectors -name 'packet-*.c') wireshark/epan/dissectors/
           cp dissectors/CMakeListsCustom.txt wireshark/epan/dissectors/
 
       - name: Configure

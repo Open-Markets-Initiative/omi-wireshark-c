@@ -14,7 +14,7 @@ and without asking.
 
 What is reserved
 
-Only the Open Markets Initiative and William Tegel may place this code
+Only authorized users of the Open Markets Initiative may place this code
 into the Wireshark build. That means:
 
   - submitting it to the Wireshark project, at wireshark/wireshark or elsewhere
