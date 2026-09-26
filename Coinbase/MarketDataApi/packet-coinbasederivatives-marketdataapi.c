@@ -4570,10 +4570,12 @@ coinbasederivatives_marketdataapi_show(uint32_t template_id)
     return true;
 }
 
-typedef struct coinbasederivatives_marketdataapi_parse {
+typedef struct coinbasederivatives_marketdataapi_parse coinbasederivatives_marketdataapi_parse;
+
+struct coinbasederivatives_marketdataapi_parse {
     const value_string *messages;
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-} coinbasederivatives_marketdataapi_parse;
+};
 
 static const coinbasederivatives_marketdataapi_parse coinbasederivatives_marketdataapi_parse_v19 = { coinbasederivatives_marketdataapi_messages, dissect_coinbasederivatives_marketdataapi_payload };
 static const coinbasederivatives_marketdataapi_parse coinbasederivatives_marketdataapi_parse_v17 = { coinbasederivatives_marketdataapi_messages_v17, dissect_coinbasederivatives_marketdataapi_payload_v17 };
@@ -6059,10 +6061,10 @@ proto_register_coinbasederivatives_marketdataapi(void)
     expert_module_t *expert_coinbasederivatives_marketdataapi = expert_register_protocol(proto_coinbasederivatives_marketdataapi);
     expert_register_field_array(expert_coinbasederivatives_marketdataapi, ei, array_length(ei));
 
-    module_t *prefs = prefs_register_protocol(proto_coinbasederivatives_marketdataapi, NULL);
+    module_t *preferences = prefs_register_protocol(proto_coinbasederivatives_marketdataapi, NULL);
 
     prefs_register_enum_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_PREFERENCE_DESCRIPTION,
@@ -6071,28 +6073,28 @@ proto_register_coinbasederivatives_marketdataapi(void)
         false);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_HEADERS_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_HEADERS_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_HEADERS_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_marketdataapi_show_headers);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_APPLICATION_MESSAGES_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_APPLICATION_MESSAGES_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_APPLICATION_MESSAGES_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_marketdataapi_show_application_messages);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_marketdataapi_show_structs);
 
     prefs_register_uint_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_DECIMAL_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_DECIMAL_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_DECIMAL_PREFERENCE_DESCRIPTION,
@@ -6105,7 +6107,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
         COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DEFAULT,
         COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM);
     prefs_register_range_preference(
-        prefs,
+        preferences,
         COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_NAME,
         COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DESCRIPTION,

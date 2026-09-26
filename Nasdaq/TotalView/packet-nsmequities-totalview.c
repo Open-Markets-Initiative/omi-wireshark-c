@@ -9415,10 +9415,12 @@ nsmequities_totalview_client_packet_show(uint32_t client_packet_type)
     return true;
 }
 
-typedef struct nsmequities_totalview_client_packet_parse {
+typedef struct nsmequities_totalview_client_packet_parse nsmequities_totalview_client_packet_parse;
+
+struct nsmequities_totalview_client_packet_parse {
     const value_string *messages;
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type);
-} nsmequities_totalview_client_packet_parse;
+};
 
 static const nsmequities_totalview_client_packet_parse nsmequities_totalview_client_packet_parse_v502026 = { nsmequities_totalview_client_packet_messages, dissect_nsmequities_totalview_client_packet_client_payload };
 static const nsmequities_totalview_client_packet_parse nsmequities_totalview_client_packet_parse_v502023 = { nsmequities_totalview_client_packet_messages_v502023, dissect_nsmequities_totalview_client_packet_client_payload_v502023 };
@@ -9492,10 +9494,12 @@ nsmequities_totalview_server_packet_show(uint32_t server_packet_type)
     return true;
 }
 
-typedef struct nsmequities_totalview_server_packet_parse {
+typedef struct nsmequities_totalview_server_packet_parse nsmequities_totalview_server_packet_parse;
+
+struct nsmequities_totalview_server_packet_parse {
     const value_string *messages;
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type);
-} nsmequities_totalview_server_packet_parse;
+};
 
 static const nsmequities_totalview_server_packet_parse nsmequities_totalview_server_packet_parse_v502026 = { nsmequities_totalview_server_packet_messages, dissect_nsmequities_totalview_server_packet_server_payload };
 static const nsmequities_totalview_server_packet_parse nsmequities_totalview_server_packet_parse_v502023 = { nsmequities_totalview_server_packet_messages_v502023, dissect_nsmequities_totalview_server_packet_server_payload_v502023 };
@@ -9611,23 +9615,25 @@ nsmequities_totalview_packet_show(uint32_t message_type)
     return true;
 }
 
+typedef struct nsmequities_totalview_packet_parse nsmequities_totalview_packet_parse;
+
 static unsigned dissect_nsmequities_totalview_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_packet_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_packet_header_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_totalview_packet_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const struct nsmequities_totalview_packet_parse *parse);
-static unsigned dissect_nsmequities_totalview_packet_message_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const struct nsmequities_totalview_packet_parse *parse);
-static unsigned dissect_nsmequities_totalview_packet_message_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const struct nsmequities_totalview_packet_parse *parse);
+static unsigned dissect_nsmequities_totalview_packet_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse);
+static unsigned dissect_nsmequities_totalview_packet_message_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse);
+static unsigned dissect_nsmequities_totalview_packet_message_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse);
 static uint32_t dissect_nsmequities_totalview_packet_count(tvbuff_t *tvb);
 static uint32_t dissect_nsmequities_totalview_packet_count_v30(tvbuff_t *tvb);
 static uint32_t dissect_nsmequities_totalview_packet_count_v20a(tvbuff_t *tvb);
 
-typedef struct nsmequities_totalview_packet_parse {
+struct nsmequities_totalview_packet_parse {
     const value_string *messages;
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
     unsigned (*header)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-    unsigned (*message)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const struct nsmequities_totalview_packet_parse *parse);
+    unsigned (*message)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse);
     uint32_t (*count)(tvbuff_t *tvb);
-} nsmequities_totalview_packet_parse;
+};
 
 static const nsmequities_totalview_packet_parse nsmequities_totalview_packet_parse_v502026 = { nsmequities_totalview_packet_messages, dissect_nsmequities_totalview_packet_payload, dissect_nsmequities_totalview_packet_header, dissect_nsmequities_totalview_packet_message, dissect_nsmequities_totalview_packet_count };
 static const nsmequities_totalview_packet_parse nsmequities_totalview_packet_parse_v502023 = { nsmequities_totalview_packet_messages, dissect_nsmequities_totalview_packet_payload, dissect_nsmequities_totalview_packet_header, dissect_nsmequities_totalview_packet_message, dissect_nsmequities_totalview_packet_count };
@@ -11904,10 +11910,10 @@ proto_register_nsmequities_totalview(void)
     expert_module_t *expert_nsmequities_totalview = expert_register_protocol(proto_nsmequities_totalview);
     expert_register_field_array(expert_nsmequities_totalview, ei, array_length(ei));
 
-    module_t *prefs = prefs_register_protocol(proto_nsmequities_totalview, NULL);
+    module_t *preferences = prefs_register_protocol(proto_nsmequities_totalview, NULL);
 
     prefs_register_enum_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_VERSION_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_VERSION_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_VERSION_PREFERENCE_DESCRIPTION,
@@ -11916,35 +11922,35 @@ proto_register_nsmequities_totalview(void)
         false);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_SHOW_HEADERS_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_SHOW_HEADERS_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SHOW_HEADERS_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_show_headers);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_SHOW_SESSION_MESSAGES_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_SHOW_SESSION_MESSAGES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SHOW_SESSION_MESSAGES_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_show_session_messages);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_SHOW_APPLICATION_MESSAGES_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_SHOW_APPLICATION_MESSAGES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SHOW_APPLICATION_MESSAGES_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_show_application_messages);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_SHOW_MESSAGES_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_SHOW_MESSAGES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SHOW_MESSAGES_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_show_messages);
 
     prefs_register_uint_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_DESCRIPTION,
@@ -11952,35 +11958,35 @@ proto_register_nsmequities_totalview(void)
         &nsmequities_totalview_pref_decimal_places);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_READ_MILLISECOND_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_READ_MILLISECOND_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_READ_MILLISECOND_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_read_millisecond);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_READ_NANOSECONDS_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_READ_NANOSECONDS_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_READ_NANOSECONDS_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_read_nanoseconds);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_READ_SECOND_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_READ_SECOND_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_READ_SECOND_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_read_second);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_READ_TIMESTAMP_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_READ_TIMESTAMP_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_READ_TIMESTAMP_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_read_timestamp);
 
     prefs_register_enum_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_ASSUME_ROLE_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_ASSUME_ROLE_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_ASSUME_ROLE_PREFERENCE_DESCRIPTION,
@@ -11989,7 +11995,7 @@ proto_register_nsmequities_totalview(void)
         false);
 
     prefs_register_uint_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_ACCEPTOR_PORT_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_ACCEPTOR_PORT_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_ACCEPTOR_PORT_PREFERENCE_DESCRIPTION,
@@ -11997,14 +12003,14 @@ proto_register_nsmequities_totalview(void)
         &nsmequities_totalview_pref_acceptor_port);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_SWAP_SIDES_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_SWAP_SIDES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SWAP_SIDES_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_swap_sides);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         NSMEQUITIES_TOTALVIEW_INDEXES_PREFERENCE_NAME,
         NSMEQUITIES_TOTALVIEW_INDEXES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_INDEXES_PREFERENCE_DESCRIPTION,

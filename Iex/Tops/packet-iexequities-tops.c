@@ -1916,10 +1916,12 @@ iexequities_tops_show(uint32_t message_type)
     return true;
 }
 
-typedef struct iexequities_tops_parse {
+typedef struct iexequities_tops_parse iexequities_tops_parse;
+
+struct iexequities_tops_parse {
     const value_string *messages;
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
-} iexequities_tops_parse;
+};
 
 static const iexequities_tops_parse iexequities_tops_parse_v166 = { iexequities_tops_messages, dissect_iexequities_tops_message_data };
 static const iexequities_tops_parse iexequities_tops_parse_v164 = { iexequities_tops_messages_v164, dissect_iexequities_tops_message_data_v164 };
@@ -2058,7 +2060,7 @@ iexequities_tops_heur_identifier(tvbuff_t *tvb)
 static bool
 iexequities_tops_heur_payload(tvbuff_t *tvb)
 {
-    return IEXEQUITIES_TOPS_HEADER_SIZE + tvb_get_letohs(tvb, 12) == tvb_reported_length(tvb);
+    return (unsigned)(IEXEQUITIES_TOPS_HEADER_SIZE + tvb_get_letohs(tvb, 12)) == tvb_reported_length(tvb);
 }
 
 /* Does the frame pass every test of Packet? */
@@ -2686,10 +2688,10 @@ proto_register_iexequities_tops(void)
     expert_module_t *expert_iexequities_tops = expert_register_protocol(proto_iexequities_tops);
     expert_register_field_array(expert_iexequities_tops, ei, array_length(ei));
 
-    module_t *prefs = prefs_register_protocol(proto_iexequities_tops, NULL);
+    module_t *preferences = prefs_register_protocol(proto_iexequities_tops, NULL);
 
     prefs_register_enum_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_VERSION_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_VERSION_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_VERSION_PREFERENCE_DESCRIPTION,
@@ -2698,7 +2700,7 @@ proto_register_iexequities_tops(void)
         false);
 
     prefs_register_enum_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_ENVIRONMENT_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_ENVIRONMENT_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_ENVIRONMENT_PREFERENCE_DESCRIPTION,
@@ -2707,21 +2709,21 @@ proto_register_iexequities_tops(void)
         false);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_SHOW_HEADERS_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_SHOW_HEADERS_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_SHOW_HEADERS_PREFERENCE_DESCRIPTION,
         &iexequities_tops_show_headers);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_SHOW_APPLICATION_MESSAGES_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_SHOW_APPLICATION_MESSAGES_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_SHOW_APPLICATION_MESSAGES_PREFERENCE_DESCRIPTION,
         &iexequities_tops_show_application_messages);
 
     prefs_register_uint_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_DECIMAL_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_DECIMAL_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_DECIMAL_PREFERENCE_DESCRIPTION,
@@ -2729,7 +2731,7 @@ proto_register_iexequities_tops(void)
         &iexequities_tops_pref_decimal_places);
 
     prefs_register_bool_preference(
-        prefs,
+        preferences,
         IEXEQUITIES_TOPS_INDEXES_PREFERENCE_NAME,
         IEXEQUITIES_TOPS_INDEXES_PREFERENCE_TITLE,
         IEXEQUITIES_TOPS_INDEXES_PREFERENCE_DESCRIPTION,
