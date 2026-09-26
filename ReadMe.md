@@ -26,15 +26,6 @@ you make; the reservation is on putting this code into builds handed to others.
 
 [License](License) states this in full and is the text that governs.
 
-Each dissector is generated. Edits belong in the model or the configuration it
-was generated from, never in the C, which is overwritten on the next run.
-
-| Protocol | Dissector | Filter | Versions |
-| --- | --- | --- | --- |
-| [CoinbaseDerivatives MarketDataApi](Coinbase/MarketDataApi/ReadMe.md) | `packet-coinbasederivatives-marketdataapi.c` | `coinbasederivatives.marketdataapi` | 1.9, 1.7, 1.3, 1.2 |
-| [IexEquities Tops](Iex/Tops/ReadMe.md) | `packet-iexequities-tops.c` | `iexequities.tops` | 1.66, 1.64, 1.56 |
-| [NsmEquities TotalView](Nasdaq/TotalView/ReadMe.md) | `packet-nsmequities-totalview.c` | `nsmequities.totalview` | 5.0.2026, 5.0.2023, 5.0.2022, 5.0.2018, 5.0.2017, 4.1, 3.2, 4.0, 3.1, 3.1.f, 4.0.f, 3.0, 2.0.a, 2.0, 1.0 |
-
 [Omi.Directory]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative "Open Markets Initiative"
 [Omi.Glossary]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/About "Omi Glossary"
 [Wireshark.Lua.Repository]: https://github.com/Open-Markets-Initiative/omi-wireshark-lua "Omi Lua Wireshark Dissectors"
