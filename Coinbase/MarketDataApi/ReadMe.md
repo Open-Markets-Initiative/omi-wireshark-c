@@ -20,5 +20,7 @@ was generated from, never in the C, which is overwritten on the next run.
 
 [Omi.Directory]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative "Open Markets Initiative"
 [Omi.Glossary]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/About "Omi Glossary"
+[Omi.Projects]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/Projects "Open Markets Initiative Projects"
 [Wireshark.Lua.Repository]: https://github.com/Open-Markets-Initiative/omi-wireshark-lua "Omi Lua Wireshark Dissectors"
+[Lean.Definitions.Repository]: https://github.com/Open-Markets-Initiative/omi-lean-definitions "Omi Lean Definitions"
 [Coinbase.Organization]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/Organizations/Coinbase "Coinbase"

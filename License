@@ -22,7 +22,8 @@ into the Wireshark build. That means:
   - distributing any Wireshark binary built with it
 
 Those rights are reserved by the copyright holders and are not granted here.
-Publishing this code is not an offer of it to the Wireshark project.
+These dissectors are intended for the Wireshark project and the Initiative
+will contribute them; publishing them here does not pass that to anyone else.
 
 
 Wireshark's own license
