@@ -56,3 +56,71 @@ jobs:
             fi
             echo "  $filter"
           done
+
+  windows:
+
+    # The same dissectors compiled by MSVC, which is the compiler Wireshark's own
+    # windows build uses and which diagnoses what gcc does not: a type spelled two
+    # ways is an error to gcc and silence to MSVC, and an implicitly declared
+    # function is the other way about. Neither compiler alone covers the other.
+    #
+    # Windows runners bill at several times the linux rate and this build is slow,
+    # so it runs on main and on request rather than on every pull request
+    name: Compile into Wireshark (MSVC)
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+
+    env:
+      WIRESHARK_BASE_DIR: C:\wireshark-libs
+
+    steps:
+
+      - name: Check out the dissectors
+        uses: actions/checkout@v5
+        with:
+          path: dissectors
+
+      - name: Check out Wireshark
+        uses: actions/checkout@v5
+        with:
+          repository: wireshark/wireshark
+          ref: master
+          path: wireshark
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Add the dissectors to the build
+        shell: bash
+        run: |
+          cp $(find dissectors -name 'packet-*.c') wireshark/epan/dissectors/
+          cp dissectors/CMakeListsCustom.txt wireshark/epan/dissectors/
+
+      # No generator is named, so cmake takes the newest visual studio on the
+      # image and the job follows the runner forward instead of pinning a
+      # generator that ages out. Configure downloads the windows third party
+      # libraries into WIRESHARK_BASE_DIR
+      - name: Configure
+        run: cmake -S wireshark -B build -A x64 -DBUILD_wireshark=OFF
+
+      # tshark alone does not bring the third party runtime dlls with it, and
+      # without them the binary cannot start at all: it exits 0xC0000135 before
+      # reaching main, which reads as a dissector failure and is not one
+      - name: Build
+        run: |
+          cmake --build build --config RelWithDebInfo --target tshark
+          cmake --build build --config RelWithDebInfo --target copy_cli_dlls
+
+      - name: Check every dissector registered
+        shell: bash
+        run: |
+          ./build/run/RelWithDebInfo/tshark.exe -G protocols | cut -f3 > registered
+          for filter in coinbasederivatives.marketdataapi iexequities.tops nsmequities.totalview; do
+            if ! grep -qx "$filter" registered; then
+              echo "::error::$filter did not register"
+              exit 1
+            fi
+            echo "  $filter"
+          done

@@ -4,54 +4,30 @@
 
 ## Why C
 
-Wireshark's own dissectors are written in C and compiled into `libwireshark`. These are
-the same kind of thing. They run inside Wireshark rather than on top of it, and that
-changes what they can do.
+Wireshark's own dissectors are C, compiled into `libwireshark`. These are the same kind
+of thing: they run inside Wireshark, not on top of it.
 
-**Speed.** Nothing interprets a script for every field of every message, so a compiled
-dissector holds up on captures large enough to matter: a full session rather than a
-sample of one.
-
-**Typed fields.** A timestamp is an absolute time that Wireshark renders as a date, a
-price is a scaled number, an enumeration reads as its name. Filters, columns and
-statistics treat them as they treat any built-in protocol, because they are the same
-field types.
-
-**Expert information.** What is malformed, truncated or unexpected is flagged where
-Wireshark surfaces it, and can be filtered on.
-
-**Preferences and heuristics.** Pin a version, change what is shown, or let the
-dissector recognise its own traffic without being told which protocol it is.
-
-**No dependency.** There is no plugin directory to populate and no script to reload, and
-a Wireshark built without Lua runs them just the same. `tshark` and `sharkd` get exactly
-what the graphical Wireshark gets.
+- **Speed.** No script interpreted per field, so they hold up on a full session.
+- **Typed fields.** Timestamps are absolute times, prices scaled numbers, enumerations read as names. Filters and columns treat them as any built-in protocol.
+- **Expert information.** Malformed, truncated and unexpected data is flagged and filterable.
+- **Preferences and heuristics.** Pin a version, change what is shown, or let a dissector recognise its own traffic.
+- **No dependency.** No plugin directory, no reload, no Lua. `tshark` and `sharkd` get what Wireshark gets.
 
 ## Coverage
 
-Each dissector is the whole protocol, not the part of it somebody needed. Every message
-the specification defines, every field of every message, and every version the exchange
-has published: 3 protocols and 22 versions here, each protocol read end to end by a
-single dissector. A capture from the first version of a feed and a capture from the
-current one are dissected by the same file.
+Each dissector is the whole protocol: every message, every field, every published
+version. 3 protocols and 22 versions here, each read end to end by one file, first
+version to current.
 
-That is what generating them buys. Each is compiled from a model of the specification,
-so what it covers is what the specification says rather than what a reader had time for.
+They are generated from a model of the specification, and published for preview before
+they are merged into released Wireshark.
 
-They are published for preview before they are merged into released Wireshark, and so
-that you can build them into a Wireshark of your own.
-
-## Proven
+## Proven Models
 
 **The protocol models these dissectors are generated from are proven by Lean 4.**
 
-Each model also generates a [Lean 4 definition][Lean.Definitions.Repository]: one module
-per protocol version, with theorems relating every decoder to its encoder. Decoding an
-encoded message returns the message it started from, and each field's width is what the
-specification says. The Lean toolchain checks every proof on each change.
-
-The model is the one source the C is generated from, so the layout these dissectors read
-is proved rather than asserted.
+Each model also generates a [Lean 4 definition][Lean.Definitions.Repository], one module
+per protocol version, with theorems relating every decoder to its encoder.
 
 ## Usage
 
@@ -75,14 +51,21 @@ you make; the reservation is on putting this code into builds handed to others.
 
 ## Lua Dissectors
 
-The same protocols are published as Lua scripts: [Omi Lua Wireshark Dissectors][Wireshark.Lua.Repository].
+The same protocols are published as Lua scripts: [omi-wireshark-lua][Wireshark.Lua.Repository].
 
-Those need no build at all. Drop one in the Wireshark plugins directory and it works,
-in a Wireshark you already have. They are also far easier to change: the script is read
-at load, so you can hide a field or rename a column and reload to see it.
+No build: drop one in the Wireshark plugins directory and it works. They are LLM
+friendly too, so point a model at one, ask it to hide a field or rename a column,
+and reload.
 
-Take the Lua ones if you do not want to compile anything, and these if you want the
-speed and the integration a built-in dissector has.
+Take those to avoid compiling, these for the speed.
+
+## Support Wireshark
+
+Wireshark is free and open source, maintained under the nonprofit Wireshark Foundation,
+which relies on donations to fund development, infrastructure, and education.
+
+If these dissectors are useful to you, please consider supporting the foundation:
+[Donate to the Wireshark Foundation](https://wiresharkfoundation.org/donate/ "Wireshark Foundation Donations")
 
 ## Open Markets Initiative
 
