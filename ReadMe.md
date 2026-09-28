@@ -2,25 +2,16 @@
 
 # Omi Wireshark C Dissectors
 
-## Why C
-
-Wireshark's own dissectors are C, compiled into `libwireshark`. These are the same kind
-of thing: they run inside Wireshark, not on top of it.
-
-- **Speed.** No script interpreted per field, so they hold up on a full session.
-- **Typed fields.** Timestamps are absolute times, prices scaled numbers, enumerations read as names. Filters and columns treat them as any built-in protocol.
-- **Expert information.** Malformed, truncated and unexpected data is flagged and filterable.
-- **Preferences and heuristics.** Pin a version, change what is shown, or let a dissector recognise its own traffic.
-- **No dependency.** No plugin directory, no reload, no Lua. `tshark` and `sharkd` get what Wireshark gets.
-
 ## Coverage
 
-Each dissector is the whole protocol: every message, every field, every published
-version. 3 protocols and 22 versions here, each read end to end by one file, first
-version to current.
+These dissectors are designed to cover the whole protocol: every message, every field,
+every published version. 3 protocols and 22 versions here.
 
-They are generated from a model of the specification, and published for preview before
-they are merged into released Wireshark.
+Versions are aggregated into one set of identifiers: one field set and one filter
+namespace per protocol, versioned only where the wire differs.
+
+Generated from a model of the specification, and published for preview before they are
+merged into released Wireshark.
 
 ## Proven Models
 
