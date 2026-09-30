@@ -60,11 +60,11 @@ If these dissectors are useful to you, please consider supporting the foundation
 dedicated to enhancing the stability of electronic financial markets using modern
 development methods.
 
-Other generated code can be found at [Omi Projects][Omi.Projects]; for Omi rules and
+Other generated code can be found at [Omi Repositories][Omi.Repositories]; for Omi rules and
 regulations, see [Omi Directory][Omi.Directory].
 
 [Omi.Directory]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative "Open Markets Initiative"
 [Omi.Glossary]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/About "Omi Glossary"
-[Omi.Projects]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/Projects "Open Markets Initiative Projects"
+[Omi.Repositories]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/Repositories "Open Markets Initiative Repositories"
 [Wireshark.Lua.Repository]: https://github.com/Open-Markets-Initiative/omi-wireshark-lua "Omi Lua Wireshark Dissectors"
 [Lean.Definitions.Repository]: https://github.com/Open-Markets-Initiative/omi-lean-definitions "Omi Lean Definitions"
