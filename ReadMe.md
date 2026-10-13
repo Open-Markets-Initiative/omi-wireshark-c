@@ -67,4 +67,4 @@ regulations, see [Omi Directory][Omi.Directory].
 [Omi.Glossary]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/About "Omi Glossary"
 [Omi.Repositories]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative/tree/main/Repositories "Open Markets Initiative Repositories"
 [Wireshark.Lua.Repository]: https://github.com/Open-Markets-Initiative/omi-wireshark-lua "Omi Lua Wireshark Dissectors"
-[Lean.Definitions.Repository]: https://github.com/Open-Markets-Initiative/omi-lean-definitions "Omi Lean Definitions"
+[Lean.Definitions.Repository]: https://github.com/Open-Markets-Initiative/omi-lean4-definitions "Omi Lean Definitions"
