@@ -13,15 +13,15 @@
  *   Nasdaq.NsmEquities.TotalView.Itch.v5.0.2018
  *   Nasdaq.NsmEquities.TotalView.Itch.v5.0.2017
  *   Nasdaq.NsmEquities.TotalView.Itch.v4.1
- *   Nasdaq.NsmEquities.TotalView.Itch.v3.2
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v3.2
  *   Nasdaq.NsmEquities.TotalView.Itch.v4.0
- *   Nasdaq.NsmEquities.TotalView.Itch.v3.1
- *   Nasdaq.NsmEquities.TotalView.Itch.v3.1.f
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v3.1
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v3.1.f
  *   Nasdaq.NsmEquities.TotalView.Itch.v4.0.f
- *   Nasdaq.NsmEquities.TotalView.Itch.v3.0
- *   Nasdaq.NsmEquities.TotalView.Itch.v2.0.a
- *   Nasdaq.NsmEquities.TotalView.Itch.v2.0
- *   Nasdaq.NsmEquities.TotalView.Itch.v1.0
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v3.0
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v2.0.a
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v2.0
+ *   Nasdaq.NsmEquities.TotalView.AsciiItch.v1.0
  *
  * Authors: Omi Developers
  *
@@ -83,7 +83,10 @@ static int proto_nsmequities_totalview;
 
 static int hf_nsmequities_totalview_accepted_sequence_number;
 static int hf_nsmequities_totalview_accepted_sequence_number_v502023;
+static int hf_nsmequities_totalview_accepted_sequence_number_v32;
+static int hf_nsmequities_totalview_accepted_sequence_number_v30;
 static int hf_nsmequities_totalview_accepted_session;
+static int hf_nsmequities_totalview_accepted_session_v32;
 static int hf_nsmequities_totalview_attribution;
 static int hf_nsmequities_totalview_auction_collar_extension;
 static int hf_nsmequities_totalview_auction_collar_reference_price;
@@ -95,7 +98,6 @@ static int hf_nsmequities_totalview_canceled_shares_v32;
 static int hf_nsmequities_totalview_canceled_shares_v10;
 static int hf_nsmequities_totalview_client_packet_type;
 static int hf_nsmequities_totalview_contra_broker_code;
-static int hf_nsmequities_totalview_count;
 static int hf_nsmequities_totalview_cross_price;
 static int hf_nsmequities_totalview_cross_price_v32;
 static int hf_nsmequities_totalview_cross_shares;
@@ -126,7 +128,6 @@ static int hf_nsmequities_totalview_ipo_quotation_release_qualifier;
 static int hf_nsmequities_totalview_ipo_quotation_release_time;
 static int hf_nsmequities_totalview_issue_classification;
 static int hf_nsmequities_totalview_issue_sub_type;
-static int hf_nsmequities_totalview_length;
 static int hf_nsmequities_totalview_level_1;
 static int hf_nsmequities_totalview_level_2;
 static int hf_nsmequities_totalview_level_3;
@@ -143,6 +144,7 @@ static int hf_nsmequities_totalview_match_number_v32;
 static int hf_nsmequities_totalview_match_number_v30;
 static int hf_nsmequities_totalview_maximum_allowable_price;
 static int hf_nsmequities_totalview_message_count;
+static int hf_nsmequities_totalview_message_count_v30;
 static int hf_nsmequities_totalview_message_length;
 static int hf_nsmequities_totalview_message_type;
 static int hf_nsmequities_totalview_millisecond;
@@ -179,25 +181,23 @@ static int hf_nsmequities_totalview_reason_code;
 static int hf_nsmequities_totalview_reg_sho_action;
 static int hf_nsmequities_totalview_reject_reason_code;
 static int hf_nsmequities_totalview_requested_sequence_number;
-static int hf_nsmequities_totalview_requested_sequence_number_v502023;
 static int hf_nsmequities_totalview_requested_sequence_number_v32;
 static int hf_nsmequities_totalview_requested_sequence_number_v30;
 static int hf_nsmequities_totalview_requested_session;
 static int hf_nsmequities_totalview_requested_session_v32;
 static int hf_nsmequities_totalview_reserved;
+static int hf_nsmequities_totalview_reserved_1;
 static int hf_nsmequities_totalview_round_lot_size;
 static int hf_nsmequities_totalview_round_lot_size_v32;
 static int hf_nsmequities_totalview_round_lots_only;
 static int hf_nsmequities_totalview_second;
 static int hf_nsmequities_totalview_second_v32;
-static int hf_nsmequities_totalview_sequence;
 static int hf_nsmequities_totalview_sequence_number;
 static int hf_nsmequities_totalview_sequence_number_v30;
 static int hf_nsmequities_totalview_sequenced_message_type;
 static int hf_nsmequities_totalview_server_packet_type;
 static int hf_nsmequities_totalview_session;
 static int hf_nsmequities_totalview_session_v30;
-static int hf_nsmequities_totalview_session_v10;
 static int hf_nsmequities_totalview_shares;
 static int hf_nsmequities_totalview_shares_v20a;
 static int hf_nsmequities_totalview_shares_v10;
@@ -205,6 +205,7 @@ static int hf_nsmequities_totalview_shares_numeric_6;
 static int hf_nsmequities_totalview_shares_numeric_9;
 static int hf_nsmequities_totalview_short_sale_threshold_indicator;
 static int hf_nsmequities_totalview_side;
+static int hf_nsmequities_totalview_soup_lf;
 static int hf_nsmequities_totalview_stock;
 static int hf_nsmequities_totalview_stock_v40;
 static int hf_nsmequities_totalview_stock_alpha_6;
@@ -214,7 +215,6 @@ static int hf_nsmequities_totalview_stock_alphanumeric_6;
 static int hf_nsmequities_totalview_stock_alphanumeric_8;
 static int hf_nsmequities_totalview_stock_halted;
 static int hf_nsmequities_totalview_stock_locate;
-static int hf_nsmequities_totalview_text;
 static int hf_nsmequities_totalview_timestamp;
 static int hf_nsmequities_totalview_timestamp_v20a;
 static int hf_nsmequities_totalview_timestamp_v10;
@@ -274,8 +274,9 @@ static int ett_nsmequities_totalview_timestamp;
 static int ett_nsmequities_totalview_client_packet_header;
 static int ett_nsmequities_totalview_server_packet_header;
 static int ett_nsmequities_totalview_message_header;
+static int ett_nsmequities_totalview_client_packet_header_v32;
+static int ett_nsmequities_totalview_server_packet_header_v32;
 static int ett_nsmequities_totalview_sequenced_message_header;
-static int ett_nsmequities_totalview_message_header_v30;
 static int ett_nsmequities_totalview_sequenced_message_header_v20a;
 static int ett_nsmequities_totalview_message_header_v20a;
 static int ett_nsmequities_totalview_sequenced_message_header_v10;
@@ -423,6 +424,13 @@ static bool nsmequities_totalview_show_messages = true;
 #define NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_DESCRIPTION "Decimal places shown for scaled fields, the default is the full wire precision"
 
 static unsigned nsmequities_totalview_pref_decimal_places = 8;
+
+/* Ipo Quotation Release Time read as a time of day, which is the default */
+#define NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_NAME "read.ipoquotationreleasetime"
+#define NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_TITLE "Read Ipo Quotation Release Time as a time"
+#define NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_DESCRIPTION "Read Ipo Quotation Release Time as a time of day, with the instant it names beneath it. Off states the seconds since midnight the wire carries and nothing else"
+
+static bool nsmequities_totalview_pref_read_ipoquotationreleasetime = true;
 
 /* Millisecond read as a time of day, which is the default */
 #define NSMEQUITIES_TOTALVIEW_READ_MILLISECOND_PREFERENCE_NAME "read.millisecond"
@@ -670,46 +678,57 @@ nsmequities_totalview_decimal_places(char *buf)
 
 /* Format an implied 4 decimal place value */
 static void
-nsmequities_totalview_format_decimal_4_32(char *buf, uint32_t raw)
+nsmequities_totalview_format_decimal_4_32_unsigned(char *buf, uint32_t raw)
 {
-    int64_t value = (int32_t)raw;
-    int64_t whole = value / 10000;
-    int64_t fraction = value % 10000;
+    uint64_t value = (uint32_t)raw;
+    uint64_t units = value / 10000;
+    uint64_t fraction = value % 10000;
 
-    if (fraction < 0) {
-        fraction = -fraction;
-    }
-
-    if (value < 0 && whole == 0) {
-        snprintf(buf, ITEM_LABEL_LENGTH, "-0.%04" PRId64, fraction);
-    }
-    else {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%04" PRId64, whole, fraction);
-    }
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64 ".%04" PRIu64, units, fraction);
 
     nsmequities_totalview_decimal_places(buf);
 }
 
 /* Format an implied 8 decimal place value */
 static void
-nsmequities_totalview_format_decimal_8_64(char *buf, uint64_t raw)
+nsmequities_totalview_format_decimal_8_64_unsigned(char *buf, uint64_t raw)
 {
-    int64_t value = (int64_t)raw;
-    int64_t whole = value / 100000000;
-    int64_t fraction = value % 100000000;
+    uint64_t value = (uint64_t)raw;
+    uint64_t units = value / 100000000;
+    uint64_t fraction = value % 100000000;
 
-    if (fraction < 0) {
-        fraction = -fraction;
-    }
-
-    if (value < 0 && whole == 0) {
-        snprintf(buf, ITEM_LABEL_LENGTH, "-0.%08" PRId64, fraction);
-    }
-    else {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%08" PRId64, whole, fraction);
-    }
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64 ".%08" PRIu64, units, fraction);
 
     nsmequities_totalview_decimal_places(buf);
+}
+
+/* the number a decimal writing its own point spells */
+static const char *
+nsmequities_totalview_decimal_text(wmem_allocator_t *pool, const char *text)
+{
+    const char *at = text + strspn(text, " ");
+    const char *sign = "";
+    size_t zeros;
+
+    if (*at == '\0') {
+        return NULL;
+    }
+
+    if (*at == '-' || *at == '+') {
+        sign = (*at == '-') ? "-" : "+";
+        at++;
+    }
+
+    /* a run of zeros spells zero, so the last digit stays */
+    zeros = strspn(at, "0");
+
+    if (zeros > 0 && at[zeros] == '\0') {
+        zeros--;
+    }
+
+    at += zeros;
+
+    return *at == '.' ? wmem_strdup_printf(pool, "%s0%s", sign, at) : wmem_strdup_printf(pool, "%s%s", sign, at);
 }
 
 /* Broadcast endpoints from the connectivity model */
@@ -727,6 +746,19 @@ static const nsmequities_totalview_endpoint nsmequities_totalview_endpoints[] = 
     { { 233, 86, 230, 143 }, 26477, "New Jersey Metro Area" },
     { { 233, 86, 230, 144 }, 26400, "New Jersey Metro Area" },
     { { 233, 54, 12, 101 }, 26400, "New York Metro Area" },
+    { { 233, 54, 12, 219 }, 26477, "Mid-Atlantic Region" },
+    { { 233, 54, 12, 119 }, 26477, "New York Metro Area" },
+    { { 233, 54, 12, 100 }, 26477, "New York Metro Area" },
+    { { 233, 54, 12, 150 }, 26477, "Mid-Atlantic Region" },
+    { { 233, 54, 12, 50 }, 26477, "New York Metro Area" },
+    { { 233, 54, 12, 102 }, 26477, "New York Metro Area" },
+    { { 233, 54, 12, 104 }, 26477, "Secaucus Metro Area" },
+    { { 233, 86, 230, 110 }, 26477, "Mid-Atlantic Region" },
+    { { 233, 86, 230, 111 }, 26477, "Mid-Atlantic Region" },
+    { { 233, 54, 12, 104 }, 26400, "New Jersey Metro Area" },
+    { { 233, 74, 125, 137 }, 26400, "New Jersey Metro Area" },
+    { { 233, 127, 56, 0 }, 18070, "Feed A London Metro Area" },
+    { { 233, 127, 56, 64 }, 18070, "Feed B London Metro Area" },
 };
 
 /* The published endpoint a frame was sent to, NULL for any other destination */
@@ -756,16 +788,20 @@ nsmequities_totalview_endpoint_of(packet_info *pinfo)
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_NAME        "Accepted Sequence Number"
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_DESCRIPTION "The sequence number in ASCII of the next Sequenced Message to be sent. Left padded with spaces."
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_FILTER      "nsmequities.totalview.acceptedsequencenumber"
-#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_ENCODING    ENC_ASCII
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_SIZE        20
 
 static unsigned
-parse_nsmequities_totalview_accepted_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_accepted_sequence_number(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_accepted_sequence_number, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_ENCODING);
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_SIZE, ENC_ASCII);
+
+    uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_accepted_sequence_number, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_SIZE, value);
 
     return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_SIZE;
 }
@@ -792,6 +828,50 @@ parse_nsmequities_totalview_accepted_sequence_number_v502023(tvbuff_t *tvb, pack
     return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V502023_SIZE;
 }
 
+/* Accepted Sequence Number V32 */
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_NAME        "Accepted Sequence Number"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_DESCRIPTION "The sequence number in ASCII of the next Sequenced Message to be sent. Left padded with spaces."
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_FILTER      "nsmequities.totalview.acceptedsequencenumber"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_DISPLAY     BASE_DEC
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_ENCODING    ENC_ASCII
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_SIZE        20
+
+static unsigned
+parse_nsmequities_totalview_accepted_sequence_number_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_SIZE, ENC_ASCII);
+
+    uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_accepted_sequence_number_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_SIZE, value);
+
+    return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_SIZE;
+}
+
+/* Accepted Sequence Number V30 */
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_NAME        "Accepted Sequence Number"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_DESCRIPTION "The sequence number in ASCII of the next Sequenced Message to be sent. Left padded with spaces."
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_FILTER      "nsmequities.totalview.acceptedsequencenumber"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_DISPLAY     BASE_DEC
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_ENCODING    ENC_ASCII
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_SIZE        10
+
+static unsigned
+parse_nsmequities_totalview_accepted_sequence_number_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_SIZE, ENC_ASCII);
+
+    uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_accepted_sequence_number_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_SIZE, value);
+
+    return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_SIZE;
+}
+
 /* Accepted Session */
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_NAME        "Accepted Session"
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_DESCRIPTION "The session ID of the session that is now logged into. Left padded with spaces."
@@ -808,6 +888,24 @@ parse_nsmequities_totalview_accepted_session(tvbuff_t *tvb, packet_info *pinfo _
     proto_tree_add_item(tree, hf_nsmequities_totalview_accepted_session, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE;
+}
+
+/* Accepted Session V32 */
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_NAME        "Accepted Session"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_DESCRIPTION "The session ID of the session that is now logged into. Left padded with spaces."
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_FILTER      "nsmequities.totalview.acceptedsession"
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_TYPE        FT_STRING
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_ENCODING    ENC_ASCII
+#define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE        10
+
+static unsigned
+parse_nsmequities_totalview_accepted_session_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_nsmequities_totalview_accepted_session_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_ENCODING);
+
+    return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE;
 }
 
 /* Attribution */
@@ -850,7 +948,7 @@ parse_nsmequities_totalview_auction_collar_extension(tvbuff_t *tvb, packet_info 
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_NAME        "Auction Collar Reference Price"
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_DESCRIPTION "Reference price used to set the auction collars"
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_FILTER      "nsmequities.totalview.auctioncollarreferenceprice"
-#define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1051,33 +1149,11 @@ parse_nsmequities_totalview_contra_broker_code(tvbuff_t *tvb, packet_info *pinfo
     return offset + NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE;
 }
 
-/* Count values the dispatch switches on */
-#define NSMEQUITIES_TOTALVIEW_COUNT_HEARTBEAT      0
-#define NSMEQUITIES_TOTALVIEW_COUNT_END_OF_SESSION 65535
-
-/* Count */
-#define NSMEQUITIES_TOTALVIEW_COUNT_NAME        "Count"
-#define NSMEQUITIES_TOTALVIEW_COUNT_DESCRIPTION "Number of messages to follow this header"
-#define NSMEQUITIES_TOTALVIEW_COUNT_FILTER      "nsmequities.totalview.count"
-#define NSMEQUITIES_TOTALVIEW_COUNT_TYPE        FT_UINT16
-#define NSMEQUITIES_TOTALVIEW_COUNT_DISPLAY     BASE_DEC
-#define NSMEQUITIES_TOTALVIEW_COUNT_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_COUNT_ENCODING    ENC_LITTLE_ENDIAN
-#define NSMEQUITIES_TOTALVIEW_COUNT_SIZE        2
-
-static unsigned
-parse_nsmequities_totalview_count(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_count, tvb, offset, NSMEQUITIES_TOTALVIEW_COUNT_SIZE, NSMEQUITIES_TOTALVIEW_COUNT_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_COUNT_SIZE;
-}
-
 /* Cross Price */
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_NAME        "Cross Price"
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_DESCRIPTION "The price at which the cross occurred"
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_FILTER      "nsmequities.totalview.crossprice"
-#define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1163,7 +1239,7 @@ parse_nsmequities_totalview_cross_type(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_NAME        "Current Reference Price"
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_DESCRIPTION "The price at which the NOII shares are being calculated"
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_FILTER      "nsmequities.totalview.currentreferenceprice"
-#define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1203,19 +1279,10 @@ parse_nsmequities_totalview_current_reference_price_v32(tvbuff_t *tvb, packet_in
 #define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_NAME        "Debug Text"
 #define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_DESCRIPTION "Free form human readable text"
 #define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_FILTER      "nsmequities.totalview.debugtext"
-#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_TYPE        FT_CHAR
-#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_TYPE        FT_STRING
+#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_DISPLAY     BASE_NONE
 #define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_ENCODING    ENC_ASCII
-#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_SIZE        1
-
-static unsigned
-parse_nsmequities_totalview_debug_text(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_debug_text, tvb, offset, NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_SIZE, NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_SIZE;
-}
+#define NSMEQUITIES_TOTALVIEW_DEBUG_TEXT_ENCODING    ENC_NA
 
 /* Display */
 #define NSMEQUITIES_TOTALVIEW_DISPLAY_NAME        "Display"
@@ -1382,7 +1449,7 @@ parse_nsmequities_totalview_executed_shares_v10(tvbuff_t *tvb, packet_info *pinf
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_NAME        "Execution Price"
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_DESCRIPTION "The price at which the order execution occurred"
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_FILTER      "nsmequities.totalview.executionprice"
-#define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1422,7 +1489,7 @@ parse_nsmequities_totalview_execution_price_v32(tvbuff_t *tvb, packet_info *pinf
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_NAME        "Far Price"
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_DESCRIPTION "A hypothetical auction-clearing price for cross orders only"
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_FILTER      "nsmequities.totalview.farprice"
-#define NSMEQUITIES_TOTALVIEW_FAR_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_FAR_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1638,7 +1705,7 @@ parse_nsmequities_totalview_ipo_flag(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_NAME        "Ipo Price"
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_DESCRIPTION "Denotes the IPO price to be used for intraday net change calculations"
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_FILTER      "nsmequities.totalview.ipoprice"
-#define NSMEQUITIES_TOTALVIEW_IPO_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_IPO_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_IPO_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1680,16 +1747,47 @@ parse_nsmequities_totalview_ipo_quotation_release_qualifier(tvbuff_t *tvb, packe
 #define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_NAME        "Ipo Quotation Release Time"
 #define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_DESCRIPTION "Denotes the IPO release time, in seconds since midnight, for quotation to the nearest second"
 #define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_FILTER      "nsmequities.totalview.ipoquotationreleasetime"
-#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_TYPE        FT_UINT32
-#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_DISPLAY     BASE_DEC
+#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_TYPE        FT_ABSOLUTE_TIME
+#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_DISPLAY     ABSOLUTE_TIME_UTC
 #define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_ENCODING    ENC_TIME_SECS | ENC_BIG_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE        4
 
 static unsigned
-parse_nsmequities_totalview_ipo_quotation_release_time(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_ipo_quotation_release_time(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_ipo_quotation_release_time, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_ENCODING);
+    uint64_t seconds = tvb_get_ntohl(tvb, offset);
+
+    /* The messages after it count from this second */
+    nsmequities_totalview_anchor_set(pinfo, seconds);
+
+    if (!nsmequities_totalview_pref_read_ipoquotationreleasetime) {
+        proto_tree_add_uint64(tree, hf_nsmequities_totalview_elapsed_seconds, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, seconds);
+
+        return offset + NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE;
+    }
+
+    nstime_t time = {
+        .secs = (time_t)(seconds / 1),
+        .nsecs = (int)(seconds % 1) * 1000000000,
+    };
+
+    nstime_t instant;
+
+    nsmequities_totalview_utc(pinfo, (uint64_t)time.secs, (uint32_t)time.nsecs, &instant);
+
+    /* The instant reads unambiguously, the time of day it was sent at does not */
+    proto_item *reading = proto_tree_add_time(tree, hf_nsmequities_totalview_ipo_quotation_release_time, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, &instant);
+
+    proto_tree *readings = proto_item_add_subtree(reading, ett_nsmequities_totalview_timestamp);
+
+    char clock[32];
+
+    nsmequities_totalview_time_of_day_label(clock, sizeof(clock), &time);
+
+    proto_item_set_generated(proto_tree_add_time_format_value(readings, hf_nsmequities_totalview_time_of_day, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, &time, "%s", clock));
+    proto_item_set_generated(proto_tree_add_time(readings, hf_nsmequities_totalview_local, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, &instant));
+    proto_tree_add_uint64(readings, hf_nsmequities_totalview_elapsed_seconds, tvb, offset, NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE, seconds);
 
     return offset + NSMEQUITIES_TOTALVIEW_IPO_QUOTATION_RELEASE_TIME_SIZE;
 }
@@ -1818,29 +1916,11 @@ parse_nsmequities_totalview_issue_sub_type(tvbuff_t *tvb, packet_info *pinfo, pr
     return offset + NSMEQUITIES_TOTALVIEW_ISSUE_SUB_TYPE_SIZE;
 }
 
-/* Length */
-#define NSMEQUITIES_TOTALVIEW_LENGTH_NAME        "Length"
-#define NSMEQUITIES_TOTALVIEW_LENGTH_DESCRIPTION "Length of data message not including this field"
-#define NSMEQUITIES_TOTALVIEW_LENGTH_FILTER      "nsmequities.totalview.length"
-#define NSMEQUITIES_TOTALVIEW_LENGTH_TYPE        FT_UINT16
-#define NSMEQUITIES_TOTALVIEW_LENGTH_DISPLAY     BASE_DEC
-#define NSMEQUITIES_TOTALVIEW_LENGTH_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_LENGTH_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_TOTALVIEW_LENGTH_SIZE        2
-
-static unsigned
-parse_nsmequities_totalview_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_length, tvb, offset, NSMEQUITIES_TOTALVIEW_LENGTH_SIZE, NSMEQUITIES_TOTALVIEW_LENGTH_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_LENGTH_SIZE;
-}
-
 /* Level 1 */
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_NAME        "Level 1"
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_DESCRIPTION "Denotes the MWCB Level 1 Value."
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_FILTER      "nsmequities.totalview.level1"
-#define NSMEQUITIES_TOTALVIEW_LEVEL_1_TYPE        FT_INT64
+#define NSMEQUITIES_TOTALVIEW_LEVEL_1_TYPE        FT_UINT64
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_LEVEL_1_ENCODING    ENC_BIG_ENDIAN
@@ -1858,7 +1938,7 @@ parse_nsmequities_totalview_level_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_NAME        "Level 2"
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_DESCRIPTION "Denotes the MWCB Level 2 Value."
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_FILTER      "nsmequities.totalview.level2"
-#define NSMEQUITIES_TOTALVIEW_LEVEL_2_TYPE        FT_INT64
+#define NSMEQUITIES_TOTALVIEW_LEVEL_2_TYPE        FT_UINT64
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_LEVEL_2_ENCODING    ENC_BIG_ENDIAN
@@ -1876,7 +1956,7 @@ parse_nsmequities_totalview_level_2(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_NAME        "Level 3"
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_DESCRIPTION "Denotes the MWCB Level 3 Value."
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_FILTER      "nsmequities.totalview.level3"
-#define NSMEQUITIES_TOTALVIEW_LEVEL_3_TYPE        FT_INT64
+#define NSMEQUITIES_TOTALVIEW_LEVEL_3_TYPE        FT_UINT64
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_LEVEL_3_ENCODING    ENC_BIG_ENDIAN
@@ -1912,7 +1992,7 @@ parse_nsmequities_totalview_locate_code(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_NAME        "Lower Auction Collar Price"
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_DESCRIPTION "Indicates the price of the lower auction collar threshold"
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_FILTER      "nsmequities.totalview.lowerauctioncollarprice"
-#define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -1930,7 +2010,7 @@ parse_nsmequities_totalview_lower_auction_collar_price(tvbuff_t *tvb, packet_inf
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_NAME        "Lower Price Range Collar"
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_DESCRIPTION "Indicates the price of the Lower Auction Collar Threshold"
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_FILTER      "nsmequities.totalview.lowerpricerangecollar"
-#define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_ENCODING    ENC_BIG_ENDIAN
@@ -1989,6 +2069,7 @@ static const value_string nsmequities_totalview_market_category_vals[] = {
     { 'M', "Nyse Texas" },
     { 'Z', "Bats Z" },
     { 'V', "Investors Exchange" },
+    { 'F', "Texas Exchange" },
     { ' ', "Not Available" },
     { 'T', "Cqs" },
     { 0, NULL }
@@ -2147,7 +2228,7 @@ parse_nsmequities_totalview_match_number_v30(tvbuff_t *tvb, packet_info *pinfo, 
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_NAME        "Maximum Allowable Price"
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_DESCRIPTION "80% above Registration Statement Highest Price"
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_FILTER      "nsmequities.totalview.maximumallowableprice"
-#define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -2181,6 +2262,28 @@ parse_nsmequities_totalview_message_count(tvbuff_t *tvb, packet_info *pinfo _U_,
     proto_tree_add_item(tree, hf_nsmequities_totalview_message_count, tvb, offset, NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_SIZE, NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_SIZE;
+}
+
+/* Message Count V30 values the dispatch switches on */
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_HEARTBEAT      0
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_END_OF_SESSION 65535
+
+/* Message Count V30 */
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_NAME        "Message Count"
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_DESCRIPTION "Number of messages to follow this header"
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_FILTER      "nsmequities.totalview.messagecount"
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_TYPE        FT_UINT16
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_DISPLAY     BASE_DEC
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_ENCODING    ENC_LITTLE_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_SIZE        2
+
+static unsigned
+parse_nsmequities_totalview_message_count_v30(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_nsmequities_totalview_message_count_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_SIZE, NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_ENCODING);
+
+    return offset + NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_SIZE;
 }
 
 /* Message Length */
@@ -2336,7 +2439,7 @@ parse_nsmequities_totalview_millisecond(tvbuff_t *tvb, packet_info *pinfo, proto
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_NAME        "Minimum Allowable Price"
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_DESCRIPTION "20% below Registration Statement Lower Price"
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_FILTER      "nsmequities.totalview.minimumallowableprice"
-#define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -2440,7 +2543,7 @@ parse_nsmequities_totalview_nanoseconds(tvbuff_t *tvb, packet_info *pinfo, proto
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_NAME        "Near Execution Price"
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_DESCRIPTION "The current reference price when the DLCR volatility test has successfully passed"
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_FILTER      "nsmequities.totalview.nearexecutionprice"
-#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -2476,7 +2579,7 @@ parse_nsmequities_totalview_near_execution_time(tvbuff_t *tvb, packet_info *pinf
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_NAME        "Near Price"
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_DESCRIPTION "A hypothetical auction-clearing price for cross orders as well as continuous orders"
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_FILTER      "nsmequities.totalview.nearprice"
-#define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -2800,7 +2903,7 @@ parse_nsmequities_totalview_password_v32(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define NSMEQUITIES_TOTALVIEW_PRICE_NAME        "Price"
 #define NSMEQUITIES_TOTALVIEW_PRICE_DESCRIPTION "The display price of the new order"
 #define NSMEQUITIES_TOTALVIEW_PRICE_FILTER      "nsmequities.totalview.price"
-#define NSMEQUITIES_TOTALVIEW_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -2840,16 +2943,21 @@ parse_nsmequities_totalview_price_v32(tvbuff_t *tvb, packet_info *pinfo, proto_t
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_NAME        "Price"
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_DESCRIPTION "The limit price of the order. 9 whole number places, a decimal point, and 10 decimal digits."
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_FILTER      "nsmequities.totalview.price"
-#define NSMEQUITIES_TOTALVIEW_PRICE_V10_TYPE        FT_STRING
+#define NSMEQUITIES_TOTALVIEW_PRICE_V10_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_DISPLAY     BASE_NONE
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_ENCODING    ENC_ASCII
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_SIZE        20
 
 static unsigned
-parse_nsmequities_totalview_price_v10(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_price_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_price_v10, tvb, offset, NSMEQUITIES_TOTALVIEW_PRICE_V10_SIZE, NSMEQUITIES_TOTALVIEW_PRICE_V10_ENCODING);
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_PRICE_V10_SIZE, ENC_ASCII);
+
+    const char *shown = nsmequities_totalview_decimal_text(pinfo->pool, text);
+    double value = strtod(text, NULL);
+
+    proto_tree_add_double_format_value(tree, hf_nsmequities_totalview_price_v10, tvb, offset, NSMEQUITIES_TOTALVIEW_PRICE_V10_SIZE, value, "%s", shown != NULL ? shown : "No Value");
 
     return offset + NSMEQUITIES_TOTALVIEW_PRICE_V10_SIZE;
 }
@@ -3116,56 +3224,42 @@ parse_nsmequities_totalview_reject_reason_code(tvbuff_t *tvb, packet_info *pinfo
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_NAME        "Requested Sequence Number"
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_DESCRIPTION "Specifies the next sequence number in ASCII the client wants to receive upon connection, or 0 to start receiving the most recently generated message."
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_FILTER      "nsmequities.totalview.requestedsequencenumber"
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_ENCODING    ENC_ASCII
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE        20
 
 static unsigned
-parse_nsmequities_totalview_requested_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_requested_sequence_number(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_requested_sequence_number, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE;
-}
-
-/* Requested Sequence Number V502023 */
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_NAME        "Requested Sequence Number"
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_DESCRIPTION "Specifies the next sequence number in ASCII the client wants to receive upon connection, or 0 to start receiving the most recently generated message."
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_FILTER      "nsmequities.totalview.requestedsequencenumber"
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_TYPE        FT_UINT64
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_DISPLAY     BASE_DEC
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_ENCODING    ENC_ASCII
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_SIZE        20
-
-static unsigned
-parse_nsmequities_totalview_requested_sequence_number_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_SIZE, ENC_ASCII);
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE, ENC_ASCII);
 
     uint64_t value = (uint64_t)strtoull(text, NULL, 10);
 
-    proto_tree_add_uint64(tree, hf_nsmequities_totalview_requested_sequence_number_v502023, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_SIZE, value);
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_requested_sequence_number, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE, value);
 
-    return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_SIZE;
+    return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_SIZE;
 }
 
 /* Requested Sequence Number V32 */
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_NAME        "Requested Sequence Number"
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_DESCRIPTION "Specifies the next sequence number in ASCII the client wants to receive upon connection, or 0 to start receiving the most recently generated message."
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_FILTER      "nsmequities.totalview.requestedsequencenumber"
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_ENCODING    ENC_ASCII
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_SIZE        20
 
 static unsigned
-parse_nsmequities_totalview_requested_sequence_number_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_requested_sequence_number_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_requested_sequence_number_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_ENCODING);
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_SIZE, ENC_ASCII);
+
+    uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_requested_sequence_number_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_SIZE, value);
 
     return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_SIZE;
 }
@@ -3174,16 +3268,20 @@ parse_nsmequities_totalview_requested_sequence_number_v32(tvbuff_t *tvb, packet_
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_NAME        "Requested Sequence Number"
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_DESCRIPTION "Specifies the next sequence number in ASCII the client wants to receive upon connection, or 0 to start receiving the most recently generated message."
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_FILTER      "nsmequities.totalview.requestedsequencenumber"
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_TYPE        FT_UINT64
+#define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_ENCODING    ENC_ASCII
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_requested_sequence_number_v30(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_requested_sequence_number_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_requested_sequence_number_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_ENCODING);
+    const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_SIZE, ENC_ASCII);
+
+    uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    proto_tree_add_uint64(tree, hf_nsmequities_totalview_requested_sequence_number_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_SIZE, value);
 
     return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V30_SIZE;
 }
@@ -3240,6 +3338,24 @@ parse_nsmequities_totalview_reserved(tvbuff_t *tvb, packet_info *pinfo _U_, prot
     proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
+}
+
+/* Reserved 1 */
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_NAME        "Reserved 1"
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_DESCRIPTION "Reserved."
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_FILTER      "nsmequities.totalview.reserved1"
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_TYPE        FT_CHAR
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_ENCODING    ENC_ASCII
+#define NSMEQUITIES_TOTALVIEW_RESERVED_1_SIZE        1
+
+static unsigned
+parse_nsmequities_totalview_reserved_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_nsmequities_totalview_reserved_1, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_1_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_1_ENCODING);
+
+    return offset + NSMEQUITIES_TOTALVIEW_RESERVED_1_SIZE;
 }
 
 /* Round Lot Size */
@@ -3406,24 +3522,6 @@ parse_nsmequities_totalview_second_v32(tvbuff_t *tvb, packet_info *pinfo, proto_
     return offset + NSMEQUITIES_TOTALVIEW_SECOND_V32_SIZE;
 }
 
-/* Sequence */
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NAME        "Sequence"
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_DESCRIPTION "Sequence Number of the first message to follow this header"
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_FILTER      "nsmequities.totalview.sequence"
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_TYPE        FT_UINT32
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_DISPLAY     BASE_DEC
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_SIZE        4
-
-static unsigned
-parse_nsmequities_totalview_sequence(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_sequence, tvb, offset, NSMEQUITIES_TOTALVIEW_SEQUENCE_SIZE, NSMEQUITIES_TOTALVIEW_SEQUENCE_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_SEQUENCE_SIZE;
-}
-
 /* Sequence Number */
 #define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_NAME        "Sequence Number"
 #define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_DESCRIPTION "Sequence number of the first message to follow this header"
@@ -3444,13 +3542,13 @@ parse_nsmequities_totalview_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U
 
 /* Sequence Number V30 */
 #define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_NAME        "Sequence Number"
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_DESCRIPTION "The sequence number in ASCII of the next Sequenced Message to be sent. Left padded with spaces."
+#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_DESCRIPTION "Sequence Number of the first message to follow this header"
 #define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_FILTER      "nsmequities.totalview.sequencenumber"
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_DISPLAY     BASE_NONE
+#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_TYPE        FT_UINT32
+#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_ENCODING    ENC_ASCII
-#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_SIZE        10
+#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_V30_SIZE        4
 
 static unsigned
 parse_nsmequities_totalview_sequence_number_v30(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -3601,24 +3699,6 @@ parse_nsmequities_totalview_session_v30(tvbuff_t *tvb, packet_info *pinfo _U_, p
     proto_tree_add_item(tree, hf_nsmequities_totalview_session_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE, NSMEQUITIES_TOTALVIEW_SESSION_V30_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE;
-}
-
-/* Session V10 */
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_NAME        "Session"
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_DESCRIPTION "The session ID of the session that is now logged into. Left padded with spaces."
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_FILTER      "nsmequities.totalview.session"
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_TYPE        FT_STRING
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_DISPLAY     BASE_NONE
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_ENCODING    ENC_ASCII
-#define NSMEQUITIES_TOTALVIEW_SESSION_V10_SIZE        10
-
-static unsigned
-parse_nsmequities_totalview_session_v10(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_session_v10, tvb, offset, NSMEQUITIES_TOTALVIEW_SESSION_V10_SIZE, NSMEQUITIES_TOTALVIEW_SESSION_V10_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_SESSION_V10_SIZE;
 }
 
 /* Shares */
@@ -3774,6 +3854,24 @@ parse_nsmequities_totalview_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     proto_tree_add_item(tree, hf_nsmequities_totalview_side, tvb, offset, NSMEQUITIES_TOTALVIEW_SIDE_SIZE, NSMEQUITIES_TOTALVIEW_SIDE_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_SIDE_SIZE;
+}
+
+/* Soup Lf */
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_NAME        "Soup Lf"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_DESCRIPTION "Terminating line feed character"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_FILTER      "nsmequities.totalview.souplf"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_TYPE        FT_UINT8
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_ENCODING    ENC_LITTLE_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE        1
+
+static unsigned
+parse_nsmequities_totalview_soup_lf(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_nsmequities_totalview_soup_lf, tvb, offset, NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE, NSMEQUITIES_TOTALVIEW_SOUP_LF_ENCODING);
+
+    return offset + NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE;
 }
 
 /* Stock */
@@ -3942,24 +4040,6 @@ parse_nsmequities_totalview_stock_locate(tvbuff_t *tvb, packet_info *pinfo _U_, 
     proto_tree_add_item(tree, hf_nsmequities_totalview_stock_locate, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_LOCATE_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_LOCATE_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_LOCATE_SIZE;
-}
-
-/* Text */
-#define NSMEQUITIES_TOTALVIEW_TEXT_NAME        "Text"
-#define NSMEQUITIES_TOTALVIEW_TEXT_DESCRIPTION "Free form human readable text"
-#define NSMEQUITIES_TOTALVIEW_TEXT_FILTER      "nsmequities.totalview.text"
-#define NSMEQUITIES_TOTALVIEW_TEXT_TYPE        FT_CHAR
-#define NSMEQUITIES_TOTALVIEW_TEXT_DISPLAY     BASE_HEX
-#define NSMEQUITIES_TOTALVIEW_TEXT_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_TEXT_ENCODING    ENC_ASCII
-#define NSMEQUITIES_TOTALVIEW_TEXT_SIZE        1
-
-static unsigned
-parse_nsmequities_totalview_text(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_text, tvb, offset, NSMEQUITIES_TOTALVIEW_TEXT_SIZE, NSMEQUITIES_TOTALVIEW_TEXT_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_TEXT_SIZE;
 }
 
 /* Timestamp */
@@ -4181,7 +4261,7 @@ parse_nsmequities_totalview_unsequenced_message_type(tvbuff_t *tvb, packet_info 
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_NAME        "Upper Auction Collar Price"
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_DESCRIPTION "Indicates the price of the upper auction collar threshold"
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_FILTER      "nsmequities.totalview.upperauctioncollarprice"
-#define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_ENCODING    ENC_BIG_ENDIAN
@@ -4199,7 +4279,7 @@ parse_nsmequities_totalview_upper_auction_collar_price(tvbuff_t *tvb, packet_inf
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_NAME        "Upper Price Range Collar"
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_DESCRIPTION "Indicates the price of the Upper Auction Collar Threshold"
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_FILTER      "nsmequities.totalview.upperpricerangecollar"
-#define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_TYPE        FT_INT32
+#define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_TYPE        FT_UINT32
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_ENCODING    ENC_BIG_ENDIAN
@@ -4286,7 +4366,6 @@ static unsigned dissect_nsmequities_totalview_net_order_imbalance_indicator(tvbu
 static unsigned dissect_nsmequities_totalview_retail_price_improvement_indicator(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_direct_listing_with_capital_raise_price_discovery(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_totalview_login_request_packet_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_login_accepted_packet_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v502022(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v502017(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -4310,9 +4389,11 @@ static unsigned dissect_nsmequities_totalview_cross_trade_v41(tvbuff_t *tvb, pac
 static unsigned dissect_nsmequities_totalview_broken_trade_v41(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_net_order_imbalance_indicator_v41(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_retail_price_improvement_indicator_v41(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_totalview_client_packet_header_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_debug_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_login_request_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_unsequenced_data_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_totalview_server_packet_header_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_login_accepted_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -4432,7 +4513,6 @@ static unsigned dissect_nsmequities_totalview_trade_v30(tvbuff_t *tvb, packet_in
 static unsigned dissect_nsmequities_totalview_cross_trade_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_broken_trade_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_net_order_imbalance_indicator_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_totalview_message_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_system_event_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_stock_directory_v30_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_stock_trading_action_v30_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -4460,7 +4540,6 @@ static unsigned dissect_nsmequities_totalview_system_event_v20(tvbuff_t *tvb, pa
 static unsigned dissect_nsmequities_totalview_order_executed_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_order_cancel_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_broken_trade_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_totalview_login_accepted_packet_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_message_header_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_add_order_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -4534,9 +4613,9 @@ dissect_nsmequities_totalview_client_packet_header(tvbuff_t *tvb, packet_info *p
 
 /* Debug Packet */
 static unsigned
-dissect_nsmequities_totalview_debug_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_totalview_debug_packet(tvbuff_t *tvb _U_, packet_info *pinfo _U_, proto_tree *tree _U_, unsigned offset)
 {
-    offset = parse_nsmequities_totalview_debug_text(tvb, pinfo, tree, offset);
+    /* Debug Text is a placeholder, it consumes no bytes */
 
     return offset;
 }
@@ -4991,18 +5070,6 @@ dissect_nsmequities_totalview_message_header(tvbuff_t *tvb, packet_info *pinfo, 
     return offset;
 }
 
-/* Login Request Packet */
-static unsigned
-dissect_nsmequities_totalview_login_request_packet_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_nsmequities_totalview_username(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_password(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_requested_session(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_requested_sequence_number_v502023(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
 /* Login Accepted Packet */
 static unsigned
 dissect_nsmequities_totalview_login_accepted_packet_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -5299,11 +5366,31 @@ dissect_nsmequities_totalview_retail_price_improvement_indicator_v41(tvbuff_t *t
     return offset;
 }
 
+/* Client Packet Header */
+static unsigned
+dissect_nsmequities_totalview_client_packet_header_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (nsmequities_totalview_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_totalview_client_packet_header_v32, &item, "Client Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_nsmequities_totalview_client_packet_type(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
+
 /* Debug Packet */
 static unsigned
-dissect_nsmequities_totalview_debug_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_totalview_debug_packet_v32(tvbuff_t *tvb _U_, packet_info *pinfo _U_, proto_tree *tree _U_, unsigned offset)
 {
-    offset = parse_nsmequities_totalview_text(tvb, pinfo, tree, offset);
+    /* Text is a placeholder, it consumes no bytes */
 
     return offset;
 }
@@ -5329,12 +5416,32 @@ dissect_nsmequities_totalview_unsequenced_data_packet_v32(tvbuff_t *tvb _U_, pac
     return offset;
 }
 
+/* Server Packet Header */
+static unsigned
+dissect_nsmequities_totalview_server_packet_header_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (nsmequities_totalview_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_totalview_server_packet_header_v32, &item, "Server Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_nsmequities_totalview_server_packet_type(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
+
 /* Login Accepted Packet */
 static unsigned
 dissect_nsmequities_totalview_login_accepted_packet_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_totalview_session(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_sequence_number(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_accepted_session_v32(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_accepted_sequence_number_v32(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -5420,7 +5527,7 @@ dissect_nsmequities_totalview_stock_trading_action_v32(tvbuff_t *tvb, packet_inf
 {
     offset = parse_nsmequities_totalview_stock_alpha_8(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5622,7 +5729,7 @@ dissect_nsmequities_totalview_stock_trading_action_v32_v32(tvbuff_t *tvb, packet
 {
     offset = parse_nsmequities_totalview_stock_alpha_8(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6001,7 +6108,7 @@ dissect_nsmequities_totalview_stock_trading_action_v31(tvbuff_t *tvb, packet_inf
 {
     offset = parse_nsmequities_totalview_stock_alpha_6(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6119,7 +6226,7 @@ dissect_nsmequities_totalview_stock_trading_action_v31_v31(tvbuff_t *tvb, packet
 {
     offset = parse_nsmequities_totalview_stock_alpha_6(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6311,7 +6418,7 @@ dissect_nsmequities_totalview_stock_trading_action_v31f(tvbuff_t *tvb, packet_in
 {
     offset = parse_nsmequities_totalview_stock_alpha_6(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6635,8 +6742,8 @@ dissect_nsmequities_totalview_login_request_packet_v30(tvbuff_t *tvb, packet_inf
 static unsigned
 dissect_nsmequities_totalview_login_accepted_packet_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_totalview_session_v30(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_sequence_number_v30(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_accepted_session_v32(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_accepted_sequence_number_v30(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -6675,7 +6782,7 @@ dissect_nsmequities_totalview_stock_trading_action_v30(tvbuff_t *tvb, packet_inf
 {
     offset = parse_nsmequities_totalview_stock_alphanumeric_6(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6804,27 +6911,6 @@ dissect_nsmequities_totalview_net_order_imbalance_indicator_v30(tvbuff_t *tvb, p
     return offset;
 }
 
-/* Message Header */
-static unsigned
-dissect_nsmequities_totalview_message_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (nsmequities_totalview_show_headers) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_totalview_message_header_v30, &item, "Message Header");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_nsmequities_totalview_length(tvb, pinfo, group, offset);
-    offset = parse_nsmequities_totalview_message_type(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
 /* System Event Message V30 */
 static unsigned
 dissect_nsmequities_totalview_system_event_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -6853,7 +6939,7 @@ dissect_nsmequities_totalview_stock_trading_action_v30_v30(tvbuff_t *tvb, packet
 {
     offset = parse_nsmequities_totalview_stock_alphanumeric_6(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_totalview_reserved_1(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -7042,7 +7128,7 @@ dissect_nsmequities_totalview_message_header_v20a(tvbuff_t *tvb, packet_info *pi
 
     unsigned start = offset;
 
-    offset = parse_nsmequities_totalview_length(tvb, pinfo, group, offset);
+    offset = parse_nsmequities_totalview_message_length(tvb, pinfo, group, offset);
     offset = parse_nsmequities_totalview_timestamp_v20a(tvb, pinfo, group, offset);
     offset = parse_nsmequities_totalview_message_type(tvb, pinfo, group, offset);
 
@@ -7154,16 +7240,6 @@ static unsigned
 dissect_nsmequities_totalview_broken_trade_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_nsmequities_totalview_match_number_v30(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Login Accepted Packet */
-static unsigned
-dissect_nsmequities_totalview_login_accepted_packet_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_nsmequities_totalview_session_v10(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_sequence_number_v30(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -7309,7 +7385,7 @@ dissect_nsmequities_totalview_client_packet_client_payload_v502023(tvbuff_t *tvb
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_LOGIN_REQUEST_PACKET:
-        return dissect_nsmequities_totalview_login_request_packet_v502023(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_totalview_login_request_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_UNSEQUENCED_DATA_PACKET:
         return dissect_nsmequities_totalview_unsequenced_data_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_CLIENT_HEARTBEAT_PACKET: /* Client Heartbeat */
@@ -7795,7 +7871,7 @@ dissect_nsmequities_totalview_server_payload_v10(tvbuff_t *tvb, packet_info *pin
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_LOGIN_ACCEPTED_PACKET:
-        return dissect_nsmequities_totalview_login_accepted_packet_v10(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_totalview_login_accepted_packet_v30(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_LOGIN_REJECTED_PACKET:
         return dissect_nsmequities_totalview_login_rejected_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_SEQUENCED_DATA_PACKET:
@@ -9690,7 +9766,7 @@ nsmequities_totalview_packet_parse_for(int version)
 static bool
 nsmequities_totalview_acceptor_port(uint32_t port)
 {
-    return port != 0 && (port == nsmequities_totalview_pref_acceptor_port || port == 18070 || port == 26400 || port == 26477 || port == 18170);
+    return port != 0 && (port == nsmequities_totalview_pref_acceptor_port || port == 18070 || port == 26400 || port == 26477 || port == 18170 || port == 36987);
 }
 
 /* Connection role of the frame's sender */
@@ -9940,8 +10016,8 @@ dissect_nsmequities_totalview_packet_header_v30(tvbuff_t *tvb, packet_info *pinf
         ett_nsmequities_totalview_header, NULL, "Packet Header");
 
     offset = parse_nsmequities_totalview_session_v30(tvb, pinfo, header, offset);
-    offset = parse_nsmequities_totalview_sequence(tvb, pinfo, header, offset);
-    offset = parse_nsmequities_totalview_count(tvb, pinfo, header, offset);
+    offset = parse_nsmequities_totalview_sequence_number_v30(tvb, pinfo, header, offset);
+    offset = parse_nsmequities_totalview_message_count_v30(tvb, pinfo, header, offset);
 
     return offset;
 }
@@ -9954,8 +10030,8 @@ dissect_nsmequities_totalview_packet_header_v20a(tvbuff_t *tvb, packet_info *pin
         ett_nsmequities_totalview_header, NULL, "Packet Header");
 
     offset = parse_nsmequities_totalview_session_v30(tvb, pinfo, header, offset);
-    offset = parse_nsmequities_totalview_sequence(tvb, pinfo, header, offset);
-    offset = parse_nsmequities_totalview_count(tvb, pinfo, header, offset);
+    offset = parse_nsmequities_totalview_sequence_number_v30(tvb, pinfo, header, offset);
+    offset = parse_nsmequities_totalview_message_count_v30(tvb, pinfo, header, offset);
 
     return offset;
 }
@@ -10018,27 +10094,27 @@ dissect_nsmequities_totalview_packet_message(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_nsmequities_totalview_packet_message_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse)
 {
-    uint32_t length = tvb_get_ntohs(tvb, offset);
+    uint32_t message_length = tvb_get_ntohs(tvb, offset);
     uint32_t message_type = tvb_get_uint8(tvb, offset + 2);
 
     const char *name = val_to_str(pinfo->pool, message_type, parse->messages, "Unknown (%u)");
 
     proto_tree *message = nsmequities_totalview_packet_show(message_type)
-        ? proto_tree_add_subtree(tree, tvb, offset, length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, name)
+        ? proto_tree_add_subtree(tree, tvb, offset, message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, name)
         : tree;
 
     unsigned position = offset;
 
-    position = dissect_nsmequities_totalview_message_header_v30(tvb, pinfo, message, position);
+    position = dissect_nsmequities_totalview_message_header(tvb, pinfo, message, position);
 
     position = parse->dissect(tvb, pinfo, message, position, message_type);
 
     /* The parsed fields must account for the declared length exactly */
-    if (position != offset + length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT) {
+    if (position != offset + message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT) {
         expert_add_info(pinfo, message, &ei_nsmequities_totalview_length);
     }
 
-    return length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT;
+    return message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT;
 }
 
 /* NsmEquities TotalView message size adjusts the declared length */
@@ -10048,13 +10124,13 @@ dissect_nsmequities_totalview_packet_message_v30(tvbuff_t *tvb, packet_info *pin
 static unsigned
 dissect_nsmequities_totalview_packet_message_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_packet_parse *parse)
 {
-    uint32_t length = tvb_get_ntohs(tvb, offset);
+    uint32_t message_length = tvb_get_ntohs(tvb, offset);
     uint32_t message_type = tvb_get_uint8(tvb, offset + 10);
 
     const char *name = val_to_str(pinfo->pool, message_type, parse->messages, "Unknown (%u)");
 
     proto_tree *message = nsmequities_totalview_packet_show(message_type)
-        ? proto_tree_add_subtree(tree, tvb, offset, length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, name)
+        ? proto_tree_add_subtree(tree, tvb, offset, message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, name)
         : tree;
 
     unsigned position = offset;
@@ -10064,11 +10140,11 @@ dissect_nsmequities_totalview_packet_message_v20a(tvbuff_t *tvb, packet_info *pi
     position = parse->dissect(tvb, pinfo, message, position, message_type);
 
     /* The parsed fields must account for the declared length exactly */
-    if (position != offset + length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT) {
+    if (position != offset + message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT) {
         expert_add_info(pinfo, message, &ei_nsmequities_totalview_length);
     }
 
-    return length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT;
+    return message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT;
 }
 
 /* Counted messages, returns the position after the last message */
@@ -10268,46 +10344,6 @@ nsmequities_totalview_server_packet_heur_frame(tvbuff_t *tvb)
     return frame >= NSMEQUITIES_TOTALVIEW_SERVER_PACKET_HEADER_SIZE && frame <= (int)tvb_reported_length(tvb);
 }
 
-/* Sequenced Data Packet of Server Packet: the application messages it carries */
-static bool
-nsmequities_totalview_server_packet_heur_fingerprint_v502026_sequenced_data_packet(tvbuff_t *tvb)
-{
-    if (tvb_captured_length(tvb) < 4) {
-        return false;
-    }
-
-    uint32_t sequenced_message_type = tvb_get_uint8(tvb, 3);
-
-    switch (sequenced_message_type) {
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT: /* System Event Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_STOCK_DIRECTORY: /* Stock Directory Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_STOCK_TRADING_ACTION: /* Stock Trading Action Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_REG_SHO_SHORT_SALE_PRICE_TEST_RESTRICTED_INDICATOR: /* Reg Sho Short Sale Price Test Restricted Indicator Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_MARKET_PARTICIPANT_POSITION: /* Market Participant Position Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_MWCB_DECLINE_LEVEL: /* Mwcb Decline Level Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_MWCB_STATUS_LEVEL: /* Mwcb Status Level Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_IPO_QUOTING_PERIOD_UPDATE: /* Ipo Quoting Period Update */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_LULD_AUCTION_COLLAR: /* Luld Auction Collar Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_OPERATIONAL_HALT: /* Operational Halt Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ADD_ORDER_NO_MPID_ATTRIBUTION: /* Add Order No Mpid Attribution Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ADD_ORDER_WITH_MPID_ATTRIBUTION: /* Add Order With Mpid Attribution Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ORDER_EXECUTED: /* Order Executed Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ORDER_EXECUTED_WITH_PRICE: /* Order Executed With Price Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ORDER_CANCEL: /* Order Cancel Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ORDER_DELETE: /* Order Delete Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_ORDER_REPLACE: /* Order Replace Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_NON_CROSS_TRADE: /* Non Cross Trade Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_CROSS_TRADE: /* Cross Trade Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_BROKEN_TRADE: /* Broken Trade Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_NET_ORDER_IMBALANCE_INDICATOR: /* Net Order Imbalance Indicator Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_RETAIL_PRICE_IMPROVEMENT_INDICATOR: /* Retail Price Improvement Indicator Message */
-    case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_DIRECT_LISTING_WITH_CAPITAL_RAISE_PRICE_DISCOVERY: /* Direct Listing With Capital Raise Price Discovery Message */
-        return true;
-    }
-
-    return false;
-}
-
 /* Fingerprint of Server Packet: would its message dispatch accept the frame? */
 static bool
 nsmequities_totalview_server_packet_heur_fingerprint_v502026(tvbuff_t *tvb)
@@ -10322,11 +10358,10 @@ nsmequities_totalview_server_packet_heur_fingerprint_v502026(tvbuff_t *tvb)
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET: /* Debug Packet */
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_LOGIN_ACCEPTED_PACKET: /* Login Accepted Packet */
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_LOGIN_REJECTED_PACKET: /* Login Rejected Packet */
+    case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_SEQUENCED_DATA_PACKET: /* Sequenced Data Packet */
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_SERVER_HEARTBEAT_PACKET: /* Server Heartbeat Packet */
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_END_OF_SESSION_PACKET: /* End Of Session Packet */
         return true;
-    case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_SEQUENCED_DATA_PACKET: /* Sequenced Data Packet */
-        return nsmequities_totalview_server_packet_heur_fingerprint_v502026_sequenced_data_packet(tvb);
     }
 
     return false;
@@ -10518,6 +10553,24 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V502023_MASK,
               NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V502023_DESCRIPTION,
               HFILL } },
+        { &hf_nsmequities_totalview_accepted_sequence_number_v32,
+            { NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_NAME,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_FILTER,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_TYPE,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_MASK,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V32_DESCRIPTION,
+              HFILL } },
+        { &hf_nsmequities_totalview_accepted_sequence_number_v30,
+            { NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_NAME,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_FILTER,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_TYPE,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_MASK,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SEQUENCE_NUMBER_V30_DESCRIPTION,
+              HFILL } },
         { &hf_nsmequities_totalview_accepted_session,
             { NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_NAME,
               NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_FILTER,
@@ -10526,6 +10579,15 @@ proto_register_nsmequities_totalview(void)
               NULL,
               NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_MASK,
               NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_DESCRIPTION,
+              HFILL } },
+        { &hf_nsmequities_totalview_accepted_session_v32,
+            { NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_NAME,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_FILTER,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_TYPE,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_MASK,
+              NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_attribution,
             { NSMEQUITIES_TOTALVIEW_ATTRIBUTION_NAME,
@@ -10550,7 +10612,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_AUCTION_COLLAR_REFERENCE_PRICE_DESCRIPTION,
               HFILL } },
@@ -10626,21 +10688,12 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_MASK,
               NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_totalview_count,
-            { NSMEQUITIES_TOTALVIEW_COUNT_NAME,
-              NSMEQUITIES_TOTALVIEW_COUNT_FILTER,
-              NSMEQUITIES_TOTALVIEW_COUNT_TYPE,
-              NSMEQUITIES_TOTALVIEW_COUNT_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_COUNT_MASK,
-              NSMEQUITIES_TOTALVIEW_COUNT_DESCRIPTION,
-              HFILL } },
         { &hf_nsmequities_totalview_cross_price,
             { NSMEQUITIES_TOTALVIEW_CROSS_PRICE_NAME,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_DESCRIPTION,
               HFILL } },
@@ -10649,7 +10702,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -10676,7 +10729,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_DESCRIPTION,
               HFILL } },
@@ -10685,7 +10738,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -10766,7 +10819,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_DESCRIPTION,
               HFILL } },
@@ -10775,7 +10828,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -10784,7 +10837,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_DESCRIPTION,
               HFILL } },
@@ -10793,7 +10846,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -10865,7 +10918,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_IPO_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_IPO_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_IPO_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_IPO_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_IPO_PRICE_DESCRIPTION,
               HFILL } },
@@ -10905,21 +10958,12 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_ISSUE_SUB_TYPE_MASK,
               NSMEQUITIES_TOTALVIEW_ISSUE_SUB_TYPE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_totalview_length,
-            { NSMEQUITIES_TOTALVIEW_LENGTH_NAME,
-              NSMEQUITIES_TOTALVIEW_LENGTH_FILTER,
-              NSMEQUITIES_TOTALVIEW_LENGTH_TYPE,
-              NSMEQUITIES_TOTALVIEW_LENGTH_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_LENGTH_MASK,
-              NSMEQUITIES_TOTALVIEW_LENGTH_DESCRIPTION,
-              HFILL } },
         { &hf_nsmequities_totalview_level_1,
             { NSMEQUITIES_TOTALVIEW_LEVEL_1_NAME,
               NSMEQUITIES_TOTALVIEW_LEVEL_1_FILTER,
               NSMEQUITIES_TOTALVIEW_LEVEL_1_TYPE,
               NSMEQUITIES_TOTALVIEW_LEVEL_1_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_8_64),
+              CF_FUNC(nsmequities_totalview_format_decimal_8_64_unsigned),
               NSMEQUITIES_TOTALVIEW_LEVEL_1_MASK,
               NSMEQUITIES_TOTALVIEW_LEVEL_1_DESCRIPTION,
               HFILL } },
@@ -10928,7 +10972,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_LEVEL_2_FILTER,
               NSMEQUITIES_TOTALVIEW_LEVEL_2_TYPE,
               NSMEQUITIES_TOTALVIEW_LEVEL_2_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_8_64),
+              CF_FUNC(nsmequities_totalview_format_decimal_8_64_unsigned),
               NSMEQUITIES_TOTALVIEW_LEVEL_2_MASK,
               NSMEQUITIES_TOTALVIEW_LEVEL_2_DESCRIPTION,
               HFILL } },
@@ -10937,7 +10981,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_LEVEL_3_FILTER,
               NSMEQUITIES_TOTALVIEW_LEVEL_3_TYPE,
               NSMEQUITIES_TOTALVIEW_LEVEL_3_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_8_64),
+              CF_FUNC(nsmequities_totalview_format_decimal_8_64_unsigned),
               NSMEQUITIES_TOTALVIEW_LEVEL_3_MASK,
               NSMEQUITIES_TOTALVIEW_LEVEL_3_DESCRIPTION,
               HFILL } },
@@ -10955,7 +10999,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_LOWER_AUCTION_COLLAR_PRICE_DESCRIPTION,
               HFILL } },
@@ -10964,7 +11008,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_FILTER,
               NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_TYPE,
               NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_MASK,
               NSMEQUITIES_TOTALVIEW_LOWER_PRICE_RANGE_COLLAR_DESCRIPTION,
               HFILL } },
@@ -11045,7 +11089,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_MAXIMUM_ALLOWABLE_PRICE_DESCRIPTION,
               HFILL } },
@@ -11057,6 +11101,15 @@ proto_register_nsmequities_totalview(void)
               NULL,
               NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_MASK,
               NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_DESCRIPTION,
+              HFILL } },
+        { &hf_nsmequities_totalview_message_count_v30,
+            { NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_NAME,
+              NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_FILTER,
+              NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_TYPE,
+              NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_MASK,
+              NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_V30_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_message_length,
             { NSMEQUITIES_TOTALVIEW_MESSAGE_LENGTH_NAME,
@@ -11090,7 +11143,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_MINIMUM_ALLOWABLE_PRICE_DESCRIPTION,
               HFILL } },
@@ -11126,7 +11179,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_PRICE_DESCRIPTION,
               HFILL } },
@@ -11144,7 +11197,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_DESCRIPTION,
               HFILL } },
@@ -11153,7 +11206,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -11288,7 +11341,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_PRICE_DESCRIPTION,
               HFILL } },
@@ -11297,7 +11350,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_PRICE_V32_FILTER,
               NSMEQUITIES_TOTALVIEW_PRICE_V32_TYPE,
               NSMEQUITIES_TOTALVIEW_PRICE_V32_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_PRICE_V32_MASK,
               NSMEQUITIES_TOTALVIEW_PRICE_V32_DESCRIPTION,
               HFILL } },
@@ -11382,15 +11435,6 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_MASK,
               NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_totalview_requested_sequence_number_v502023,
-            { NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_NAME,
-              NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_FILTER,
-              NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_TYPE,
-              NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_MASK,
-              NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V502023_DESCRIPTION,
-              HFILL } },
         { &hf_nsmequities_totalview_requested_sequence_number_v32,
             { NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_NAME,
               NSMEQUITIES_TOTALVIEW_REQUESTED_SEQUENCE_NUMBER_V32_FILTER,
@@ -11436,6 +11480,15 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_RESERVED_MASK,
               NSMEQUITIES_TOTALVIEW_RESERVED_DESCRIPTION,
               HFILL } },
+        { &hf_nsmequities_totalview_reserved_1,
+            { NSMEQUITIES_TOTALVIEW_RESERVED_1_NAME,
+              NSMEQUITIES_TOTALVIEW_RESERVED_1_FILTER,
+              NSMEQUITIES_TOTALVIEW_RESERVED_1_TYPE,
+              NSMEQUITIES_TOTALVIEW_RESERVED_1_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_RESERVED_1_MASK,
+              NSMEQUITIES_TOTALVIEW_RESERVED_1_DESCRIPTION,
+              HFILL } },
         { &hf_nsmequities_totalview_round_lot_size,
             { NSMEQUITIES_TOTALVIEW_ROUND_LOT_SIZE_NAME,
               NSMEQUITIES_TOTALVIEW_ROUND_LOT_SIZE_FILTER,
@@ -11480,15 +11533,6 @@ proto_register_nsmequities_totalview(void)
               NULL,
               NSMEQUITIES_TOTALVIEW_SECOND_V32_MASK,
               NSMEQUITIES_TOTALVIEW_SECOND_V32_DESCRIPTION,
-              HFILL } },
-        { &hf_nsmequities_totalview_sequence,
-            { NSMEQUITIES_TOTALVIEW_SEQUENCE_NAME,
-              NSMEQUITIES_TOTALVIEW_SEQUENCE_FILTER,
-              NSMEQUITIES_TOTALVIEW_SEQUENCE_TYPE,
-              NSMEQUITIES_TOTALVIEW_SEQUENCE_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_SEQUENCE_MASK,
-              NSMEQUITIES_TOTALVIEW_SEQUENCE_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_sequence_number,
             { NSMEQUITIES_TOTALVIEW_SEQUENCE_NUMBER_NAME,
@@ -11543,15 +11587,6 @@ proto_register_nsmequities_totalview(void)
               NULL,
               NSMEQUITIES_TOTALVIEW_SESSION_V30_MASK,
               NSMEQUITIES_TOTALVIEW_SESSION_V30_DESCRIPTION,
-              HFILL } },
-        { &hf_nsmequities_totalview_session_v10,
-            { NSMEQUITIES_TOTALVIEW_SESSION_V10_NAME,
-              NSMEQUITIES_TOTALVIEW_SESSION_V10_FILTER,
-              NSMEQUITIES_TOTALVIEW_SESSION_V10_TYPE,
-              NSMEQUITIES_TOTALVIEW_SESSION_V10_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_SESSION_V10_MASK,
-              NSMEQUITIES_TOTALVIEW_SESSION_V10_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_shares,
             { NSMEQUITIES_TOTALVIEW_SHARES_NAME,
@@ -11615,6 +11650,15 @@ proto_register_nsmequities_totalview(void)
               VALS(nsmequities_totalview_side_vals),
               NSMEQUITIES_TOTALVIEW_SIDE_MASK,
               NSMEQUITIES_TOTALVIEW_SIDE_DESCRIPTION,
+              HFILL } },
+        { &hf_nsmequities_totalview_soup_lf,
+            { NSMEQUITIES_TOTALVIEW_SOUP_LF_NAME,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_FILTER,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_TYPE,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_MASK,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_stock,
             { NSMEQUITIES_TOTALVIEW_STOCK_NAME,
@@ -11697,15 +11741,6 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_STOCK_LOCATE_MASK,
               NSMEQUITIES_TOTALVIEW_STOCK_LOCATE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_totalview_text,
-            { NSMEQUITIES_TOTALVIEW_TEXT_NAME,
-              NSMEQUITIES_TOTALVIEW_TEXT_FILTER,
-              NSMEQUITIES_TOTALVIEW_TEXT_TYPE,
-              NSMEQUITIES_TOTALVIEW_TEXT_DISPLAY,
-              NULL,
-              NSMEQUITIES_TOTALVIEW_TEXT_MASK,
-              NSMEQUITIES_TOTALVIEW_TEXT_DESCRIPTION,
-              HFILL } },
         { &hf_nsmequities_totalview_timestamp,
             { NSMEQUITIES_TOTALVIEW_TIMESTAMP_NAME,
               NSMEQUITIES_TOTALVIEW_TIMESTAMP_FILTER,
@@ -11774,7 +11809,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_FILTER,
               NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_TYPE,
               NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_MASK,
               NSMEQUITIES_TOTALVIEW_UPPER_AUCTION_COLLAR_PRICE_DESCRIPTION,
               HFILL } },
@@ -11783,7 +11818,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_FILTER,
               NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_TYPE,
               NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_DISPLAY,
-              CF_FUNC(nsmequities_totalview_format_decimal_4_32),
+              CF_FUNC(nsmequities_totalview_format_decimal_4_32_unsigned),
               NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_MASK,
               NSMEQUITIES_TOTALVIEW_UPPER_PRICE_RANGE_COLLAR_DESCRIPTION,
               HFILL } },
@@ -11886,8 +11921,9 @@ proto_register_nsmequities_totalview(void)
         &ett_nsmequities_totalview_client_packet_header,
         &ett_nsmequities_totalview_server_packet_header,
         &ett_nsmequities_totalview_message_header,
+        &ett_nsmequities_totalview_client_packet_header_v32,
+        &ett_nsmequities_totalview_server_packet_header_v32,
         &ett_nsmequities_totalview_sequenced_message_header,
-        &ett_nsmequities_totalview_message_header_v30,
         &ett_nsmequities_totalview_sequenced_message_header_v20a,
         &ett_nsmequities_totalview_message_header_v20a,
         &ett_nsmequities_totalview_sequenced_message_header_v10,
@@ -11956,6 +11992,13 @@ proto_register_nsmequities_totalview(void)
         NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_DESCRIPTION,
         10,
         &nsmequities_totalview_pref_decimal_places);
+
+    prefs_register_bool_preference(
+        preferences,
+        NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_NAME,
+        NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_TITLE,
+        NSMEQUITIES_TOTALVIEW_READ_IPOQUOTATIONRELEASETIME_PREFERENCE_DESCRIPTION,
+        &nsmequities_totalview_pref_read_ipoquotationreleasetime);
 
     prefs_register_bool_preference(
         preferences,

@@ -385,18 +385,18 @@ static void
 coinbasederivatives_marketdataapi_format_decimal_9_64(char *buf, uint64_t raw)
 {
     int64_t value = (int64_t)raw;
-    int64_t whole = value / 1000000000;
+    int64_t units = value / 1000000000;
     int64_t fraction = value % 1000000000;
 
     if (fraction < 0) {
         fraction = -fraction;
     }
 
-    if (value < 0 && whole == 0) {
+    if (value < 0 && units == 0) {
         snprintf(buf, ITEM_LABEL_LENGTH, "-0.%09" PRId64, fraction);
     }
     else {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%09" PRId64, whole, fraction);
+        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%09" PRId64, units, fraction);
     }
 
     coinbasederivatives_marketdataapi_decimal_places(buf);
@@ -412,18 +412,18 @@ coinbasederivatives_marketdataapi_format_decimal_9_64_nullable(char *buf, uint64
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
-    int64_t whole = value / 1000000000;
+    int64_t units = value / 1000000000;
     int64_t fraction = value % 1000000000;
 
     if (fraction < 0) {
         fraction = -fraction;
     }
 
-    if (value < 0 && whole == 0) {
+    if (value < 0 && units == 0) {
         snprintf(buf, ITEM_LABEL_LENGTH, "-0.%09" PRId64, fraction);
     }
     else {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%09" PRId64, whole, fraction);
+        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%09" PRId64, units, fraction);
     }
 
     coinbasederivatives_marketdataapi_decimal_places(buf);

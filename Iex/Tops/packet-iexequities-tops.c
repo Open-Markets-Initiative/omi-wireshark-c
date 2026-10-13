@@ -78,6 +78,7 @@ static int hf_iexequities_tops_detail;
 static int hf_iexequities_tops_etp;
 static int hf_iexequities_tops_extended_hours;
 static int hf_iexequities_tops_extension_number;
+static int hf_iexequities_tops_extension_number_v164;
 static int hf_iexequities_tops_first_message_sequence_number;
 static int hf_iexequities_tops_imbalance_shares;
 static int hf_iexequities_tops_imbalance_side;
@@ -310,18 +311,18 @@ static void
 iexequities_tops_format_decimal_4_64(char *buf, uint64_t raw)
 {
     int64_t value = (int64_t)raw;
-    int64_t whole = value / 10000;
+    int64_t units = value / 10000;
     int64_t fraction = value % 10000;
 
     if (fraction < 0) {
         fraction = -fraction;
     }
 
-    if (value < 0 && whole == 0) {
+    if (value < 0 && units == 0) {
         snprintf(buf, ITEM_LABEL_LENGTH, "-0.%04" PRId64, fraction);
     }
     else {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%04" PRId64, whole, fraction);
+        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%04" PRId64, units, fraction);
     }
 
     iexequities_tops_decimal_places(buf);
@@ -599,10 +600,10 @@ parse_iexequities_tops_detail(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define IEXEQUITIES_TOPS_EXTENSION_NUMBER_NAME        "Extension Number"
 #define IEXEQUITIES_TOPS_EXTENSION_NUMBER_DESCRIPTION "Number of extensions an auction received"
 #define IEXEQUITIES_TOPS_EXTENSION_NUMBER_FILTER      "iexequities.tops.extensionnumber"
-#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_TYPE        FT_CHAR
-#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_DISPLAY     BASE_HEX
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_TYPE        FT_UINT8
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_DISPLAY     BASE_DEC
 #define IEXEQUITIES_TOPS_EXTENSION_NUMBER_MASK        0x0
-#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_ENCODING    ENC_ASCII
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_TOPS_EXTENSION_NUMBER_SIZE        1
 
 static unsigned
@@ -611,6 +612,24 @@ parse_iexequities_tops_extension_number(tvbuff_t *tvb, packet_info *pinfo _U_, p
     proto_tree_add_item(tree, hf_iexequities_tops_extension_number, tvb, offset, IEXEQUITIES_TOPS_EXTENSION_NUMBER_SIZE, IEXEQUITIES_TOPS_EXTENSION_NUMBER_ENCODING);
 
     return offset + IEXEQUITIES_TOPS_EXTENSION_NUMBER_SIZE;
+}
+
+/* Extension Number V164 */
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_NAME        "Extension Number"
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_DESCRIPTION "Number of extensions an auction received"
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_FILTER      "iexequities.tops.extensionnumber"
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_TYPE        FT_CHAR
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_DISPLAY     BASE_HEX
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_MASK        0x0
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_ENCODING    ENC_ASCII
+#define IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_SIZE        1
+
+static unsigned
+parse_iexequities_tops_extension_number_v164(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_iexequities_tops_extension_number_v164, tvb, offset, IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_SIZE, IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_ENCODING);
+
+    return offset + IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_SIZE;
 }
 
 /* First Message Sequence Number */
@@ -1401,7 +1420,7 @@ parse_iexequities_tops_upper_auction_collar(tvbuff_t *tvb, packet_info *pinfo _U
 #define IEXEQUITIES_TOPS_VERSION_DESCRIPTION "Version of transport specification"
 #define IEXEQUITIES_TOPS_VERSION_FILTER      "iexequities.tops.version"
 #define IEXEQUITIES_TOPS_VERSION_TYPE        FT_UINT8
-#define IEXEQUITIES_TOPS_VERSION_DISPLAY     BASE_DEC
+#define IEXEQUITIES_TOPS_VERSION_DISPLAY     BASE_HEX
 #define IEXEQUITIES_TOPS_VERSION_MASK        0x0
 #define IEXEQUITIES_TOPS_VERSION_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_TOPS_VERSION_SIZE        1
@@ -1546,6 +1565,7 @@ static unsigned dissect_iexequities_tops_official_price(tvbuff_t *tvb, packet_in
 static unsigned dissect_iexequities_tops_trade_break(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_auction_information(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_security_event(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_iexequities_tops_auction_information_v164(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_trade_report_v156(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_trade_break_v156(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_message_data(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
@@ -1731,6 +1751,28 @@ dissect_iexequities_tops_security_event(tvbuff_t *tvb, packet_info *pinfo, proto
     return offset;
 }
 
+/* Auction Information Message */
+static unsigned
+dissect_iexequities_tops_auction_information_v164(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_iexequities_tops_auction_type(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_symbol(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_paired_shares(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_reference_price(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_indicative_clearing_price(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_imbalance_shares(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_imbalance_side(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_extension_number_v164(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_scheduled_auction_time(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_auction_book_clearing_price(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_collar_reference_price(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_lower_auction_collar(tvb, pinfo, tree, offset);
+    offset = parse_iexequities_tops_upper_auction_collar(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Trade Report Message V156 */
 static unsigned
 dissect_iexequities_tops_trade_report_v156(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -1853,7 +1895,7 @@ dissect_iexequities_tops_message_data_v164(tvbuff_t *tvb, packet_info *pinfo, pr
     case IEXEQUITIES_TOPS_MESSAGE_TYPE_TRADE_BREAK:
         return dissect_iexequities_tops_trade_break(tvb, pinfo, tree, offset);
     case IEXEQUITIES_TOPS_MESSAGE_TYPE_AUCTION_INFORMATION:
-        return dissect_iexequities_tops_auction_information(tvb, pinfo, tree, offset);
+        return dissect_iexequities_tops_auction_information_v164(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -2043,17 +2085,11 @@ dissect_iexequities_tops(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, vo
 /* The fewest bytes any frame of the protocol holds, a header without messages */
 #define IEXEQUITIES_TOPS_MINIMUM_SIZE 40
 
-/* Message Protocol Id, each value a version pins it to */
+/* Version: Iex Tp */
 static bool
 iexequities_tops_heur_identifier(tvbuff_t *tvb)
 {
-    switch (tvb_get_letohs(tvb, 2)) {
-    case 0x8003: /* Iex Tops, 1.66, 1.64 */
-    case 0x8002: /* Iex Tops, 1.56 */
-        return true;
-    default:
-        return false;
-    }
+    return tvb_get_uint8(tvb, 0) == 0x01;
 }
 
 /* The declared payload length accounts for the datagram exactly */
@@ -2203,6 +2239,15 @@ proto_register_iexequities_tops(void)
               NULL,
               IEXEQUITIES_TOPS_EXTENSION_NUMBER_MASK,
               IEXEQUITIES_TOPS_EXTENSION_NUMBER_DESCRIPTION,
+              HFILL } },
+        { &hf_iexequities_tops_extension_number_v164,
+            { IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_NAME,
+              IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_FILTER,
+              IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_TYPE,
+              IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_DISPLAY,
+              NULL,
+              IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_MASK,
+              IEXEQUITIES_TOPS_EXTENSION_NUMBER_V164_DESCRIPTION,
               HFILL } },
         { &hf_iexequities_tops_first_message_sequence_number,
             { IEXEQUITIES_TOPS_FIRST_MESSAGE_SEQUENCE_NUMBER_NAME,
