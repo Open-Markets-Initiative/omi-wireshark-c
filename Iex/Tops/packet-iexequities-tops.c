@@ -876,12 +876,11 @@ parse_iexequities_tops_message_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 }
 
 /* Odd Lot */
-#define IEXEQUITIES_TOPS_ODD_LOT_NAME        "Odd Lot"
-#define IEXEQUITIES_TOPS_ODD_LOT_DESCRIPTION "Odd Lot"
-#define IEXEQUITIES_TOPS_ODD_LOT_FILTER      "iexequities.tops.oddlot"
-#define IEXEQUITIES_TOPS_ODD_LOT_TYPE        FT_BOOLEAN
-#define IEXEQUITIES_TOPS_ODD_LOT_DISPLAY     8
-#define IEXEQUITIES_TOPS_ODD_LOT_MASK        0x20
+#define IEXEQUITIES_TOPS_ODD_LOT_NAME    "Odd Lot"
+#define IEXEQUITIES_TOPS_ODD_LOT_FILTER  "iexequities.tops.oddlot"
+#define IEXEQUITIES_TOPS_ODD_LOT_TYPE    FT_BOOLEAN
+#define IEXEQUITIES_TOPS_ODD_LOT_DISPLAY 8
+#define IEXEQUITIES_TOPS_ODD_LOT_MASK    0x20
 
 /* Official Price */
 #define IEXEQUITIES_TOPS_OFFICIAL_PRICE_NAME        "Official Price"
@@ -1446,14 +1445,13 @@ parse_iexequities_tops_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
  */
 
 /* Security Directory Flags */
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_NAME        "Security Directory Flags"
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_DESCRIPTION "Security Directory Flags"
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_FILTER      "iexequities.tops.securitydirectoryflags"
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_TYPE        FT_UINT8
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_DISPLAY     BASE_HEX
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_MASK        0x0
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
-#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_SIZE        1
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_NAME     "Security Directory Flags"
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_FILTER   "iexequities.tops.securitydirectoryflags"
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_TYPE     FT_UINT8
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_DISPLAY  BASE_HEX
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_MASK     0x0
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_ENCODING ENC_LITTLE_ENDIAN
+#define IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_SIZE     1
 
 static int * const iexequities_tops_security_directory_flags_fields[] = {
     &hf_iexequities_tops_test_security,
@@ -1472,14 +1470,13 @@ parse_iexequities_tops_security_directory_flags(tvbuff_t *tvb, packet_info *pinf
 }
 
 /* Quote Update Flags */
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_NAME        "Quote Update Flags"
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_DESCRIPTION "Quote Update Flags"
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_FILTER      "iexequities.tops.quoteupdateflags"
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_TYPE        FT_UINT8
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_DISPLAY     BASE_HEX
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_MASK        0x0
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
-#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_SIZE        1
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_NAME     "Quote Update Flags"
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_FILTER   "iexequities.tops.quoteupdateflags"
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_TYPE     FT_UINT8
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_DISPLAY  BASE_HEX
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_MASK     0x0
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_ENCODING ENC_LITTLE_ENDIAN
+#define IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_SIZE     1
 
 static int * const iexequities_tops_quote_update_flags_fields[] = {
     &hf_iexequities_tops_symbol_availability,
@@ -1497,14 +1494,13 @@ parse_iexequities_tops_quote_update_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 }
 
 /* Sale Condition Flags */
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_NAME        "Sale Condition Flags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_DESCRIPTION "Sale Condition Flags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_FILTER      "iexequities.tops.saleconditionflags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_TYPE        FT_UINT8
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_DISPLAY     BASE_HEX
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_MASK        0x0
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_SIZE        1
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_NAME     "Sale Condition Flags"
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_FILTER   "iexequities.tops.saleconditionflags"
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_TYPE     FT_UINT8
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_DISPLAY  BASE_HEX
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_MASK     0x0
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_ENCODING ENC_LITTLE_ENDIAN
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_SIZE     1
 
 static int * const iexequities_tops_sale_condition_flags_fields[] = {
     &hf_iexequities_tops_intermarket_sweep,
@@ -1525,14 +1521,13 @@ parse_iexequities_tops_sale_condition_flags(tvbuff_t *tvb, packet_info *pinfo _U
 }
 
 /* Sale Condition Flags */
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_NAME        "Sale Condition Flags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_DESCRIPTION "Sale Condition Flags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_FILTER      "iexequities.tops.saleconditionflags"
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_TYPE        FT_UINT8
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_DISPLAY     BASE_HEX
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_MASK        0x0
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_ENCODING    ENC_LITTLE_ENDIAN
-#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_SIZE        1
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_NAME     "Sale Condition Flags"
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_FILTER   "iexequities.tops.saleconditionflags"
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_TYPE     FT_UINT8
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_DISPLAY  BASE_HEX
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_MASK     0x0
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_ENCODING ENC_LITTLE_ENDIAN
+#define IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_SIZE     1
 
 static int * const iexequities_tops_sale_condition_flags_v156_fields[] = {
     &hf_iexequities_tops_intermarket_sweep,
@@ -2618,7 +2613,7 @@ proto_register_iexequities_tops(void)
               IEXEQUITIES_TOPS_ODD_LOT_DISPLAY,
               NULL,
               IEXEQUITIES_TOPS_ODD_LOT_MASK,
-              IEXEQUITIES_TOPS_ODD_LOT_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_iexequities_tops_singleprice_cross_trade,
             { IEXEQUITIES_TOPS_SINGLEPRICE_CROSS_TRADE_NAME,
@@ -2674,7 +2669,7 @@ proto_register_iexequities_tops(void)
               IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_DISPLAY,
               NULL,
               IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_MASK,
-              IEXEQUITIES_TOPS_SECURITY_DIRECTORY_FLAGS_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_iexequities_tops_quote_update_flags,
             { IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_NAME,
@@ -2683,7 +2678,7 @@ proto_register_iexequities_tops(void)
               IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_DISPLAY,
               NULL,
               IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_MASK,
-              IEXEQUITIES_TOPS_QUOTE_UPDATE_FLAGS_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_iexequities_tops_sale_condition_flags,
             { IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_NAME,
@@ -2692,7 +2687,7 @@ proto_register_iexequities_tops(void)
               IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_DISPLAY,
               NULL,
               IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_MASK,
-              IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_iexequities_tops_sale_condition_flags_v156,
             { IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_NAME,
@@ -2701,7 +2696,7 @@ proto_register_iexequities_tops(void)
               IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_DISPLAY,
               NULL,
               IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_MASK,
-              IEXEQUITIES_TOPS_SALE_CONDITION_FLAGS_V156_DESCRIPTION,
+              NULL,
               HFILL } },
     };
 

@@ -22,7 +22,7 @@ Registered as `NSMEQUITIES TOTALVIEW` (`NSMEQUITIES.TOTALVIEW`), display filter 
 | 3.1 | `Nasdaq.NsmEquities.TotalView.AsciiItch.v3.1` | 2010-10-06 |
 | 3.1.f | `Nasdaq.NsmEquities.TotalView.AsciiItch.v3.1.f` | 2009-07-08 |
 | 4.0.f | `Nasdaq.NsmEquities.TotalView.Itch.v4.0.f` | 2009-05-29 |
-| 3.0 | `Nasdaq.NsmEquities.TotalView.AsciiItch.v3.0` | 2008-09-16 |
+| 3.0 | `Nasdaq.NsmEquities.TotalView.AsciiItch.v3.0` | 2008-09-29 |
 | 2.0.a | `Nasdaq.NsmEquities.TotalView.AsciiItch.v2.0.a` | 2007-02-15 |
 | 2.0 | `Nasdaq.NsmEquities.TotalView.AsciiItch.v2.0` | 2003-01-03 |
 | 1.0 | `Nasdaq.NsmEquities.TotalView.AsciiItch.v1.0` | 2006-08-09 |

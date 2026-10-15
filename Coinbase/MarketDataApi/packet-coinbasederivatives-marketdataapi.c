@@ -311,14 +311,12 @@ static bool coinbasederivatives_marketdataapi_show_structs = true;
 
 static unsigned coinbasederivatives_marketdataapi_pref_decimal_places = 9;
 
-/* Ports the feed arrives on, assigned per deployment */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_NAME "ports"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_TITLE "Ports"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DESCRIPTION "Ports this feed arrives on, set to the ports the exchange assigned this deployment"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DEFAULT "5222,5223,5224,5225"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM 65535
+/* Entries of a repeating group are numbered */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_NAME "show.indexes"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_TITLE "Show Indexes"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_DESCRIPTION "Number the entries of a repeating group in the protocol tree"
 
-static range_t *coinbasederivatives_marketdataapi_pref_ports;
+static bool coinbasederivatives_marketdataapi_pref_show_indexes = true;
 
 /*
  * CoinbaseDerivatives MarketDataApi Methods
@@ -455,6 +453,59 @@ coinbasederivatives_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Broadcast endpoints from the connectivity model */
+typedef struct coinbasederivatives_marketdataapi_endpoint {
+    uint8_t address[4];
+    uint16_t port;
+    const char *name;
+} coinbasederivatives_marketdataapi_endpoint;
+
+static const coinbasederivatives_marketdataapi_endpoint coinbasederivatives_marketdataapi_endpoints[] = {
+    { { 233, 246, 250, 17 }, 6222, "Feed Sbe Market Data Incremental Equity Equinix CH4" },
+    { { 233, 246, 250, 39 }, 6222, "Feed Sbe Market Data Incremental Equity Equinix CH4" },
+    { { 233, 246, 250, 18 }, 6224, "Feed Sbe Market Data Snapshot Equity Equinix CH4" },
+    { { 233, 246, 250, 40 }, 6224, "Feed Sbe Market Data Snapshot Equity Equinix CH4" },
+    { { 233, 246, 250, 19 }, 6223, "Feed Sbe Market Data Incremental Non-Equity Equinix CH4" },
+    { { 233, 246, 250, 41 }, 6223, "Feed Sbe Market Data Incremental Non-Equity Equinix CH4" },
+    { { 233, 246, 250, 20 }, 6225, "Feed Sbe Market Data Snapshot Non-Equity Equinix CH4" },
+    { { 233, 246, 250, 42 }, 6225, "Feed Sbe Market Data Snapshot Non-Equity Equinix CH4" },
+    { { 233, 246, 250, 81 }, 6222, "Feed Sbe Market Data Incremental Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 103 }, 6222, "Feed Sbe Market Data Incremental Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 82 }, 6224, "Feed Sbe Market Data Snapshot Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 104 }, 6224, "Feed Sbe Market Data Snapshot Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 83 }, 6223, "Feed Sbe Market Data Incremental Non-Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 105 }, 6223, "Feed Sbe Market Data Incremental Non-Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 84 }, 6225, "Feed Sbe Market Data Snapshot Non-Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 106 }, 6225, "Feed Sbe Market Data Snapshot Non-Equity Equinix NY5, Disaster Recovery" },
+    { { 233, 246, 250, 135 }, 5222, "Feed Sbe Market Data Incremental Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 167 }, 5222, "Feed Sbe Market Data Incremental Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 136 }, 5224, "Feed Sbe Market Data Snapshot Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 168 }, 5224, "Feed Sbe Market Data Snapshot Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 137 }, 5223, "Feed Sbe Market Data Incremental Non-Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 169 }, 5223, "Feed Sbe Market Data Incremental Non-Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 138 }, 5225, "Feed Sbe Market Data Snapshot Non-Equity Equinix NY5, Testing" },
+    { { 233, 246, 250, 170 }, 5225, "Feed Sbe Market Data Snapshot Non-Equity Equinix NY5, Testing" },
+};
+
+/* The published endpoint a frame was sent to, NULL for any other destination */
+static const coinbasederivatives_marketdataapi_endpoint *
+coinbasederivatives_marketdataapi_endpoint_of(packet_info *pinfo)
+{
+    if (pinfo->net_dst.type != AT_IPv4 || pinfo->net_dst.len != 4) {
+        return NULL;
+    }
+
+    for (size_t index = 0; index < array_length(coinbasederivatives_marketdataapi_endpoints); index++) {
+        const coinbasederivatives_marketdataapi_endpoint *endpoint = &coinbasederivatives_marketdataapi_endpoints[index];
+
+        if (pinfo->destport == endpoint->port && memcmp(pinfo->net_dst.data, endpoint->address, 4) == 0) {
+            return endpoint;
+        }
+    }
+
+    return NULL;
 }
 
 /*
@@ -805,7 +856,7 @@ parse_coinbasederivatives_marketdataapi_correlation_id(tvbuff_t *tvb, packet_inf
 
 /* Currency */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_NAME        "Currency"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_DESCRIPTION "currency"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_DESCRIPTION "Currency used for price"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_FILTER      "coinbasederivatives.marketdataapi.currency"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_TYPE        FT_STRING
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CURRENCY_DISPLAY     BASE_NONE
@@ -895,7 +946,7 @@ parse_coinbasederivatives_marketdataapi_deepest_price_v12(tvbuff_t *tvb, packet_
 
 /* Description */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_NAME        "Description"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_DESCRIPTION "description"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_DESCRIPTION "Instrument name"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_FILTER      "coinbasederivatives.marketdataapi.description"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_TYPE        FT_STRING
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DESCRIPTION_DISPLAY     BASE_NONE
@@ -913,7 +964,7 @@ parse_coinbasederivatives_marketdataapi_description(tvbuff_t *tvb, packet_info *
 
 /* Details */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_NAME        "Details"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_DESCRIPTION "details"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_DESCRIPTION "Retransmit reject reason in text"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_FILTER      "coinbasederivatives.marketdataapi.details"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_TYPE        FT_STRING
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DETAILS_DISPLAY     BASE_NONE
@@ -1219,7 +1270,7 @@ parse_coinbasederivatives_marketdataapi_instr_seq_num(tvbuff_t *tvb, packet_info
 
 /* Instrument Flags */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_NAME        "Instrument Flags"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_DESCRIPTION "Total message size in bytes including this header"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_DESCRIPTION "Bitset marking where the transaction begins and ends: 0x01 start of transaction, 0x02 end of transaction, 0x04 clear book"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_FILTER      "coinbasederivatives.marketdataapi.instrumentflags"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_TYPE        FT_UINT8
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_FLAGS_DISPLAY     BASE_DEC
@@ -1255,7 +1306,7 @@ parse_coinbasederivatives_marketdataapi_instrument_id(tvbuff_t *tvb, packet_info
 
 /* Instrument Side */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_NAME        "Instrument Side"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DESCRIPTION "Instrument Side"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DESCRIPTION "1 buy, -1 sell, 0 opening fill, and -128 where side does not apply to the message"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_FILTER      "coinbasederivatives.marketdataapi.instrumentside"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_TYPE        FT_INT8
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DISPLAY     BASE_DEC
@@ -1573,14 +1624,13 @@ parse_coinbasederivatives_marketdataapi_message_count(tvbuff_t *tvb, packet_info
 }
 
 /* Month */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_NAME        "Month"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DESCRIPTION "month"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_FILTER      "coinbasederivatives.marketdataapi.month"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_TYPE        FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY     BASE_DEC
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_MASK        0x0
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_ENCODING    ENC_LITTLE_ENDIAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_SIZE        2
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_NAME     "Month"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_FILTER   "coinbasederivatives.marketdataapi.month"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_TYPE     FT_INT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY  BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_MASK     0x0
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_ENCODING ENC_LITTLE_ENDIAN
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_SIZE     2
 
 static unsigned
 parse_coinbasederivatives_marketdataapi_month(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -2057,7 +2107,7 @@ parse_coinbasederivatives_marketdataapi_predicted_funding_rate(tvbuff_t *tvb, pa
 
 /* Price */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_NAME        "Price"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_DESCRIPTION "price"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_DESCRIPTION "Price encoded with 9 decimal places"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_FILTER      "coinbasederivatives.marketdataapi.price"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_TYPE        FT_INT64
 #define COINBASEDERIVATIVES_MARKETDATAAPI_PRICE_DISPLAY     BASE_CUSTOM
@@ -2212,7 +2262,7 @@ parse_coinbasederivatives_marketdataapi_product_id(tvbuff_t *tvb, packet_info *p
 
 /* Quantity */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_NAME        "Quantity"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_DESCRIPTION "quantity"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_DESCRIPTION "Quantity encoded with 0 decimal places"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_FILTER      "coinbasederivatives.marketdataapi.quantity"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_TYPE        FT_INT32
 #define COINBASEDERIVATIVES_MARKETDATAAPI_QUANTITY_DISPLAY     BASE_DEC
@@ -2230,7 +2280,7 @@ parse_coinbasederivatives_marketdataapi_quantity(tvbuff_t *tvb, packet_info *pin
 
 /* Reason */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_NAME        "Reason"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_DESCRIPTION "reason"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_DESCRIPTION "Why the retransmit was rejected: 1 sequence too low, 2 sequence too high, 3 rate limit exceeded, 4 other error"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_FILTER      "coinbasederivatives.marketdataapi.reason"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_TYPE        FT_INT8
 #define COINBASEDERIVATIVES_MARKETDATAAPI_REASON_DISPLAY     BASE_DEC
@@ -2256,7 +2306,7 @@ parse_coinbasederivatives_marketdataapi_reason(tvbuff_t *tvb, packet_info *pinfo
 
 /* Reserved */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_NAME        "Reserved"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_DESCRIPTION "reserved"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_DESCRIPTION "Two bytes of padding, reserved for future use"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_FILTER      "coinbasederivatives.marketdataapi.reserved"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_TYPE        FT_INT16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_DISPLAY     BASE_DEC
@@ -2599,7 +2649,7 @@ parse_coinbasederivatives_marketdataapi_strike_price(tvbuff_t *tvb, packet_info 
 
 /* Symbol */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_NAME        "Symbol"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_DESCRIPTION "symbol"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_DESCRIPTION "Instrument name or symbol"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_FILTER      "coinbasederivatives.marketdataapi.symbol"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_TYPE        FT_STRING
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SYMBOL_DISPLAY     BASE_NONE
@@ -2881,14 +2931,13 @@ parse_coinbasederivatives_marketdataapi_week_of_month(tvbuff_t *tvb, packet_info
 }
 
 /* Year */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_NAME        "Year"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DESCRIPTION "year"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_FILTER      "coinbasederivatives.marketdataapi.year"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_TYPE        FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY     BASE_DEC
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_MASK        0x0
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_ENCODING    ENC_LITTLE_ENDIAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_SIZE        2
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_NAME     "Year"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_FILTER   "coinbasederivatives.marketdataapi.year"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_TYPE     FT_INT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY  BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_MASK     0x0
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_ENCODING ENC_LITTLE_ENDIAN
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_SIZE     2
 
 static unsigned
 parse_coinbasederivatives_marketdataapi_year(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -4213,8 +4262,6 @@ static const value_string coinbasederivatives_marketdataapi_messages[] = {
 static unsigned
 dissect_coinbasederivatives_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_marketdataapi_messages, "Unknown (%u)"));
-
     switch (template_id) {
     case COINBASEDERIVATIVES_MARKETDATAAPI_TEMPLATE_ID_OUTRIGHT_INSTRUMENT_DEFINITION:
         return dissect_coinbasederivatives_marketdataapi_outright_instrument_definition(tvb, pinfo, tree, offset);
@@ -4300,8 +4347,6 @@ static const value_string coinbasederivatives_marketdataapi_messages_v17[] = {
 static unsigned
 dissect_coinbasederivatives_marketdataapi_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_marketdataapi_messages_v17, "Unknown (%u)"));
-
     switch (template_id) {
     case COINBASEDERIVATIVES_MARKETDATAAPI_TEMPLATE_ID_OUTRIGHT_INSTRUMENT_DEFINITION:
         return dissect_coinbasederivatives_marketdataapi_outright_instrument_definition_v17(tvb, pinfo, tree, offset);
@@ -4384,8 +4429,6 @@ static const value_string coinbasederivatives_marketdataapi_messages_v13[] = {
 static unsigned
 dissect_coinbasederivatives_marketdataapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_marketdataapi_messages_v13, "Unknown (%u)"));
-
     switch (template_id) {
     case COINBASEDERIVATIVES_MARKETDATAAPI_TEMPLATE_ID_OUTRIGHT_INSTRUMENT_DEFINITION:
         return dissect_coinbasederivatives_marketdataapi_outright_instrument_definition_v13(tvb, pinfo, tree, offset);
@@ -4464,8 +4507,6 @@ static const value_string coinbasederivatives_marketdataapi_messages_v12[] = {
 static unsigned
 dissect_coinbasederivatives_marketdataapi_payload_v12(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_marketdataapi_messages_v12, "Unknown (%u)"));
-
     switch (template_id) {
     case COINBASEDERIVATIVES_MARKETDATAAPI_TEMPLATE_ID_OUTRIGHT_INSTRUMENT_DEFINITION:
         return dissect_coinbasederivatives_marketdataapi_outright_instrument_definition_v12(tvb, pinfo, tree, offset);
@@ -4650,11 +4691,11 @@ dissect_coinbasederivatives_marketdataapi_message(tvbuff_t *tvb, packet_info *pi
     return frame_length;
 }
 
-/* Messages to the end of the payload, returns the position after the last message */
+/* Counted messages, returns the position after the last message */
 static unsigned
-dissect_coinbasederivatives_marketdataapi_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const coinbasederivatives_marketdataapi_parse *parse)
+dissect_coinbasederivatives_marketdataapi_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t count, const coinbasederivatives_marketdataapi_parse *parse)
 {
-    while (offset < tvb_reported_length(tvb)) {
+    for (uint32_t index = 0; index < count; index++) {
         offset += dissect_coinbasederivatives_marketdataapi_message(tvb, pinfo, tree, offset, parse);
     }
 
@@ -4671,6 +4712,9 @@ dissect_coinbasederivatives_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, pro
     proto_item *item = proto_tree_add_item(tree, proto_coinbasederivatives_marketdataapi, tvb, 0, -1, ENC_NA);
     proto_tree *packet = proto_item_add_subtree(item, ett_coinbasederivatives_marketdataapi);
 
+    const coinbasederivatives_marketdataapi_endpoint *endpoint = coinbasederivatives_marketdataapi_endpoint_of(pinfo);
+
+    uint32_t count = tvb_get_uint8(tvb, 19);
     uint64_t seconds = tvb_get_letoh64(tvb, 0) / UINT64_C(1000000000);
     int declared = tvb_captured_length(tvb) >= 34
         ? (int)tvb_get_letohs(tvb, 32)
@@ -4679,10 +4723,16 @@ dissect_coinbasederivatives_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, pro
 
     proto_item_append_text(item, " %s", coinbasederivatives_marketdataapi_version_name(version));
 
+    if (endpoint != NULL) {
+        proto_item_append_text(item, ", %s", endpoint->name);
+    }
+
     const coinbasederivatives_marketdataapi_parse *parse = coinbasederivatives_marketdataapi_parse_for(version);
     unsigned position = dissect_coinbasederivatives_marketdataapi_header(tvb, pinfo, packet, 0);
 
-    position = dissect_coinbasederivatives_marketdataapi_messages(tvb, pinfo, packet, position, parse);
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+
+    position = dissect_coinbasederivatives_marketdataapi_messages(tvb, pinfo, packet, position, count, parse);
 
     return (int)position;
 }
@@ -4690,26 +4740,26 @@ dissect_coinbasederivatives_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, pro
 /* The fewest bytes any frame of the protocol holds, a header without messages */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MINIMUM_SIZE 24
 
-/* The frame travels on a port the feed is assigned, the ports are the
-   deployment's and held by preference */
+/* The frame was sent to an endpoint the feed is published on, which
+   tells this feed from others sharing the encoding */
 static bool
-coinbasederivatives_marketdataapi_heur_port(packet_info *pinfo)
+coinbasederivatives_marketdataapi_heur_endpoint(packet_info *pinfo)
 {
-    return value_is_in_range(coinbasederivatives_marketdataapi_pref_ports, pinfo->destport);
+    return coinbasederivatives_marketdataapi_endpoint_of(pinfo) != NULL;
 }
 
 /* Does the frame pass every test of Packet? */
 static bool
 coinbasederivatives_marketdataapi_heur_accepts(tvbuff_t *tvb _U_, packet_info *pinfo)
 {
-    if (!coinbasederivatives_marketdataapi_heur_port(pinfo)) {
+    if (!coinbasederivatives_marketdataapi_heur_endpoint(pinfo)) {
         return false;
     }
 
     return true;
 }
 
-/* Recognize the protocol by the port it travels on */
+/* Recognize the protocol by the published endpoint it was sent to */
 static bool
 dissect_coinbasederivatives_marketdataapi_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *data)
 {
@@ -5265,7 +5315,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY,
               NULL,
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_coinbasederivatives_marketdataapi_new_leg_1_price,
             { COINBASEDERIVATIVES_MARKETDATAAPI_NEW_LEG_1_PRICE_NAME,
@@ -5841,7 +5891,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY,
               NULL,
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DESCRIPTION,
+              NULL,
               HFILL } },
 
         /* Bit Fields */
@@ -6101,18 +6151,12 @@ proto_register_coinbasederivatives_marketdataapi(void)
         10,
         &coinbasederivatives_marketdataapi_pref_decimal_places);
 
-    range_convert_str(
-        wmem_epan_scope(),
-        &coinbasederivatives_marketdataapi_pref_ports,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DEFAULT,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM);
-    prefs_register_range_preference(
+    prefs_register_bool_preference(
         preferences,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_NAME,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_TITLE,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_DESCRIPTION,
-        &coinbasederivatives_marketdataapi_pref_ports,
-        COINBASEDERIVATIVES_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM);
+        COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_NAME,
+        COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_TITLE,
+        COINBASEDERIVATIVES_MARKETDATAAPI_INDEXES_PREFERENCE_DESCRIPTION,
+        &coinbasederivatives_marketdataapi_pref_show_indexes);
 
     coinbasederivatives_marketdataapi_handle = register_dissector(COINBASEDERIVATIVES_MARKETDATAAPI_PROTOCOL_FILTER, dissect_coinbasederivatives_marketdataapi, proto_coinbasederivatives_marketdataapi);
 }

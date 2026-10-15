@@ -2,19 +2,17 @@
 
 # IexEquities Tops
 
-Registered as `IEXEQUITIES TOPS` (`IEXEQUITIES.TOPS`), display filter `iexequities.tops`.
+Registered as `IEXEQUITIES TOPS` (`IEXEQUITIES.TOPSSNAP`), display filter `iexequities.topssnap`.
 
-- Transport: UDP
-- Broadcast endpoints: 4 from the connectivity model
-- Recognition: UDP by content, environment by endpoint
+- Transport: TCP
+- Ports: 11380, 33380
+- Recognition: TCP by port, environment by none
 
 | Version | Model | Effective |
 | --- | --- | --- |
-| 1.66 | `Iex.IexEquities.Tops.IexTp.v1.66` | 2021-10-11 |
-| 1.64 | `Iex.IexEquities.Tops.IexTp.v1.64` | 2020-05-04 |
-| 1.56 | `Iex.IexEquities.Tops.IexTp.v1.56` | 2017-05-15 |
+| 1.6 | `Iex.IexEquities.Tops.Snap.v1.6` | 2021-09-27 |
 
-`packet-iexequities-tops.c` is generated, edits belong in the model or the configuration it
+`packet-iexequities-topssnap.c` is generated, edits belong in the model or the configuration it
 was generated from, never in the C, which is overwritten on the next run.
 
 [Omi.Directory]: https://github.com/Open-Markets-Initiative/Open-Markets-Initiative "Open Markets Initiative"
