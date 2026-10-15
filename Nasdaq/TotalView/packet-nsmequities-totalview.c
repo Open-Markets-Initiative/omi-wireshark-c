@@ -274,10 +274,12 @@ static int ett_nsmequities_totalview_message;
 static int ett_nsmequities_totalview_timestamp;
 static int ett_nsmequities_totalview_client_packet_header;
 static int ett_nsmequities_totalview_server_packet_header;
+static int ett_nsmequities_totalview_packet_header;
 static int ett_nsmequities_totalview_message_header;
 static int ett_nsmequities_totalview_client_packet_header_v32;
 static int ett_nsmequities_totalview_server_packet_header_v32;
 static int ett_nsmequities_totalview_sequenced_message_header;
+static int ett_nsmequities_totalview_packet_header_v30;
 static int ett_nsmequities_totalview_message_header_v30;
 static int ett_nsmequities_totalview_sequenced_message_header_v20a;
 static int ett_nsmequities_totalview_message_header_v20a;
@@ -4383,6 +4385,7 @@ static unsigned dissect_nsmequities_totalview_broken_trade(tvbuff_t *tvb, packet
 static unsigned dissect_nsmequities_totalview_net_order_imbalance_indicator(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_retail_price_improvement_indicator(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_direct_listing_with_capital_raise_price_discovery(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_totalview_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_login_accepted_packet_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v502022(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -4531,6 +4534,7 @@ static unsigned dissect_nsmequities_totalview_trade_v30(tvbuff_t *tvb, packet_in
 static unsigned dissect_nsmequities_totalview_cross_trade_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_broken_trade_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_net_order_imbalance_indicator_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_totalview_packet_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_message_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_data_packet_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_totalview_sequenced_message_header_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -5045,6 +5049,28 @@ dissect_nsmequities_totalview_direct_listing_with_capital_raise_price_discovery(
     offset = parse_nsmequities_totalview_near_execution_time(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_lower_price_range_collar(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_upper_price_range_collar(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Packet Header */
+static unsigned
+dissect_nsmequities_totalview_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (nsmequities_totalview_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_totalview_packet_header, &item, "Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_nsmequities_totalview_session(tvb, pinfo, group, offset);
+    offset = parse_nsmequities_totalview_sequence_number(tvb, pinfo, group, offset);
+    offset = parse_nsmequities_totalview_message_count(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -6907,6 +6933,28 @@ dissect_nsmequities_totalview_net_order_imbalance_indicator_v30(tvbuff_t *tvb, p
     offset = parse_nsmequities_totalview_current_reference_price_v32(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_cross_type(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_price_variation_indicator(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Packet Header */
+static unsigned
+dissect_nsmequities_totalview_packet_header_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (nsmequities_totalview_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_totalview_packet_header_v30, &item, "Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_nsmequities_totalview_session_v30(tvb, pinfo, group, offset);
+    offset = parse_nsmequities_totalview_sequence_number_v30(tvb, pinfo, group, offset);
+    offset = parse_nsmequities_totalview_message_count_v30(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -11779,10 +11827,12 @@ proto_register_nsmequities_totalview(void)
         &ett_nsmequities_totalview_timestamp,
         &ett_nsmequities_totalview_client_packet_header,
         &ett_nsmequities_totalview_server_packet_header,
+        &ett_nsmequities_totalview_packet_header,
         &ett_nsmequities_totalview_message_header,
         &ett_nsmequities_totalview_client_packet_header_v32,
         &ett_nsmequities_totalview_server_packet_header_v32,
         &ett_nsmequities_totalview_sequenced_message_header,
+        &ett_nsmequities_totalview_packet_header_v30,
         &ett_nsmequities_totalview_message_header_v30,
         &ett_nsmequities_totalview_sequenced_message_header_v20a,
         &ett_nsmequities_totalview_message_header_v20a,

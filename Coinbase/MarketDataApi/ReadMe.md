@@ -5,8 +5,9 @@
 Registered as `DERIBIT MARKETDATAAPI` (`DERIBIT.MARKETDATAAPI`), display filter `deribit.marketdataapi`.
 
 - Transport: UDP
-- Ports: 4220, 4230, 4240, 4241, 4242, 4243, 4244, 4245, 4246, 4247
-- Recognition: UDP by port, environment by none
+- Ports: 4240, 4241, 4242, 4243, 4244, 4245, 4246, 4247
+- Broadcast endpoints: 48 from the connectivity model
+- Recognition: UDP by endpoint, environment by none
 
 | Version | Model | Effective |
 | --- | --- | --- |

@@ -174,6 +174,7 @@ static int ett_deribit_marketdataapi_flags;
 static int ett_deribit_marketdataapi_taker_flags;
 static int ett_deribit_marketdataapi_maker_flags;
 static int ett_deribit_marketdataapi_flags_v01;
+static int ett_deribit_marketdataapi_packet_header;
 static int ett_deribit_marketdataapi_md_message_header;
 static int ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups;
 static int ett_deribit_marketdataapi_group_size_encoding;
@@ -262,15 +263,6 @@ static unsigned deribit_marketdataapi_pref_decimal_places = 9;
 #define DERIBIT_MARKETDATAAPI_INDEXES_PREFERENCE_DESCRIPTION "Number the entries of a repeating group in the protocol tree"
 
 static bool deribit_marketdataapi_pref_show_indexes = true;
-
-/* Ports the feed arrives on, assigned per deployment */
-#define DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_NAME "ports"
-#define DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_TITLE "Ports"
-#define DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_DESCRIPTION "Ports this feed arrives on, set to the ports the exchange assigned this deployment"
-#define DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_DEFAULT "4220,4230,4240,4241,4242,4243,4244,4245,4246,4247"
-#define DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM 65535
-
-static range_t *deribit_marketdataapi_pref_ports;
 
 /*
  * Deribit MarketDataApi Methods
@@ -378,6 +370,83 @@ deribit_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Broadcast endpoints from the connectivity model */
+typedef struct deribit_marketdataapi_endpoint {
+    uint8_t address[4];
+    uint16_t port;
+    const char *name;
+} deribit_marketdataapi_endpoint;
+
+static const deribit_marketdataapi_endpoint deribit_marketdataapi_endpoints[] = {
+    { { 224, 0, 12, 192 }, 4230, "Feed Sbe Market Data Snapshot BTC Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 208 }, 4230, "Feed Sbe Market Data Snapshot BTC Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 193 }, 4220, "Feed Sbe Market Data Incremental BTC Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 209 }, 4220, "Feed Sbe Market Data Incremental BTC Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 224 }, 4230, "Feed Sbe Market Data Snapshot BTC Perpetuals, Futures and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 225 }, 4220, "Feed Sbe Market Data Incremental BTC Perpetuals, Futures and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 194 }, 4230, "Feed Sbe Market Data Snapshot BTC Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 210 }, 4230, "Feed Sbe Market Data Snapshot BTC Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 195 }, 4220, "Feed Sbe Market Data Incremental BTC Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 211 }, 4220, "Feed Sbe Market Data Incremental BTC Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 226 }, 4230, "Feed Sbe Market Data Snapshot BTC Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 227 }, 4220, "Feed Sbe Market Data Incremental BTC Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 196 }, 4230, "Feed Sbe Market Data Snapshot ETH Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 212 }, 4230, "Feed Sbe Market Data Snapshot ETH Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 197 }, 4220, "Feed Sbe Market Data Incremental ETH Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 213 }, 4220, "Feed Sbe Market Data Incremental ETH Perpetuals, Futures and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 228 }, 4230, "Feed Sbe Market Data Snapshot ETH Perpetuals, Futures and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 229 }, 4220, "Feed Sbe Market Data Incremental ETH Perpetuals, Futures and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 198 }, 4230, "Feed Sbe Market Data Snapshot ETH Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 214 }, 4230, "Feed Sbe Market Data Snapshot ETH Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 199 }, 4220, "Feed Sbe Market Data Incremental ETH Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 215 }, 4220, "Feed Sbe Market Data Incremental ETH Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 230 }, 4230, "Feed Sbe Market Data Snapshot ETH Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 231 }, 4220, "Feed Sbe Market Data Incremental ETH Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 200 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 216 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 201 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 217 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 232 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 233 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Futures, Perpetuals and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 202 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 218 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 203 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 219 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Options and Option Combinations Equinix LD4" },
+    { { 224, 0, 12, 234 }, 4230, "Feed Sbe Market Data Snapshot Tier 2 Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 235 }, 4220, "Feed Sbe Market Data Incremental Tier 2 Options and Option Combinations Equinix LD4, Testing" },
+    { { 224, 0, 12, 204 }, 4230, "Feed Sbe Market Data Snapshot Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 220 }, 4230, "Feed Sbe Market Data Snapshot Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 205 }, 4220, "Feed Sbe Market Data Incremental Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 221 }, 4220, "Feed Sbe Market Data Incremental Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4" },
+    { { 224, 0, 12, 236 }, 4230, "Feed Sbe Market Data Snapshot Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 237 }, 4220, "Feed Sbe Market Data Incremental Tier 3 Futures, Perpetuals and Future Spreads Equinix LD4, Testing" },
+    { { 224, 0, 12, 206 }, 4230, "Feed Sbe Market Data Snapshot RWA and pre-IPO perpetuals Equinix LD4" },
+    { { 224, 0, 12, 222 }, 4230, "Feed Sbe Market Data Snapshot RWA and pre-IPO perpetuals Equinix LD4" },
+    { { 224, 0, 12, 207 }, 4220, "Feed Sbe Market Data Incremental RWA and pre-IPO perpetuals Equinix LD4" },
+    { { 224, 0, 12, 223 }, 4220, "Feed Sbe Market Data Incremental RWA and pre-IPO perpetuals Equinix LD4" },
+    { { 224, 0, 12, 238 }, 4230, "Feed Sbe Market Data Snapshot RWA and pre-IPO perpetuals Equinix LD4, Testing" },
+    { { 224, 0, 12, 239 }, 4220, "Feed Sbe Market Data Incremental RWA and pre-IPO perpetuals Equinix LD4, Testing" },
+};
+
+/* The published endpoint a frame was sent to, NULL for any other destination */
+static const deribit_marketdataapi_endpoint *
+deribit_marketdataapi_endpoint_of(packet_info *pinfo)
+{
+    if (pinfo->net_dst.type != AT_IPv4 || pinfo->net_dst.len != 4) {
+        return NULL;
+    }
+
+    for (size_t index = 0; index < array_length(deribit_marketdataapi_endpoints); index++) {
+        const deribit_marketdataapi_endpoint *endpoint = &deribit_marketdataapi_endpoints[index];
+
+        if (pinfo->destport == endpoint->port && memcmp(pinfo->net_dst.data, endpoint->address, 4) == 0) {
+            return endpoint;
+        }
+    }
+
+    return NULL;
 }
 
 /*
@@ -2121,6 +2190,7 @@ parse_deribit_marketdataapi_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 }
 
 /* Message and group dissect methods */
+static unsigned dissect_deribit_marketdataapi_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_md_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2154,6 +2224,30 @@ static unsigned dissect_deribit_marketdataapi_ask_put_v01(tvbuff_t *tvb, packet_
 static unsigned dissect_deribit_marketdataapi_trade_summary_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_marketdataapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
+
+/* Packet Header */
+static unsigned
+dissect_deribit_marketdataapi_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (deribit_marketdataapi_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_packet_header, &item, "Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_deribit_marketdataapi_sending_time(tvb, pinfo, group, offset);
+    offset = parse_deribit_marketdataapi_seq_num(tvb, pinfo, group, offset);
+    offset = parse_deribit_marketdataapi_channel_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_marketdataapi_packet_type(tvb, pinfo, group, offset);
+    offset = parse_deribit_marketdataapi_message_count(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
 
 /* Md Message Header */
 static unsigned
@@ -2929,11 +3023,17 @@ dissect_deribit_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
     proto_item *item = proto_tree_add_item(tree, proto_deribit_marketdataapi, tvb, 0, -1, ENC_NA);
     proto_tree *packet = proto_item_add_subtree(item, ett_deribit_marketdataapi);
 
+    const deribit_marketdataapi_endpoint *endpoint = deribit_marketdataapi_endpoint_of(pinfo);
+
     uint32_t count = tvb_get_letohs(tvb, 22);
     uint64_t seconds = tvb_get_letoh64(tvb, 0) / UINT64_C(1000000000);
     int version = deribit_marketdataapi_version(seconds);
 
     proto_item_append_text(item, " %s", deribit_marketdataapi_version_name(version));
+
+    if (endpoint != NULL) {
+        proto_item_append_text(item, ", %s", endpoint->name);
+    }
 
     const deribit_marketdataapi_parse *parse = deribit_marketdataapi_parse_for(version);
     unsigned position = dissect_deribit_marketdataapi_header(tvb, pinfo, packet, 0);
@@ -2953,26 +3053,26 @@ dissect_deribit_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
 /* The fewest bytes any frame of the protocol holds, a header without messages */
 #define DERIBIT_MARKETDATAAPI_MINIMUM_SIZE 24
 
-/* The frame travels on a port the feed is assigned, the ports are the
-   deployment's and held by preference */
+/* The frame was sent to an endpoint the feed is published on, which
+   tells this feed from others sharing the encoding */
 static bool
-deribit_marketdataapi_heur_port(packet_info *pinfo)
+deribit_marketdataapi_heur_endpoint(packet_info *pinfo)
 {
-    return value_is_in_range(deribit_marketdataapi_pref_ports, pinfo->destport);
+    return deribit_marketdataapi_endpoint_of(pinfo) != NULL;
 }
 
 /* Does the frame pass every test of Packet? */
 static bool
 deribit_marketdataapi_heur_accepts(tvbuff_t *tvb _U_, packet_info *pinfo)
 {
-    if (!deribit_marketdataapi_heur_port(pinfo)) {
+    if (!deribit_marketdataapi_heur_endpoint(pinfo)) {
         return false;
     }
 
     return true;
 }
 
-/* Recognize the protocol by the port it travels on */
+/* Recognize the protocol by the published endpoint it was sent to */
 static bool
 dissect_deribit_marketdataapi_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *data)
 {
@@ -3879,6 +3979,7 @@ proto_register_deribit_marketdataapi(void)
         &ett_deribit_marketdataapi_taker_flags,
         &ett_deribit_marketdataapi_maker_flags,
         &ett_deribit_marketdataapi_flags_v01,
+        &ett_deribit_marketdataapi_packet_header,
         &ett_deribit_marketdataapi_md_message_header,
         &ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups,
         &ett_deribit_marketdataapi_group_size_encoding,
@@ -3951,19 +4052,6 @@ proto_register_deribit_marketdataapi(void)
         DERIBIT_MARKETDATAAPI_INDEXES_PREFERENCE_TITLE,
         DERIBIT_MARKETDATAAPI_INDEXES_PREFERENCE_DESCRIPTION,
         &deribit_marketdataapi_pref_show_indexes);
-
-    range_convert_str(
-        wmem_epan_scope(),
-        &deribit_marketdataapi_pref_ports,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_DEFAULT,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM);
-    prefs_register_range_preference(
-        preferences,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_NAME,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_TITLE,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_DESCRIPTION,
-        &deribit_marketdataapi_pref_ports,
-        DERIBIT_MARKETDATAAPI_PORTS_PREFERENCE_MAXIMUM);
 
     deribit_marketdataapi_handle = register_dissector(DERIBIT_MARKETDATAAPI_PROTOCOL_FILTER, dissect_deribit_marketdataapi, proto_deribit_marketdataapi);
 }

@@ -139,6 +139,7 @@ static int ett_iexequities_tops_security_directory_flags;
 static int ett_iexequities_tops_quote_update_flags;
 static int ett_iexequities_tops_sale_condition_flags;
 static int ett_iexequities_tops_sale_condition_flags_v156;
+static int ett_iexequities_tops_iextp_header;
 static int ett_iexequities_tops_message_header;
 
 /*
@@ -522,7 +523,7 @@ parse_iexequities_tops_bid_size(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define IEXEQUITIES_TOPS_CHANNEL_ID_DESCRIPTION "Identifies the stream of bytes sequenced messages"
 #define IEXEQUITIES_TOPS_CHANNEL_ID_FILTER      "iexequities.tops.channelid"
 #define IEXEQUITIES_TOPS_CHANNEL_ID_TYPE        FT_UINT32
-#define IEXEQUITIES_TOPS_CHANNEL_ID_DISPLAY     BASE_DEC
+#define IEXEQUITIES_TOPS_CHANNEL_ID_DISPLAY     BASE_HEX
 #define IEXEQUITIES_TOPS_CHANNEL_ID_MASK        0x0
 #define IEXEQUITIES_TOPS_CHANNEL_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_TOPS_CHANNEL_ID_SIZE        4
@@ -1547,6 +1548,7 @@ parse_iexequities_tops_sale_condition_flags_v156(tvbuff_t *tvb, packet_info *pin
 }
 
 /* Message and group dissect methods */
+static unsigned dissect_iexequities_tops_iextp_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_system_event(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_iexequities_tops_security_directory(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -1566,6 +1568,35 @@ static unsigned dissect_iexequities_tops_trade_break_v156(tvbuff_t *tvb, packet_
 static unsigned dissect_iexequities_tops_message_data(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
 static unsigned dissect_iexequities_tops_message_data_v164(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
 static unsigned dissect_iexequities_tops_message_data_v156(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type);
+
+/* Iextp Header */
+static unsigned
+dissect_iexequities_tops_iextp_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (iexequities_tops_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_iexequities_tops_iextp_header, &item, "Iextp Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_iexequities_tops_version(tvb, pinfo, group, offset);
+    offset += IEXEQUITIES_TOPS_RESERVED_SIZE;
+    offset = parse_iexequities_tops_message_protocol_id(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_channel_id(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_session_id(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_payload_length(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_message_count(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_stream_offset(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_first_message_sequence_number(tvb, pinfo, group, offset);
+    offset = parse_iexequities_tops_send_time(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
 
 /* Message Header */
 static unsigned
@@ -2708,6 +2739,7 @@ proto_register_iexequities_tops(void)
         &ett_iexequities_tops_quote_update_flags,
         &ett_iexequities_tops_sale_condition_flags,
         &ett_iexequities_tops_sale_condition_flags_v156,
+        &ett_iexequities_tops_iextp_header,
         &ett_iexequities_tops_message_header,
     };
 

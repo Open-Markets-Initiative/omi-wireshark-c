@@ -150,6 +150,7 @@ static int ett_jnxequities_pts_itch_message;
 static int ett_jnxequities_pts_itch_timestamp;
 static int ett_jnxequities_pts_itch_client_packet_header;
 static int ett_jnxequities_pts_itch_server_packet_header;
+static int ett_jnxequities_pts_itch_packet_header;
 static int ett_jnxequities_pts_itch_message_header;
 
 /*
@@ -1421,6 +1422,7 @@ static unsigned dissect_jnxequities_pts_itch_order_added_with_attributes(tvbuff_
 static unsigned dissect_jnxequities_pts_itch_order_executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_jnxequities_pts_itch_order_deleted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_jnxequities_pts_itch_order_replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_jnxequities_pts_itch_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_jnxequities_pts_itch_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_jnxequities_pts_itch_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type);
 static unsigned dissect_jnxequities_pts_itch_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type);
@@ -1670,6 +1672,28 @@ dissect_jnxequities_pts_itch_order_replaced(tvbuff_t *tvb, packet_info *pinfo, p
     offset = parse_jnxequities_pts_itch_new_order_number(tvb, pinfo, tree, offset);
     offset = parse_jnxequities_pts_itch_quantity(tvb, pinfo, tree, offset);
     offset = parse_jnxequities_pts_itch_price(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Packet Header */
+static unsigned
+dissect_jnxequities_pts_itch_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (jnxequities_pts_itch_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_jnxequities_pts_itch_packet_header, &item, "Packet Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_jnxequities_pts_itch_session(tvb, pinfo, group, offset);
+    offset = parse_jnxequities_pts_itch_sequence_number(tvb, pinfo, group, offset);
+    offset = parse_jnxequities_pts_itch_message_count(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -2978,6 +3002,7 @@ proto_register_jnxequities_pts_itch(void)
         &ett_jnxequities_pts_itch_timestamp,
         &ett_jnxequities_pts_itch_client_packet_header,
         &ett_jnxequities_pts_itch_server_packet_header,
+        &ett_jnxequities_pts_itch_packet_header,
         &ett_jnxequities_pts_itch_message_header,
     };
 

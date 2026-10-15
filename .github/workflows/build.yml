@@ -12,7 +12,7 @@ jobs:
   dissectors:
 
     # A dissector compiles against the Wireshark it is written for, so the
-    # build here is a Wireshark build with these 14 dissectors in it
+    # build here is a Wireshark build with these 15 dissectors in it
     name: Compile into Wireshark
     runs-on: ubuntu-latest
     container: ghcr.io/open-markets-initiative/wireshark-c-build:latest
@@ -49,7 +49,7 @@ jobs:
       - name: Check every dissector registered
         run: |
           ./build/run/tshark -G protocols | cut -f3 > registered
-          for filter in globex.ilink3 coinbasederivatives.marketdataapi coinbasederivatives.ordersapi deribit.marketdataapi deribit.ordersapi iexequities.deep iexequities.deepplus iexequities.deepplussnap iexequities.deepsnap iexequities.tops iexequities.topssnap jnxequities.pts.itch nsmequities.orders nsmequities.totalview; do
+          for filter in globex.mdp3 globex.ilink3 coinbasederivatives.marketdataapi coinbasederivatives.ordersapi deribit.marketdataapi deribit.ordersapi iexequities.deep iexequities.deepplus iexequities.deepplussnap iexequities.deepsnap iexequities.tops iexequities.topssnap jnxequities.pts.itch nsmequities.orders nsmequities.totalview; do
             if ! grep -qx "$filter" registered; then
               echo "::error::$filter did not register"
               exit 1
@@ -117,7 +117,7 @@ jobs:
         shell: bash
         run: |
           ./build/run/RelWithDebInfo/tshark.exe -G protocols | cut -f3 > registered
-          for filter in globex.ilink3 coinbasederivatives.marketdataapi coinbasederivatives.ordersapi deribit.marketdataapi deribit.ordersapi iexequities.deep iexequities.deepplus iexequities.deepplussnap iexequities.deepsnap iexequities.tops iexequities.topssnap jnxequities.pts.itch nsmequities.orders nsmequities.totalview; do
+          for filter in globex.mdp3 globex.ilink3 coinbasederivatives.marketdataapi coinbasederivatives.ordersapi deribit.marketdataapi deribit.ordersapi iexequities.deep iexequities.deepplus iexequities.deepplussnap iexequities.deepsnap iexequities.tops iexequities.topssnap jnxequities.pts.itch nsmequities.orders nsmequities.totalview; do
             if ! grep -qx "$filter" registered; then
               echo "::error::$filter did not register"
               exit 1
