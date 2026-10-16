@@ -10,6 +10,7 @@ Registered as `DERIBIT ORDERSAPI` (`DERIBIT.ORDERSAPI`), display filter `deribit
 
 | Version | Model | Effective |
 | --- | --- | --- |
+| 1.5 | `Coinbase.Deribit.OrdersApi.Sbe.v1.5` | 2026-08-07 |
 | 1.4 | `Coinbase.Deribit.OrdersApi.Sbe.v1.4` | 2026-08-04 |
 | 1.3 | `Coinbase.Deribit.OrdersApi.Sbe.v1.3` | 2026-07-21 |
 | 1.0 | `Coinbase.Deribit.OrdersApi.Sbe.v1.0` | 2026-05-06 |

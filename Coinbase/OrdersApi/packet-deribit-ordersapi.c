@@ -1,12 +1,13 @@
 /* packet-deribit-ordersapi.c
  * Routines for Deribit OrdersApi dissection
  *
- * Aggregated protocol versions: 1.4, 1.3, 1.0, 0.1
+ * Aggregated protocol versions: 1.5, 1.4, 1.3, 1.0, 0.1
  * Version selection: automatic by send time, or forced by preference
  *
  * Generated from the Omi binary model library
  *
  * Models:
+ *   Coinbase.Deribit.OrdersApi.Sbe.v1.5
  *   Coinbase.Deribit.OrdersApi.Sbe.v1.4
  *   Coinbase.Deribit.OrdersApi.Sbe.v1.3
  *   Coinbase.Deribit.OrdersApi.Sbe.v1.0
@@ -156,6 +157,7 @@ static int hf_deribit_ordersapi_self_match_prevention_id;
 static int hf_deribit_ordersapi_self_trading_mode;
 static int hf_deribit_ordersapi_send_time_ns;
 static int hf_deribit_ordersapi_sequence_number;
+static int hf_deribit_ordersapi_session_cancel_on_disconnect;
 static int hf_deribit_ordersapi_session_flags;
 static int hf_deribit_ordersapi_side;
 static int hf_deribit_ordersapi_status;
@@ -259,13 +261,15 @@ static expert_field ei_deribit_ordersapi_length;
 #define DERIBIT_ORDERSAPI_VERSION_PREFERENCE_DESCRIPTION "Version used when dissecting, Automatic selects by the packet send time"
 
 #define DERIBIT_ORDERSAPI_VERSION_AUTOMATIC 0
-#define DERIBIT_ORDERSAPI_VERSION_1_4     1
-#define DERIBIT_ORDERSAPI_VERSION_1_3     2
-#define DERIBIT_ORDERSAPI_VERSION_1_0     3
-#define DERIBIT_ORDERSAPI_VERSION_0_1     4
+#define DERIBIT_ORDERSAPI_VERSION_1_5     1
+#define DERIBIT_ORDERSAPI_VERSION_1_4     2
+#define DERIBIT_ORDERSAPI_VERSION_1_3     3
+#define DERIBIT_ORDERSAPI_VERSION_1_0     4
+#define DERIBIT_ORDERSAPI_VERSION_0_1     5
 
 static const enum_val_t deribit_ordersapi_version_vals[] = {
     { "automatic", "Automatic (by send time)", DERIBIT_ORDERSAPI_VERSION_AUTOMATIC },
+    { "v1.5", "1.5", DERIBIT_ORDERSAPI_VERSION_1_5 },
     { "v1.4", "1.4", DERIBIT_ORDERSAPI_VERSION_1_4 },
     { "v1.3", "1.3", DERIBIT_ORDERSAPI_VERSION_1_3 },
     { "v1.0", "1.0", DERIBIT_ORDERSAPI_VERSION_1_0 },
@@ -278,6 +282,8 @@ static const char *
 deribit_ordersapi_version_name(int version)
 {
     switch (version) {
+    case DERIBIT_ORDERSAPI_VERSION_1_5:
+        return "1.5";
     case DERIBIT_ORDERSAPI_VERSION_1_4:
         return "1.4";
     case DERIBIT_ORDERSAPI_VERSION_1_3:
@@ -294,6 +300,7 @@ deribit_ordersapi_version_name(int version)
 static int deribit_ordersapi_pref_version = DERIBIT_ORDERSAPI_VERSION_AUTOMATIC;
 
 /* Version effective times, seconds since the unix epoch */
+#define DERIBIT_ORDERSAPI_EFFECTIVE_1_5 UINT64_C(1786060800) /* 2026-08-07 */
 #define DERIBIT_ORDERSAPI_EFFECTIVE_1_4 UINT64_C(1785801600) /* 2026-08-04 */
 #define DERIBIT_ORDERSAPI_EFFECTIVE_1_3 UINT64_C(1784592000) /* 2026-07-21 */
 #define DERIBIT_ORDERSAPI_EFFECTIVE_1_0 UINT64_C(1778025600) /* 2026-05-06 */
@@ -350,6 +357,10 @@ deribit_ordersapi_version(uint64_t seconds)
 {
     if (deribit_ordersapi_pref_version != DERIBIT_ORDERSAPI_VERSION_AUTOMATIC) {
         return deribit_ordersapi_pref_version;
+    }
+
+    if (seconds >= DERIBIT_ORDERSAPI_EFFECTIVE_1_5) {
+        return DERIBIT_ORDERSAPI_VERSION_1_5;
     }
 
     if (seconds >= DERIBIT_ORDERSAPI_EFFECTIVE_1_4) {
@@ -557,6 +568,8 @@ static const value_string deribit_ordersapi_ask_reject_reason_vals[] = {
     { 27, "Position Limit Exceeded" },
     { 28, "Order Size Limit Exceeded" },
     { 29, "Member Speed Bump Limit Exceeded" },
+    { 30, "Mmp Min Freeze Time Not Elapsed" },
+    { 31, "Cancel Only" },
     { 0, NULL }
 };
 
@@ -699,6 +712,8 @@ static const value_string deribit_ordersapi_bid_reject_reason_vals[] = {
     { 27, "Position Limit Exceeded" },
     { 28, "Order Size Limit Exceeded" },
     { 29, "Member Speed Bump Limit Exceeded" },
+    { 30, "Mmp Min Freeze Time Not Elapsed" },
+    { 31, "Cancel Only" },
     { 0, NULL }
 };
 
@@ -1643,6 +1658,7 @@ static const value_string deribit_ordersapi_reason_mass_quote_reject_reason_vals
     { 6, "Rate Limit" },
     { 7, "Portfolio Locked" },
     { 8, "Duplicate Instrument" },
+    { 9, "Mmp Min Freeze Time Not Elapsed" },
     { 0, NULL }
 };
 
@@ -1719,6 +1735,8 @@ static const value_string deribit_ordersapi_reason_order_reject_reason_vals[] = 
     { 27, "Position Limit Exceeded" },
     { 28, "Order Size Limit Exceeded" },
     { 29, "Member Speed Bump Limit Exceeded" },
+    { 30, "Mmp Min Freeze Time Not Elapsed" },
+    { 31, "Cancel Only" },
     { 0, NULL }
 };
 
@@ -1746,6 +1764,7 @@ static const value_string deribit_ordersapi_reason_reject_reason_vals[] = {
     { 3, "Invalid Block Length" },
     { 4, "Invalid Field Value" },
     { 5, "Message Disabled" },
+    { 6, "Gateway Not Active" },
     { 0, NULL }
 };
 
@@ -1968,6 +1987,30 @@ parse_deribit_ordersapi_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U_, p
     proto_tree_add_item(tree, hf_deribit_ordersapi_sequence_number, tvb, offset, DERIBIT_ORDERSAPI_SEQUENCE_NUMBER_SIZE, DERIBIT_ORDERSAPI_SEQUENCE_NUMBER_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_SEQUENCE_NUMBER_SIZE;
+}
+
+/* Session Cancel On Disconnect */
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_NAME        "Session Cancel On Disconnect"
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_DESCRIPTION "sessionCancelOnDisconnect"
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_FILTER      "deribit.ordersapi.sessioncancelondisconnect"
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_MASK        0x0
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_SIZE        1
+
+static const value_string deribit_ordersapi_session_cancel_on_disconnect_vals[] = {
+    { 0, "False" },
+    { 1, "True" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_session_cancel_on_disconnect(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_session_cancel_on_disconnect, tvb, offset, DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_SIZE, DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_SIZE;
 }
 
 /* Side */
@@ -2678,21 +2721,31 @@ static unsigned dissect_deribit_ordersapi_mass_quote_mmp_triggered(tvbuff_t *tvb
 static unsigned dissect_deribit_ordersapi_orders_mmp_triggered(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_orders_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_logon_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_new_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_cancel_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_new_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_cancel_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_request_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_request_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_request_message_quotes_group_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_deribit_ordersapi_new_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_cancel_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_order_placed_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_request_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_request_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_new_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_cancel_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_order_placed_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
+static unsigned dissect_deribit_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_ordersapi_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_ordersapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
@@ -2732,6 +2785,7 @@ dissect_deribit_ordersapi_logon(tvbuff_t *tvb, packet_info *pinfo, proto_tree *t
     offset = parse_deribit_ordersapi_secret(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_reset_seq_num(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_schema_version(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_session_cancel_on_disconnect(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3146,6 +3200,7 @@ dissect_deribit_ordersapi_new_order_response(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_flags_order_flags(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
 
@@ -3489,6 +3544,8 @@ dissect_deribit_ordersapi_cancel_order_response(tvbuff_t *tvb, packet_info *pinf
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4422,6 +4479,57 @@ dissect_deribit_ordersapi_orders_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo,
     return offset;
 }
 
+/* Logon Message V14 */
+static unsigned
+dissect_deribit_ordersapi_logon_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_client_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_secret(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_reset_seq_num(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_schema_version(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* New Order Response Message V14 */
+static unsigned
+dissect_deribit_ordersapi_new_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Cancel Order Response Message V14 */
+static unsigned
+dissect_deribit_ordersapi_cancel_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Logon Message V13 */
 static unsigned
 dissect_deribit_ordersapi_logon_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -4438,6 +4546,45 @@ static unsigned
 dissect_deribit_ordersapi_logon_conf_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_deribit_ordersapi_heartbeat_interval_seconds(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* New Order Response Message V13 */
+static unsigned
+dissect_deribit_ordersapi_new_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Cancel Order Response Message V13 */
+static unsigned
+dissect_deribit_ordersapi_cancel_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4550,6 +4697,45 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_group_v10(tvbuff_t *
     return offset;
 }
 
+/* New Order Response Message V10 */
+static unsigned
+dissect_deribit_ordersapi_new_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Cancel Order Response Message V10 */
+static unsigned
+dissect_deribit_ordersapi_cancel_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Order Placed Message V10 */
 static unsigned
 dissect_deribit_ordersapi_order_placed_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -4620,6 +4806,45 @@ dissect_deribit_ordersapi_mass_quote_request_v01(tvbuff_t *tvb, packet_info *pin
     offset = parse_deribit_ordersapi_self_match_prevention_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_flags_mass_quote_flags(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* New Order Response Message V01 */
+static unsigned
+dissect_deribit_ordersapi_new_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Cancel Order Response Message V01 */
+static unsigned
+dissect_deribit_ordersapi_cancel_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4785,6 +5010,142 @@ dissect_deribit_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
     return offset;
 }
 
+static const value_string deribit_ordersapi_messages_v14[] = {
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON, "Logon Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON_CONF, "Logon Conf Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGOUT, "Logout Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGGED_OUT, "Logged Out Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_HEARTBEAT, "Heartbeat Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_TEST_REQUEST, "Test Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_RESEND_REQUEST, "Resend Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GAP_FILL, "Gap Fill Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_REJECT, "Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REQUEST, "New Order Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REQUEST, "Amend Order Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REQUEST, "Cancel Order Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_BY_ID_REQUEST, "Cancel Order By Id Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_REQUEST, "Mass Quote Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REQUEST, "Mass Cancel Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_CANCEL_REQUEST, "Mass Quote Cancel Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_REQUEST, "Get Mass Quote Mmp Status Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REQUEST, "Get Orders Mmp Status Request Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_RESPONSE, "New Order Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REJECT, "New Order Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_RESPONSE, "Amend Order Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REJECT, "Amend Order Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_RESPONSE, "Cancel Order Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT, "Cancel Order Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_RESPONSE, "Mass Quote Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_REJECT, "Mass Quote Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_RESPONSE, "Mass Cancel Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REJECT, "Mass Cancel Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_RESPONSE, "Get Mass Quote Mmp Status Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_REJECT, "Get Mass Quote Mmp Status Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_RESPONSE, "Get Orders Mmp Status Response Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REJECT, "Get Orders Mmp Status Reject Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED, "Order Filled Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED, "Orders Canceled Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED, "Order Placed Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_ORDERS_PLACED, "Mass Quote Orders Placed Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_TRIGGERED, "Mass Quote Mmp Triggered Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_TRIGGERED, "Orders Mmp Triggered Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_UNFROZEN, "Mass Quote Mmp Unfrozen Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN, "Orders Mmp Unfrozen Message" },
+    { 0, NULL }
+};
+
+/* Payload: dispatch on template_id */
+static unsigned
+dissect_deribit_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
+{
+    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages_v14, "Unknown (%u)"));
+
+    switch (template_id) {
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
+        return dissect_deribit_ordersapi_logon_v14(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON_CONF:
+        return dissect_deribit_ordersapi_logon_conf(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGOUT:
+        return dissect_deribit_ordersapi_logout(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGGED_OUT:
+        return dissect_deribit_ordersapi_logged_out(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_HEARTBEAT:
+        return dissect_deribit_ordersapi_heartbeat(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_TEST_REQUEST:
+        return dissect_deribit_ordersapi_test_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_RESEND_REQUEST:
+        return dissect_deribit_ordersapi_resend_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GAP_FILL:
+        return dissect_deribit_ordersapi_gap_fill(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_REJECT:
+        return dissect_deribit_ordersapi_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REQUEST:
+        return dissect_deribit_ordersapi_new_order_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REQUEST:
+        return dissect_deribit_ordersapi_amend_order_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REQUEST:
+        return dissect_deribit_ordersapi_cancel_order_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_BY_ID_REQUEST:
+        return dissect_deribit_ordersapi_cancel_order_by_id_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_REQUEST:
+        return dissect_deribit_ordersapi_mass_quote_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REQUEST:
+        return dissect_deribit_ordersapi_mass_cancel_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_CANCEL_REQUEST:
+        return dissect_deribit_ordersapi_mass_quote_cancel_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_REQUEST:
+        return dissect_deribit_ordersapi_get_mass_quote_mmp_status_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REQUEST:
+        return dissect_deribit_ordersapi_get_orders_mmp_status_request(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_RESPONSE:
+        return dissect_deribit_ordersapi_new_order_response_v14(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REJECT:
+        return dissect_deribit_ordersapi_new_order_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_RESPONSE:
+        return dissect_deribit_ordersapi_amend_order_response(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REJECT:
+        return dissect_deribit_ordersapi_amend_order_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_RESPONSE:
+        return dissect_deribit_ordersapi_cancel_order_response_v14(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT:
+        return dissect_deribit_ordersapi_cancel_order_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
+        return dissect_deribit_ordersapi_mass_quote_response(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_REJECT:
+        return dissect_deribit_ordersapi_mass_quote_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_RESPONSE:
+        return dissect_deribit_ordersapi_mass_cancel_response(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REJECT:
+        return dissect_deribit_ordersapi_mass_cancel_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_RESPONSE:
+        return dissect_deribit_ordersapi_get_mass_quote_mmp_status_response(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_MASS_QUOTE_MMP_STATUS_REJECT:
+        return dissect_deribit_ordersapi_get_mass_quote_mmp_status_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_RESPONSE:
+        return dissect_deribit_ordersapi_get_orders_mmp_status_response(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REJECT:
+        return dissect_deribit_ordersapi_get_orders_mmp_status_reject(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
+        return dissect_deribit_ordersapi_order_filled(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED:
+        return dissect_deribit_ordersapi_orders_canceled(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED:
+        return dissect_deribit_ordersapi_order_placed(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_ORDERS_PLACED:
+        return dissect_deribit_ordersapi_mass_quote_orders_placed(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_TRIGGERED:
+        return dissect_deribit_ordersapi_mass_quote_mmp_triggered(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_TRIGGERED:
+        return dissect_deribit_ordersapi_orders_mmp_triggered(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_UNFROZEN:
+        return dissect_deribit_ordersapi_mass_quote_mmp_unfrozen(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN:
+        return dissect_deribit_ordersapi_orders_mmp_unfrozen(tvb, pinfo, tree, offset);
+    }
+
+    return offset;
+}
+
 static const value_string deribit_ordersapi_messages_v13[] = {
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON, "Logon Message" },
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON_CONF, "Logon Conf Message" },
@@ -4873,7 +5234,7 @@ dissect_deribit_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REQUEST:
         return dissect_deribit_ordersapi_get_orders_mmp_status_request(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_new_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_new_order_response_v13(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REJECT:
         return dissect_deribit_ordersapi_new_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_RESPONSE:
@@ -4881,7 +5242,7 @@ dissect_deribit_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REJECT:
         return dissect_deribit_ordersapi_amend_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_cancel_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_cancel_order_response_v13(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT:
         return dissect_deribit_ordersapi_cancel_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
@@ -4996,7 +5357,7 @@ dissect_deribit_ordersapi_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_CANCEL_REQUEST:
         return dissect_deribit_ordersapi_mass_quote_cancel_request(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_new_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_new_order_response_v10(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REJECT:
         return dissect_deribit_ordersapi_new_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_RESPONSE:
@@ -5004,7 +5365,7 @@ dissect_deribit_ordersapi_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REJECT:
         return dissect_deribit_ordersapi_amend_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_cancel_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_cancel_order_response_v10(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT:
         return dissect_deribit_ordersapi_cancel_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
@@ -5111,7 +5472,7 @@ dissect_deribit_ordersapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_CANCEL_REQUEST:
         return dissect_deribit_ordersapi_mass_quote_cancel_request(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_new_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_new_order_response_v01(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_NEW_ORDER_REJECT:
         return dissect_deribit_ordersapi_new_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_RESPONSE:
@@ -5119,7 +5480,7 @@ dissect_deribit_ordersapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_AMEND_ORDER_REJECT:
         return dissect_deribit_ordersapi_amend_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_RESPONSE:
-        return dissect_deribit_ordersapi_cancel_order_response(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_cancel_order_response_v01(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT:
         return dissect_deribit_ordersapi_cancel_order_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
@@ -5248,7 +5609,8 @@ struct deribit_ordersapi_parse {
     unsigned (*dissect)(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 };
 
-static const deribit_ordersapi_parse deribit_ordersapi_parse_v14 = { deribit_ordersapi_messages, dissect_deribit_ordersapi_payload };
+static const deribit_ordersapi_parse deribit_ordersapi_parse_v15 = { deribit_ordersapi_messages, dissect_deribit_ordersapi_payload };
+static const deribit_ordersapi_parse deribit_ordersapi_parse_v14 = { deribit_ordersapi_messages_v14, dissect_deribit_ordersapi_payload_v14 };
 static const deribit_ordersapi_parse deribit_ordersapi_parse_v13 = { deribit_ordersapi_messages_v13, dissect_deribit_ordersapi_payload_v13 };
 static const deribit_ordersapi_parse deribit_ordersapi_parse_v10 = { deribit_ordersapi_messages_v10, dissect_deribit_ordersapi_payload_v10 };
 static const deribit_ordersapi_parse deribit_ordersapi_parse_v01 = { deribit_ordersapi_messages_v01, dissect_deribit_ordersapi_payload_v01 };
@@ -5258,6 +5620,8 @@ static const deribit_ordersapi_parse *
 deribit_ordersapi_parse_for(int version)
 {
     switch (version) {
+    case DERIBIT_ORDERSAPI_VERSION_1_4:
+        return &deribit_ordersapi_parse_v14;
     case DERIBIT_ORDERSAPI_VERSION_1_3:
         return &deribit_ordersapi_parse_v13;
     case DERIBIT_ORDERSAPI_VERSION_1_0:
@@ -5265,7 +5629,7 @@ deribit_ordersapi_parse_for(int version)
     case DERIBIT_ORDERSAPI_VERSION_0_1:
         return &deribit_ordersapi_parse_v01;
     default:
-        return &deribit_ordersapi_parse_v14;
+        return &deribit_ordersapi_parse_v15;
     }
 }
 
@@ -6002,6 +6366,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_SEQUENCE_NUMBER_MASK,
               DERIBIT_ORDERSAPI_SEQUENCE_NUMBER_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_session_cancel_on_disconnect,
+            { DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_NAME,
+              DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_FILTER,
+              DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_TYPE,
+              DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_DISPLAY,
+              VALS(deribit_ordersapi_session_cancel_on_disconnect_vals),
+              DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_MASK,
+              DERIBIT_ORDERSAPI_SESSION_CANCEL_ON_DISCONNECT_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_side,
             { DERIBIT_ORDERSAPI_SIDE_NAME,
