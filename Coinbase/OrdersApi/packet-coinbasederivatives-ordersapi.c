@@ -388,14 +388,14 @@ coinbasederivatives_ordersapi_format_decimal_9_64_nullable(char *buf, uint64_t r
 static void
 coinbasederivatives_ordersapi_format_nullable_32(char *buf, uint32_t raw)
 {
-    int64_t value = (int32_t)raw;
+    uint64_t value = (uint32_t)raw;
 
     if (value == 0) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /* Format a nullable integer, the label alone for the sentinel */

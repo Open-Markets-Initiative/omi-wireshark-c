@@ -742,28 +742,28 @@ globex_ilink3_format_decimal_9_64_nullable(char *buf, uint64_t raw)
 static void
 globex_ilink3_format_nullable_32(char *buf, uint32_t raw)
 {
-    int64_t value = (int32_t)raw;
+    uint64_t value = (uint32_t)raw;
 
-    if (value == 4294967295) {
+    if (value == UINT32_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
 globex_ilink3_format_nullable_64(char *buf, uint64_t raw)
 {
-    int64_t value = (int64_t)raw;
+    uint64_t value = (uint64_t)raw;
 
-    if (value == 18446744073709551615) {
+    if (value == UINT64_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /*
@@ -908,7 +908,7 @@ globex_ilink3_format_avg_px_indicator(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1211,7 +1211,7 @@ globex_ilink3_format_clearing_account_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1250,7 +1250,7 @@ globex_ilink3_format_clearing_trade_price_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1483,7 +1483,7 @@ globex_ilink3_format_cust_order_capacity(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1551,7 +1551,7 @@ globex_ilink3_format_cxl_linked_sessions(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1978,7 +1978,7 @@ globex_ilink3_format_exec_restatement_reason(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -2086,7 +2086,7 @@ globex_ilink3_format_expiration_cycle(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -2161,7 +2161,7 @@ globex_ilink3_format_fault_tolerance_indicator(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -2515,7 +2515,7 @@ globex_ilink3_format_last_rpt_requested(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -2827,7 +2827,7 @@ globex_ilink3_format_liquidity_flag(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -2929,7 +2929,7 @@ globex_ilink3_format_managed_order(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3028,7 +3028,7 @@ globex_ilink3_format_manual_order_indicator_optional(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3202,7 +3202,7 @@ globex_ilink3_format_mass_cancel_request_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3242,7 +3242,7 @@ globex_ilink3_format_mass_cancel_tif(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3348,7 +3348,7 @@ globex_ilink3_format_mass_status_tif(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3859,7 +3859,7 @@ globex_ilink3_format_ord_status_req_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -4127,7 +4127,7 @@ globex_ilink3_format_order_event_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -4792,7 +4792,7 @@ globex_ilink3_format_quote_entry_control(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -4850,7 +4850,7 @@ globex_ilink3_format_quote_entry_open(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5040,7 +5040,7 @@ globex_ilink3_format_quote_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5334,7 +5334,7 @@ globex_ilink3_format_rfq_side(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5773,7 +5773,7 @@ globex_ilink3_format_short_sale_type(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5838,7 +5838,7 @@ globex_ilink3_format_side_optional(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5966,7 +5966,7 @@ globex_ilink3_format_split_msg(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -6243,7 +6243,7 @@ globex_ilink3_format_time_in_force(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }

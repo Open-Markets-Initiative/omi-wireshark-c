@@ -629,7 +629,7 @@ parse_jnxequities_pts_itch_match_number(tvbuff_t *tvb, packet_info *pinfo _U_, p
 
 /* Message Count values the dispatch switches on */
 #define JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_HEARTBEAT      0
-#define JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_END_OF_SESSION 65535
+#define JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_END_OF_SESSION UINT16_MAX
 
 /* Message Count */
 #define JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_NAME        "Message Count"

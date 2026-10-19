@@ -943,14 +943,14 @@ globex_mdp3_format_nullable_32(char *buf, uint32_t raw)
 static void
 globex_mdp3_format_nullable_64(char *buf, uint64_t raw)
 {
-    int64_t value = (int64_t)raw;
+    uint64_t value = (uint64_t)raw;
 
-    if (value == 18446744073709551615) {
+    if (value == UINT64_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /*
@@ -1006,7 +1006,7 @@ globex_mdp3_format_aggressor_indicator(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -1046,7 +1046,7 @@ globex_mdp3_format_aggressor_side(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3434,7 +3434,7 @@ globex_mdp3_format_md_security_trading_status(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3475,7 +3475,7 @@ globex_mdp3_format_md_stream_id(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -3920,7 +3920,7 @@ globex_mdp3_format_money_or_par(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -4106,7 +4106,7 @@ globex_mdp3_format_open_close_settl_flag(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -4988,7 +4988,7 @@ globex_mdp3_format_security_alt_id_source(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -5160,7 +5160,7 @@ globex_mdp3_format_security_trading_status(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -6253,7 +6253,7 @@ globex_mdp3_format_underlying_security_alt_id_source(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
-    if (value == 255) {
+    if (value == UINT8_MAX) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
@@ -16277,8 +16277,7 @@ dissect_globex_mdp3_client_tcp_packet_header(tvbuff_t *tvb, packet_info *pinfo, 
     proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, GLOBEX_MDP3_CLIENT_TCP_PACKET_HEADER_SIZE,
         ett_globex_mdp3_header, NULL, "Client Tcp Frame");
 
-    offset = parse_globex_mdp3_client_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_client_tcp_message(tvb, pinfo, header, offset);
+    offset = dissect_globex_mdp3_client_technical_header(tvb, pinfo, header, offset);
 
     return offset;
 }
@@ -16379,99 +16378,7 @@ dissect_globex_mdp3_server_tcp_packet_header(tvbuff_t *tvb, packet_info *pinfo, 
     proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, GLOBEX_MDP3_SERVER_TCP_PACKET_HEADER_SIZE,
         ett_globex_mdp3_header, NULL, "Server Tcp Frame");
 
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 3792,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v112(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 3036,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v111(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v110(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 2952,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v110(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v19(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 3112,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v19(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 1881,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v18(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 1708,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v16(tvb, pinfo, header, offset);
-
-    return offset;
-}
-
-/* Server Tcp Frame */
-static unsigned
-dissect_globex_mdp3_server_tcp_packet_header_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_tree *header = proto_tree_add_subtree(tree, tvb, offset, 1702,
-        ett_globex_mdp3_header, NULL, "Server Tcp Frame");
-
-    offset = parse_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
-    offset = parse_globex_mdp3_server_tcp_message_v15(tvb, pinfo, header, offset);
+    offset = dissect_globex_mdp3_server_technical_header(tvb, pinfo, header, offset);
 
     return offset;
 }

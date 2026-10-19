@@ -2245,7 +2245,7 @@ parse_nsmequities_totalview_maximum_allowable_price(tvbuff_t *tvb, packet_info *
 
 /* Message Count values the dispatch switches on */
 #define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_HEARTBEAT      0
-#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_END_OF_SESSION 65535
+#define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_END_OF_SESSION UINT16_MAX
 
 /* Message Count */
 #define NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_NAME        "Message Count"
