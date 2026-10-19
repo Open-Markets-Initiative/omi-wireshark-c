@@ -997,14 +997,6 @@ parse_iexequities_deepsnap_reject_reason_code(tvbuff_t *tvb, packet_info *pinfo 
 #define IEXEQUITIES_DEEPSNAP_RESERVED_ENCODING    ENC_NA
 #define IEXEQUITIES_DEEPSNAP_RESERVED_SIZE        1
 
-static unsigned
-parse_iexequities_deepsnap_reserved(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_deepsnap_reserved, tvb, offset, IEXEQUITIES_DEEPSNAP_RESERVED_SIZE, IEXEQUITIES_DEEPSNAP_RESERVED_ENCODING);
-
-    return offset + IEXEQUITIES_DEEPSNAP_RESERVED_SIZE;
-}
-
 /* Retail Liquidity Indicator */
 #define IEXEQUITIES_DEEPSNAP_RETAIL_LIQUIDITY_INDICATOR_NAME        "Retail Liquidity Indicator"
 #define IEXEQUITIES_DEEPSNAP_RETAIL_LIQUIDITY_INDICATOR_DESCRIPTION "Retail Liquidity Indicator identifier"

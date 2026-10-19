@@ -174,7 +174,6 @@ static int ett_deribit_marketdataapi_flags;
 static int ett_deribit_marketdataapi_taker_flags;
 static int ett_deribit_marketdataapi_maker_flags;
 static int ett_deribit_marketdataapi_flags_v01;
-static int ett_deribit_marketdataapi_packet_header;
 static int ett_deribit_marketdataapi_md_message_header;
 static int ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups;
 static int ett_deribit_marketdataapi_group_size_encoding;
@@ -2190,7 +2189,6 @@ parse_deribit_marketdataapi_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 }
 
 /* Message and group dissect methods */
-static unsigned dissect_deribit_marketdataapi_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_md_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2224,30 +2222,6 @@ static unsigned dissect_deribit_marketdataapi_ask_put_v01(tvbuff_t *tvb, packet_
 static unsigned dissect_deribit_marketdataapi_trade_summary_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_marketdataapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-
-/* Packet Header */
-static unsigned
-dissect_deribit_marketdataapi_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (deribit_marketdataapi_show_headers) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_packet_header, &item, "Packet Header");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_deribit_marketdataapi_sending_time(tvb, pinfo, group, offset);
-    offset = parse_deribit_marketdataapi_seq_num(tvb, pinfo, group, offset);
-    offset = parse_deribit_marketdataapi_channel_id(tvb, pinfo, group, offset);
-    offset = parse_deribit_marketdataapi_packet_type(tvb, pinfo, group, offset);
-    offset = parse_deribit_marketdataapi_message_count(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
 
 /* Md Message Header */
 static unsigned
@@ -3979,7 +3953,6 @@ proto_register_deribit_marketdataapi(void)
         &ett_deribit_marketdataapi_taker_flags,
         &ett_deribit_marketdataapi_maker_flags,
         &ett_deribit_marketdataapi_flags_v01,
-        &ett_deribit_marketdataapi_packet_header,
         &ett_deribit_marketdataapi_md_message_header,
         &ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups,
         &ett_deribit_marketdataapi_group_size_encoding,

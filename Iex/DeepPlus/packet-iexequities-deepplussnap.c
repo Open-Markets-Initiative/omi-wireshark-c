@@ -773,14 +773,6 @@ parse_iexequities_deepplussnap_reject_reason_code(tvbuff_t *tvb, packet_info *pi
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_ENCODING    ENC_NA
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE        1
 
-static unsigned
-parse_iexequities_deepplussnap_reserved(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_deepplussnap_reserved, tvb, offset, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_ENCODING);
-
-    return offset + IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE;
-}
-
 /* Reserved 1 */
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_NAME        "Reserved 1"
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_DESCRIPTION "Reserved for future use"

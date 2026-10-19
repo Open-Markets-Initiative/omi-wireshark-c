@@ -4362,14 +4362,6 @@ parse_globex_ilink3_ownership(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define GLOBEX_ILINK3_PADDING_272_ENCODING    ENC_NA
 #define GLOBEX_ILINK3_PADDING_272_SIZE        272
 
-static unsigned
-parse_globex_ilink3_padding_272(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_ilink3_padding_272, tvb, offset, GLOBEX_ILINK3_PADDING_272_SIZE, GLOBEX_ILINK3_PADDING_272_ENCODING);
-
-    return offset + GLOBEX_ILINK3_PADDING_272_SIZE;
-}
-
 /* Party Detail Definition Status */
 #define GLOBEX_ILINK3_PARTY_DETAIL_DEFINITION_STATUS_NAME        "Party Detail Definition Status"
 #define GLOBEX_ILINK3_PARTY_DETAIL_DEFINITION_STATUS_DESCRIPTION "Status of party detail definition for one party"

@@ -4286,14 +4286,6 @@ parse_globex_mdp3_packet_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define GLOBEX_MDP3_PADDING_1_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_1_SIZE        1
 
-static unsigned
-parse_globex_mdp3_padding_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_1, tvb, offset, GLOBEX_MDP3_PADDING_1_SIZE, GLOBEX_MDP3_PADDING_1_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_1_SIZE;
-}
-
 /* Padding 2 */
 #define GLOBEX_MDP3_PADDING_2_NAME        "Padding 2"
 #define GLOBEX_MDP3_PADDING_2_DESCRIPTION "2 bytes padding"
@@ -4303,14 +4295,6 @@ parse_globex_mdp3_padding_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_2_MASK        0x0
 #define GLOBEX_MDP3_PADDING_2_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_2_SIZE        2
-
-static unsigned
-parse_globex_mdp3_padding_2(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_2, tvb, offset, GLOBEX_MDP3_PADDING_2_SIZE, GLOBEX_MDP3_PADDING_2_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_2_SIZE;
-}
 
 /* Padding 3 */
 #define GLOBEX_MDP3_PADDING_3_NAME        "Padding 3"
@@ -4322,14 +4306,6 @@ parse_globex_mdp3_padding_2(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_3_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_3_SIZE        3
 
-static unsigned
-parse_globex_mdp3_padding_3(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_3, tvb, offset, GLOBEX_MDP3_PADDING_3_SIZE, GLOBEX_MDP3_PADDING_3_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_3_SIZE;
-}
-
 /* Padding 4 */
 #define GLOBEX_MDP3_PADDING_4_NAME        "Padding 4"
 #define GLOBEX_MDP3_PADDING_4_DESCRIPTION "4 bytes padding"
@@ -4339,14 +4315,6 @@ parse_globex_mdp3_padding_3(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_4_MASK        0x0
 #define GLOBEX_MDP3_PADDING_4_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_4_SIZE        4
-
-static unsigned
-parse_globex_mdp3_padding_4(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_4, tvb, offset, GLOBEX_MDP3_PADDING_4_SIZE, GLOBEX_MDP3_PADDING_4_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_4_SIZE;
-}
 
 /* Padding 5 */
 #define GLOBEX_MDP3_PADDING_5_NAME        "Padding 5"
@@ -4358,14 +4326,6 @@ parse_globex_mdp3_padding_4(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_5_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_5_SIZE        5
 
-static unsigned
-parse_globex_mdp3_padding_5(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_5, tvb, offset, GLOBEX_MDP3_PADDING_5_SIZE, GLOBEX_MDP3_PADDING_5_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_5_SIZE;
-}
-
 /* Padding 6 */
 #define GLOBEX_MDP3_PADDING_6_NAME        "Padding 6"
 #define GLOBEX_MDP3_PADDING_6_DESCRIPTION "6 bytes padding"
@@ -4376,14 +4336,6 @@ parse_globex_mdp3_padding_5(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_6_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_6_SIZE        6
 
-static unsigned
-parse_globex_mdp3_padding_6(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_6, tvb, offset, GLOBEX_MDP3_PADDING_6_SIZE, GLOBEX_MDP3_PADDING_6_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_6_SIZE;
-}
-
 /* Padding 7 */
 #define GLOBEX_MDP3_PADDING_7_NAME        "Padding 7"
 #define GLOBEX_MDP3_PADDING_7_DESCRIPTION "7 bytes padding"
@@ -4393,14 +4345,6 @@ parse_globex_mdp3_padding_6(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_MDP3_PADDING_7_MASK        0x0
 #define GLOBEX_MDP3_PADDING_7_ENCODING    ENC_NA
 #define GLOBEX_MDP3_PADDING_7_SIZE        7
-
-static unsigned
-parse_globex_mdp3_padding_7(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_padding_7, tvb, offset, GLOBEX_MDP3_PADDING_7_SIZE, GLOBEX_MDP3_PADDING_7_ENCODING);
-
-    return offset + GLOBEX_MDP3_PADDING_7_SIZE;
-}
 
 /* Par Value */
 #define GLOBEX_MDP3_PAR_VALUE_NAME     "Par Value"

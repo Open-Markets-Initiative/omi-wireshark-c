@@ -1055,14 +1055,6 @@ parse_iexequities_topssnap_reject_reason_code(tvbuff_t *tvb, packet_info *pinfo 
 #define IEXEQUITIES_TOPSSNAP_RESERVED_ENCODING    ENC_NA
 #define IEXEQUITIES_TOPSSNAP_RESERVED_SIZE        1
 
-static unsigned
-parse_iexequities_topssnap_reserved(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_topssnap_reserved, tvb, offset, IEXEQUITIES_TOPSSNAP_RESERVED_SIZE, IEXEQUITIES_TOPSSNAP_RESERVED_ENCODING);
-
-    return offset + IEXEQUITIES_TOPSSNAP_RESERVED_SIZE;
-}
-
 /* Retail Liquidity Indicator */
 #define IEXEQUITIES_TOPSSNAP_RETAIL_LIQUIDITY_INDICATOR_NAME        "Retail Liquidity Indicator"
 #define IEXEQUITIES_TOPSSNAP_RETAIL_LIQUIDITY_INDICATOR_DESCRIPTION "Retail Liquidity Indicator identifier"
