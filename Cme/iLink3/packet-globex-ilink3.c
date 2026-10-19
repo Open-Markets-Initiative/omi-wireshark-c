@@ -3046,7 +3046,7 @@ parse_globex_ilink3_manual_order_indicator_optional(tvbuff_t *tvb, packet_info *
 
 /* Market Segment Id */
 #define GLOBEX_ILINK3_MARKET_SEGMENT_ID_NAME        "Market Segment Id"
-#define GLOBEX_ILINK3_MARKET_SEGMENT_ID_DESCRIPTION "Specifies the market segment (physical match engine partition) for which working orders should be cancelled. Conditionally Required if MassActionScope=Market Segment (Tag 1374=9). Will be ignored if present for any other criteria specified in MassActionScope besides Market Segment"
+#define GLOBEX_ILINK3_MARKET_SEGMENT_ID_DESCRIPTION "Specifies the market segment (physical match engine partition) for which working orders should be cancelled. Conditionally Required if MassActionScope=\"Market Segment\" (Tag 1374=9). Will be ignored if present for any other criteria specified in MassActionScope besides Market Segment"
 #define GLOBEX_ILINK3_MARKET_SEGMENT_ID_FIX         1300
 #define GLOBEX_ILINK3_MARKET_SEGMENT_ID_FILTER      "globex.ilink3.marketsegmentid"
 #define GLOBEX_ILINK3_MARKET_SEGMENT_ID_TYPE        FT_UINT8
@@ -3181,7 +3181,7 @@ parse_globex_ilink3_mass_action_scope(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 
 /* Mass Cancel Request Type */
 #define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_NAME        "Mass Cancel Request Type"
-#define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_DESCRIPTION "If present specifies the scope of the OrderMassActionRequest within the context of Session and Firm. If absent then all orders belonging to Session and Firm combination will be cancelled for specified MassActionScope"
+#define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_DESCRIPTION "If present — specifies the scope of the OrderMassActionRequest within the context of Session and Firm. If absent then all orders belonging to Session and Firm combination will be cancelled for specified MassActionScope"
 #define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_FIX         6115
 #define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_FILTER      "globex.ilink3.masscancelrequesttype"
 #define GLOBEX_ILINK3_MASS_CANCEL_REQUEST_TYPE_TYPE        FT_UINT8
@@ -3838,7 +3838,7 @@ parse_globex_ilink3_ord_status_req_id_optional(tvbuff_t *tvb, packet_info *pinfo
 
 /* Ord Status Req Type */
 #define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_NAME        "Ord Status Req Type"
-#define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_DESCRIPTION "If present specifies the scope of the OrderMassStatusRequest within the context of MassStatusRequestType (585) and Session and Firm for working orders only. Status will be returned for all orders matching the criteria specified here for Session and Firm combination"
+#define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_DESCRIPTION "If present — specifies the scope of the OrderMassStatusRequest within the context of MassStatusRequestType (585) and Session and Firm for working orders only. Status will be returned for all orders matching the criteria specified here for Session and Firm combination"
 #define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_FIX         5000
 #define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_FILTER      "globex.ilink3.ordstatusreqtype"
 #define GLOBEX_ILINK3_ORD_STATUS_REQ_TYPE_TYPE        FT_UINT8
@@ -5425,7 +5425,7 @@ parse_globex_ilink3_secret_key_secure_id_expiration(tvbuff_t *tvb, packet_info *
 
 /* Security Group */
 #define GLOBEX_ILINK3_SECURITY_GROUP_NAME        "Security Group"
-#define GLOBEX_ILINK3_SECURITY_GROUP_DESCRIPTION "Specifies the Product Group for which working orders should be cancelled. Conditionally required if MassActionScope=Product Group (Tag 1374=10). Will be ignored if present for any other criteria specified in MassActionScope besides Product Group"
+#define GLOBEX_ILINK3_SECURITY_GROUP_DESCRIPTION "Specifies the Product Group for which working orders should be cancelled. Conditionally required if MassActionScope=\"Product Group\" (Tag1374=10). Will be ignored if present for any other criteria specified in MassActionScope besides Product Group"
 #define GLOBEX_ILINK3_SECURITY_GROUP_FIX         1151
 #define GLOBEX_ILINK3_SECURITY_GROUP_FILTER      "globex.ilink3.securitygroup"
 #define GLOBEX_ILINK3_SECURITY_GROUP_TYPE        FT_STRING
@@ -5463,7 +5463,7 @@ parse_globex_ilink3_security_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 
 /* Security Id Optional */
 #define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_NAME        "Security Id Optional"
-#define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_DESCRIPTION "Conditionally required if MassActionScope=Instrument (Tag 1374=1). Will be ignored if present for any other criteria specified in MassActionScope besides Instrument"
+#define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_DESCRIPTION "Conditionally required if MassActionScope=\"Instrument\" (Tag 1374=1). Will be ignored if present for any other criteria specified in MassActionScope besides Instrument"
 #define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_FIX         48
 #define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_FILTER      "globex.ilink3.securityidoptional"
 #define GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_TYPE        FT_INT32

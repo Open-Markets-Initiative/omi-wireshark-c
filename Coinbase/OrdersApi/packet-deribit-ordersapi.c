@@ -1417,19 +1417,11 @@ parse_deribit_ordersapi_order_id_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_PADDING_3_NAME        "Padding 3"
 #define DERIBIT_ORDERSAPI_PADDING_3_DESCRIPTION "padding3"
 #define DERIBIT_ORDERSAPI_PADDING_3_FILTER      "deribit.ordersapi.padding3"
-#define DERIBIT_ORDERSAPI_PADDING_3_TYPE        FT_INT24
-#define DERIBIT_ORDERSAPI_PADDING_3_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_PADDING_3_TYPE        FT_BYTES
+#define DERIBIT_ORDERSAPI_PADDING_3_DISPLAY     BASE_NONE
 #define DERIBIT_ORDERSAPI_PADDING_3_MASK        0x0
-#define DERIBIT_ORDERSAPI_PADDING_3_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_PADDING_3_ENCODING    ENC_NA
 #define DERIBIT_ORDERSAPI_PADDING_3_SIZE        3
-
-static unsigned
-parse_deribit_ordersapi_padding_3(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_padding_3, tvb, offset, DERIBIT_ORDERSAPI_PADDING_3_SIZE, DERIBIT_ORDERSAPI_PADDING_3_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_PADDING_3_SIZE;
-}
 
 /* Post Only */
 #define DERIBIT_ORDERSAPI_POST_ONLY_NAME        "Post Only"
@@ -4134,7 +4126,7 @@ dissect_deribit_ordersapi_order_placed(tvbuff_t *tvb, packet_info *pinfo, proto_
     offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_padding_3(tvb, pinfo, tree, offset);
+    offset += DERIBIT_ORDERSAPI_PADDING_3_SIZE;
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_order_placed_message_fills_groups(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_order_placed_message_legs_groups(tvb, pinfo, tree, offset);

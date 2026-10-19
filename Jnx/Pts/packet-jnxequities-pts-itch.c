@@ -505,7 +505,7 @@ parse_jnxequities_pts_itch_buy_sell_indicator(tvbuff_t *tvb, packet_info *pinfo 
 #define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_LOGOUT_REQUEST_PACKET   'O'
 
 /* Client Packet Type */
-#define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_NAME        "Client Packet Type"
+#define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_NAME        "Packet Type"
 #define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the client"
 #define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_FILTER      "jnxequities.pts.itch.clientpackettype"
 #define JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_TYPE        FT_CHAR
@@ -1223,7 +1223,7 @@ parse_jnxequities_pts_itch_sequenced_message_type(tvbuff_t *tvb, packet_info *pi
 #define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_END_OF_SESSION_PACKET   'Z'
 
 /* Server Packet Type */
-#define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_NAME        "Server Packet Type"
+#define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_NAME        "Packet Type"
 #define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the server"
 #define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_FILTER      "jnxequities.pts.itch.serverpackettype"
 #define JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_TYPE        FT_CHAR

@@ -1026,7 +1026,7 @@ parse_nsmequities_orders_clordid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_LOGOUT_REQUEST_PACKET   'O'
 
 /* Client Packet Type */
-#define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_NAME        "Client Packet Type"
+#define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_NAME        "Packet Type"
 #define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the client"
 #define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_FILTER      "nsmequities.orders.clientpackettype"
 #define NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_TYPE        FT_CHAR
@@ -3013,7 +3013,7 @@ parse_nsmequities_orders_sequenced_message_type(tvbuff_t *tvb, packet_info *pinf
 #define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_END_OF_SESSION_PACKET   'Z'
 
 /* Server Packet Type */
-#define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_NAME        "Server Packet Type"
+#define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_NAME        "Packet Type"
 #define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the server"
 #define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_FILTER      "nsmequities.orders.serverpackettype"
 #define NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_TYPE        FT_CHAR
@@ -3246,7 +3246,7 @@ parse_nsmequities_orders_timestamp(tvbuff_t *tvb, packet_info *pinfo, proto_tree
 /* Timestamp V42 */
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V42_NAME        "Timestamp"
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V42_DESCRIPTION "Timestamp – reflected as the number of nanoseconds past midnight."
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_FILTER      "nsmequities.orders.timestamp"
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_FILTER      "nsmequities.orders.timestampv42"
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V42_TYPE        FT_UINT64
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V42_DISPLAY     BASE_DEC
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V42_MASK        0x0

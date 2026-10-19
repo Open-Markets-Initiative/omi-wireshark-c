@@ -1107,7 +1107,7 @@ parse_nsmequities_totalview_canceled_shares_v10(tvbuff_t *tvb, packet_info *pinf
 #define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_LOGOUT_REQUEST_PACKET   'O'
 
 /* Client Packet Type */
-#define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_NAME        "Client Packet Type"
+#define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_NAME        "Packet Type"
 #define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the client"
 #define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_FILTER      "nsmequities.totalview.clientpackettype"
 #define NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_TYPE        FT_CHAR
@@ -1172,7 +1172,7 @@ parse_nsmequities_totalview_cross_price(tvbuff_t *tvb, packet_info *pinfo _U_, p
 /* Cross Price V32 */
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_NAME        "Cross Price"
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_DESCRIPTION "The price at which the cross occurred. Refer to Data Types for field processing notes."
-#define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_FILTER      "nsmequities.totalview.crossprice"
+#define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_FILTER      "nsmequities.totalview.crosspricev32"
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_CROSS_PRICE_V32_MASK        0x0
@@ -1258,7 +1258,7 @@ parse_nsmequities_totalview_current_reference_price(tvbuff_t *tvb, packet_info *
 /* Current Reference Price V32 */
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_NAME        "Current Reference Price"
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_DESCRIPTION "The price at which the NOII shares are being calculated."
-#define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_FILTER      "nsmequities.totalview.currentreferenceprice"
+#define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_FILTER      "nsmequities.totalview.currentreferencepricev32"
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_CURRENT_REFERENCE_PRICE_V32_MASK        0x0
@@ -1468,7 +1468,7 @@ parse_nsmequities_totalview_execution_price(tvbuff_t *tvb, packet_info *pinfo _U
 /* Execution Price V32 */
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_NAME        "Execution Price"
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_DESCRIPTION "The price at which the order execution occurred. Refer to Data Types for field processing notes."
-#define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_FILTER      "nsmequities.totalview.executionprice"
+#define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_FILTER      "nsmequities.totalview.executionpricev32"
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_EXECUTION_PRICE_V32_MASK        0x0
@@ -1508,7 +1508,7 @@ parse_nsmequities_totalview_far_price(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 /* Far Price V32 */
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_NAME        "Far Price"
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_DESCRIPTION "A hypothetical auction-clearing price for cross orders only."
-#define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_FILTER      "nsmequities.totalview.farprice"
+#define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_FILTER      "nsmequities.totalview.farpricev32"
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_FAR_PRICE_V32_MASK        0x0
@@ -2615,7 +2615,7 @@ parse_nsmequities_totalview_near_price(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 /* Near Price V32 */
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_NAME        "Near Price"
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_DESCRIPTION "A hypothetical auction-clearing price for cross orders as well as continuous orders."
-#define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_FILTER      "nsmequities.totalview.nearprice"
+#define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_FILTER      "nsmequities.totalview.nearpricev32"
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_NEAR_PRICE_V32_MASK        0x0
@@ -2939,7 +2939,7 @@ parse_nsmequities_totalview_price(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 /* Price V32 */
 #define NSMEQUITIES_TOTALVIEW_PRICE_V32_NAME        "Price"
 #define NSMEQUITIES_TOTALVIEW_PRICE_V32_DESCRIPTION "The display price of the new order. Refer to Data Types for field processing notes."
-#define NSMEQUITIES_TOTALVIEW_PRICE_V32_FILTER      "nsmequities.totalview.price"
+#define NSMEQUITIES_TOTALVIEW_PRICE_V32_FILTER      "nsmequities.totalview.pricev32"
 #define NSMEQUITIES_TOTALVIEW_PRICE_V32_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_PRICE_V32_DISPLAY     BASE_CUSTOM
 #define NSMEQUITIES_TOTALVIEW_PRICE_V32_MASK        0x0
@@ -2961,7 +2961,7 @@ parse_nsmequities_totalview_price_v32(tvbuff_t *tvb, packet_info *pinfo, proto_t
 /* Price V10 */
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_NAME        "Price"
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_DESCRIPTION "The limit price of the order. 9 whole number places, a decimal point, and 10 decimal digits."
-#define NSMEQUITIES_TOTALVIEW_PRICE_V10_FILTER      "nsmequities.totalview.price"
+#define NSMEQUITIES_TOTALVIEW_PRICE_V10_FILTER      "nsmequities.totalview.pricev10"
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_TYPE        FT_DOUBLE
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_DISPLAY     BASE_NONE
 #define NSMEQUITIES_TOTALVIEW_PRICE_V10_MASK        0x0
@@ -3656,7 +3656,7 @@ parse_nsmequities_totalview_sequenced_message_type(tvbuff_t *tvb, packet_info *p
 #define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_END_OF_SESSION_PACKET   'Z'
 
 /* Server Packet Type */
-#define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_NAME        "Server Packet Type"
+#define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_NAME        "Packet Type"
 #define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DESCRIPTION "Code identifying this packet type sent by the server"
 #define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_FILTER      "nsmequities.totalview.serverpackettype"
 #define NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_TYPE        FT_CHAR
