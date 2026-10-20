@@ -159,7 +159,6 @@ static int hf_globex_ilink3_last_rpt_requested;
 static int hf_globex_ilink3_last_uuid;
 static int hf_globex_ilink3_leaves;
 static int hf_globex_ilink3_leaves_qty;
-static int hf_globex_ilink3_leaves_qty_optional;
 static int hf_globex_ilink3_leg_exec_id;
 static int hf_globex_ilink3_leg_exec_ref_id;
 static int hf_globex_ilink3_leg_last_px;
@@ -2586,25 +2585,6 @@ parse_globex_ilink3_leaves_qty(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
     proto_tree_add_item(tree, hf_globex_ilink3_leaves_qty, tvb, offset, GLOBEX_ILINK3_LEAVES_QTY_SIZE, GLOBEX_ILINK3_LEAVES_QTY_ENCODING);
 
     return offset + GLOBEX_ILINK3_LEAVES_QTY_SIZE;
-}
-
-/* Leaves Qty Optional */
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_NAME        "Leaves Qty Optional"
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_DESCRIPTION "Amount of shares open for further execution, or unexecuted. Will not be rolled back in case of trade cancel. Will not be returned in trade cancels and leg fills."
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_FIX         151
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_FILTER      "globex.ilink3.leavesqtyoptional"
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_TYPE        FT_UINT32
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_DISPLAY     BASE_CUSTOM
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_MASK        0x0
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_SIZE        4
-
-static unsigned
-parse_globex_ilink3_leaves_qty_optional(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_ilink3_leaves_qty_optional, tvb, offset, GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_SIZE, GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_ENCODING);
-
-    return offset + GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_SIZE;
 }
 
 /* Leg Exec Id */
@@ -6922,8 +6902,6 @@ static unsigned dissect_globex_ilink3_quote_cancel_ack_entries_groups(tvbuff_t *
 static unsigned dissect_globex_ilink3_quote_cancel_ack_entries_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_globex_ilink3_quote_cancel_ack_sets_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_quote_cancel_ack_sets_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
-static unsigned dissect_globex_ilink3_execution_report_pending_cancel(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_execution_report_pending_replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_mass_quote_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_mass_quote_response_entries_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_mass_quote_response_entries_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
@@ -6976,8 +6954,6 @@ static unsigned dissect_globex_ilink3_execution_report_trade_addendum_spread_leg
 static unsigned dissect_globex_ilink3_security_definition_response_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_mass_action_report_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_quote_cancel_ack_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_execution_report_pending_cancel_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_execution_report_pending_replace_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_new_order_single_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_cancel_replace_request_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_cancel_request_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -7005,8 +6981,6 @@ static unsigned dissect_globex_ilink3_execution_report_trade_addendum_spread_leg
 static unsigned dissect_globex_ilink3_security_definition_response_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_mass_action_report_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_quote_cancel_ack_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_execution_report_pending_cancel_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_execution_report_pending_replace_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_new_order_single_v85(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_cancel_replace_request_v85(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_cancel_request_v85(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -10487,84 +10461,6 @@ dissect_globex_ilink3_quote_cancel_ack_sets_group(tvbuff_t *tvb, packet_info *pi
     return offset;
 }
 
-/* Execution Report Pending Cancel */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_cancel(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves_qty_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_reservation_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_priority_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_orig_order_user(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cancel_text(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Execution Report Pending Replace */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_short_sale_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_priority_indicator(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
 /* Mass Quote Response */
 static unsigned
 dissect_globex_ilink3_mass_quote_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -12342,79 +12238,6 @@ dissect_globex_ilink3_quote_cancel_ack_v87(tvbuff_t *tvb, packet_info *pinfo, pr
     return offset;
 }
 
-/* Execution Report Pending Cancel V87 */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_cancel_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves_qty_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Execution Report Pending Replace V87 */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_replace_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_short_sale_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
 /* New Order Single V86 */
 static unsigned
 dissect_globex_ilink3_new_order_single_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -13319,79 +13142,6 @@ dissect_globex_ilink3_quote_cancel_ack_v86(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
     offset = dissect_globex_ilink3_quote_cancel_ack_entries_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_ilink3_quote_cancel_ack_sets_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Execution Report Pending Cancel V86 */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_cancel_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves_qty_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Execution Report Pending Replace V86 */
-static unsigned
-dissect_globex_ilink3_execution_report_pending_replace_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_uuid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_cum_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_leaves(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_short_sale_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_delay_to_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -18099,8 +17849,6 @@ static const value_string globex_ilink3_server_packet_messages[] = {
     { GLOBEX_ILINK3_TEMPLATE_ID_SECURITY_DEFINITION_RESPONSE, "Security Definition Response" },
     { GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_562, "Order Mass Action Report" },
     { GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563, "Quote Cancel Ack" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL, "Execution Report Pending Cancel" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE, "Execution Report Pending Replace" },
     { GLOBEX_ILINK3_TEMPLATE_ID_MASS_QUOTE_RESPONSE, "Mass Quote Response" },
     { 0, NULL }
 };
@@ -18174,10 +17922,6 @@ dissect_globex_ilink3_server_packet_server_payload(tvbuff_t *tvb, packet_info *p
         return dissect_globex_ilink3_order_mass_action_report(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563:
         return dissect_globex_ilink3_quote_cancel_ack(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL:
-        return dissect_globex_ilink3_execution_report_pending_cancel(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE:
-        return dissect_globex_ilink3_execution_report_pending_replace(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
         return dissect_globex_ilink3_mass_quote_response(tvb, pinfo, tree, offset);
     }
@@ -18217,8 +17961,6 @@ static const value_string globex_ilink3_server_packet_messages_v88[] = {
     { GLOBEX_ILINK3_TEMPLATE_ID_SECURITY_DEFINITION_RESPONSE, "Security Definition Response" },
     { GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_562, "Order Mass Action Report" },
     { GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563, "Quote Cancel Ack" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL, "Execution Report Pending Cancel" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE, "Execution Report Pending Replace" },
     { 0, NULL }
 };
 
@@ -18291,10 +18033,6 @@ dissect_globex_ilink3_server_packet_server_payload_v88(tvbuff_t *tvb, packet_inf
         return dissect_globex_ilink3_order_mass_action_report(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563:
         return dissect_globex_ilink3_quote_cancel_ack_v88(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL:
-        return dissect_globex_ilink3_execution_report_pending_cancel(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE:
-        return dissect_globex_ilink3_execution_report_pending_replace(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -18332,8 +18070,6 @@ static const value_string globex_ilink3_server_packet_messages_v87[] = {
     { GLOBEX_ILINK3_TEMPLATE_ID_SECURITY_DEFINITION_RESPONSE, "Security Definition Response" },
     { GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_562, "Order Mass Action Report" },
     { GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563, "Quote Cancel Ack" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL, "Execution Report Pending Cancel" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE, "Execution Report Pending Replace" },
     { 0, NULL }
 };
 
@@ -18406,10 +18142,6 @@ dissect_globex_ilink3_server_packet_server_payload_v87(tvbuff_t *tvb, packet_inf
         return dissect_globex_ilink3_order_mass_action_report_v87(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563:
         return dissect_globex_ilink3_quote_cancel_ack_v87(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL:
-        return dissect_globex_ilink3_execution_report_pending_cancel_v87(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE:
-        return dissect_globex_ilink3_execution_report_pending_replace_v87(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -18447,8 +18179,6 @@ static const value_string globex_ilink3_server_packet_messages_v86[] = {
     { GLOBEX_ILINK3_TEMPLATE_ID_SECURITY_DEFINITION_RESPONSE, "Security Definition Response" },
     { GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_562, "Order Mass Action Report" },
     { GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563, "Quote Cancel Ack" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL, "Execution Report Pending Cancel" },
-    { GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE, "Execution Report Pending Replace" },
     { 0, NULL }
 };
 
@@ -18521,10 +18251,6 @@ dissect_globex_ilink3_server_packet_server_payload_v86(tvbuff_t *tvb, packet_inf
         return dissect_globex_ilink3_order_mass_action_report_v86(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563:
         return dissect_globex_ilink3_quote_cancel_ack_v86(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL:
-        return dissect_globex_ilink3_execution_report_pending_cancel_v86(tvb, pinfo, tree, offset);
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE:
-        return dissect_globex_ilink3_execution_report_pending_replace_v86(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -19131,10 +18857,6 @@ globex_ilink3_server_packet_show(uint32_t template_id)
         return globex_ilink3_show_application_messages;
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563:
         return globex_ilink3_show_application_messages;
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL:
-        return globex_ilink3_show_application_messages;
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE:
-        return globex_ilink3_show_application_messages;
     case GLOBEX_ILINK3_TEMPLATE_ID_MASS_QUOTE_RESPONSE:
         return globex_ilink3_show_application_messages;
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_547:
@@ -19567,8 +19289,6 @@ globex_ilink3_server_packet_heur_fingerprint(tvbuff_t *tvb)
     case GLOBEX_ILINK3_TEMPLATE_ID_SECURITY_DEFINITION_RESPONSE: /* Security Definition Response */
     case GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_562: /* Order Mass Action Report */
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_563: /* Quote Cancel Ack */
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_CANCEL: /* Execution Report Pending Cancel */
-    case GLOBEX_ILINK3_TEMPLATE_ID_EXECUTION_REPORT_PENDING_REPLACE: /* Execution Report Pending Replace */
     case GLOBEX_ILINK3_TEMPLATE_ID_MASS_QUOTE_RESPONSE: /* Mass Quote Response */
     case GLOBEX_ILINK3_TEMPLATE_ID_QUOTE_CANCEL_ACK_547: /* Quote Cancel Ack */
     case GLOBEX_ILINK3_TEMPLATE_ID_ORDER_MASS_ACTION_REPORT_558: /* Order Mass Action Report */
@@ -20360,15 +20080,6 @@ proto_register_globex_ilink3(void)
               NULL,
               GLOBEX_ILINK3_LEAVES_QTY_MASK,
               GLOBEX_ILINK3_LEAVES_QTY_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_ilink3_leaves_qty_optional,
-            { GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_NAME,
-              GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_FILTER,
-              GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_TYPE,
-              GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
-              GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_MASK,
-              GLOBEX_ILINK3_LEAVES_QTY_OPTIONAL_DESCRIPTION,
               HFILL } },
         { &hf_globex_ilink3_leg_exec_id,
             { GLOBEX_ILINK3_LEG_EXEC_ID_NAME,

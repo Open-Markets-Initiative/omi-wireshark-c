@@ -207,6 +207,7 @@ static int hf_nsmequities_totalview_shares_numeric_9;
 static int hf_nsmequities_totalview_short_sale_threshold_indicator;
 static int hf_nsmequities_totalview_side;
 static int hf_nsmequities_totalview_soup_lf;
+static int hf_nsmequities_totalview_soup_lf_v10;
 static int hf_nsmequities_totalview_stock;
 static int hf_nsmequities_totalview_stock_v40;
 static int hf_nsmequities_totalview_stock_alpha_6;
@@ -3890,6 +3891,24 @@ parse_nsmequities_totalview_soup_lf(tvbuff_t *tvb, packet_info *pinfo _U_, proto
     proto_tree_add_item(tree, hf_nsmequities_totalview_soup_lf, tvb, offset, NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE, NSMEQUITIES_TOTALVIEW_SOUP_LF_ENCODING);
 
     return offset + NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE;
+}
+
+/* Soup Lf V10 */
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_NAME        "Soup Lf"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DESCRIPTION "Terminating line feed character"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_FILTER      "nsmequities.totalview.souplf"
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_TYPE        FT_UINT8
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_MASK        0x0
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_ENCODING    ENC_LITTLE_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_SIZE        1
+
+static unsigned
+parse_nsmequities_totalview_soup_lf_v10(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_nsmequities_totalview_soup_lf_v10, tvb, offset, NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_SIZE, NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_ENCODING);
+
+    return offset + NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_SIZE;
 }
 
 /* Stock */
@@ -11518,6 +11537,15 @@ proto_register_nsmequities_totalview(void)
               NULL,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_MASK,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_DESCRIPTION,
+              HFILL } },
+        { &hf_nsmequities_totalview_soup_lf_v10,
+            { NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_NAME,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_FILTER,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_TYPE,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DISPLAY,
+              NULL,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_MASK,
+              NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_totalview_stock,
             { NSMEQUITIES_TOTALVIEW_STOCK_NAME,
