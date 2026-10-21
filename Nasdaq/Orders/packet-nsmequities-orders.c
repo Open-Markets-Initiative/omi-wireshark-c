@@ -1,14 +1,14 @@
 /* packet-nsmequities-orders.c
  * Routines for Nasdaq Ouch Orders dissection
  *
- * Aggregated protocol versions: 5.0, 4.2
+ * Aggregated protocol versions: 5.0, 4.2.2018
  * Version selection: automatic by send time, or forced by preference
  *
  * Generated from the Omi binary model library
  *
  * Models:
  *   Nasdaq.NsmEquities.Orders.Ouch.v5.0
- *   Nasdaq.NsmEquities.Orders.Ouch.v4.2
+ *   Nasdaq.NsmEquities.Orders.Ouch.v4.2.2018
  *
  * Authors: Omi Developers
  *
@@ -90,7 +90,7 @@ static int hf_nsmequities_orders_clordid;
 static int hf_nsmequities_orders_client_packet_type;
 static int hf_nsmequities_orders_cross_type;
 static int hf_nsmequities_orders_customer_type;
-static int hf_nsmequities_orders_customer_type_v42;
+static int hf_nsmequities_orders_customer_type_v422018;
 static int hf_nsmequities_orders_debug_text;
 static int hf_nsmequities_orders_decrement_shares;
 static int hf_nsmequities_orders_disable_order_entry_request_optional_field;
@@ -107,7 +107,7 @@ static int hf_nsmequities_orders_enter_order_optional_field;
 static int hf_nsmequities_orders_event_code;
 static int hf_nsmequities_orders_executed_shares;
 static int hf_nsmequities_orders_execution_price;
-static int hf_nsmequities_orders_execution_price_v42;
+static int hf_nsmequities_orders_execution_price_v422018;
 static int hf_nsmequities_orders_existing_order_token;
 static int hf_nsmequities_orders_expire_time;
 static int hf_nsmequities_orders_firm;
@@ -143,7 +143,7 @@ static int hf_nsmequities_orders_peg_offset;
 static int hf_nsmequities_orders_post_only;
 static int hf_nsmequities_orders_previous_order_token;
 static int hf_nsmequities_orders_price;
-static int hf_nsmequities_orders_price_v42;
+static int hf_nsmequities_orders_price_v422018;
 static int hf_nsmequities_orders_price_type;
 static int hf_nsmequities_orders_quantity;
 static int hf_nsmequities_orders_quantity_prevented_from_trading;
@@ -154,11 +154,10 @@ static int hf_nsmequities_orders_reference_price_type;
 static int hf_nsmequities_orders_reject_reason_code;
 static int hf_nsmequities_orders_rejected_order_optional_field;
 static int hf_nsmequities_orders_rejected_order_reason;
-static int hf_nsmequities_orders_rejected_order_reason_v42;
+static int hf_nsmequities_orders_rejected_order_reason_v422018;
 static int hf_nsmequities_orders_replace_order_optional_field;
 static int hf_nsmequities_orders_replaced_message_optional_field;
-static int hf_nsmequities_orders_replacement_order_token_alphanumeric_14;
-static int hf_nsmequities_orders_replacement_order_token_token_14;
+static int hf_nsmequities_orders_replacement_order_token;
 static int hf_nsmequities_orders_requested_sequence_number;
 static int hf_nsmequities_orders_requested_session;
 static int hf_nsmequities_orders_route;
@@ -171,9 +170,9 @@ static int hf_nsmequities_orders_side;
 static int hf_nsmequities_orders_stock;
 static int hf_nsmequities_orders_symbol;
 static int hf_nsmequities_orders_time_in_force;
-static int hf_nsmequities_orders_time_in_force_v42;
+static int hf_nsmequities_orders_time_in_force_v422018;
 static int hf_nsmequities_orders_timestamp;
-static int hf_nsmequities_orders_timestamp_v42;
+static int hf_nsmequities_orders_timestamp_v422018;
 static int hf_nsmequities_orders_trade_now;
 static int hf_nsmequities_orders_unsequenced_message_type;
 static int hf_nsmequities_orders_user_ref_idx;
@@ -261,12 +260,12 @@ static expert_field ei_nsmequities_orders_length;
 
 #define NSMEQUITIES_ORDERS_VERSION_AUTOMATIC 0
 #define NSMEQUITIES_ORDERS_VERSION_5_0     1
-#define NSMEQUITIES_ORDERS_VERSION_4_2     2
+#define NSMEQUITIES_ORDERS_VERSION_4_2_2018     2
 
 static const enum_val_t nsmequities_orders_version_vals[] = {
     { "automatic", "Automatic (by send time)", NSMEQUITIES_ORDERS_VERSION_AUTOMATIC },
     { "v5.0", "5.0", NSMEQUITIES_ORDERS_VERSION_5_0 },
-    { "v4.2", "4.2", NSMEQUITIES_ORDERS_VERSION_4_2 },
+    { "v4.2.2018", "4.2.2018", NSMEQUITIES_ORDERS_VERSION_4_2_2018 },
     { NULL, NULL, 0 }
 };
 
@@ -277,8 +276,8 @@ nsmequities_orders_version_name(int version)
     switch (version) {
     case NSMEQUITIES_ORDERS_VERSION_5_0:
         return "5.0";
-    case NSMEQUITIES_ORDERS_VERSION_4_2:
-        return "4.2";
+    case NSMEQUITIES_ORDERS_VERSION_4_2_2018:
+        return "4.2.2018";
     }
 
     return "";
@@ -378,7 +377,7 @@ nsmequities_orders_version(uint64_t seconds)
         return NSMEQUITIES_ORDERS_VERSION_5_0;
     }
 
-    return NSMEQUITIES_ORDERS_VERSION_4_2;
+    return NSMEQUITIES_ORDERS_VERSION_4_2_2018;
 }
 
 /* Label an offset from midnight as the clock reads it */
@@ -809,14 +808,13 @@ parse_nsmequities_orders_broken_trade_reason(tvbuff_t *tvb, packet_info *pinfo _
 }
 
 /* Buy Sell Indicator */
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_NAME        "Buy Sell Indicator"
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_DESCRIPTION "Buy/Sell Indicator"
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_FILTER      "nsmequities.orders.buysellindicator"
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_TYPE        FT_CHAR
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_DISPLAY     BASE_HEX
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_MASK        0x0
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_ENCODING    ENC_ASCII
-#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_SIZE        1
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_NAME     "Buy Sell Indicator"
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_FILTER   "nsmequities.orders.buysellindicator"
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_TYPE     FT_CHAR
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_DISPLAY  BASE_HEX
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_MASK     0x0
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_ENCODING ENC_ASCII
+#define NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_SIZE     1
 
 static const value_string nsmequities_orders_buy_sell_indicator_vals[] = {
     { 'B', "Buy" },
@@ -1107,17 +1105,17 @@ parse_nsmequities_orders_customer_type(tvbuff_t *tvb, packet_info *pinfo _U_, pr
     return offset + NSMEQUITIES_ORDERS_CUSTOMER_TYPE_SIZE;
 }
 
-/* Customer Type V42 */
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_NAME        "Customer Type"
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_DESCRIPTION "Indicates if the order is a retail designated order (optional field)"
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_FILTER      "nsmequities.orders.customertype"
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_TYPE        FT_CHAR
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_DISPLAY     BASE_HEX
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_ENCODING    ENC_ASCII
-#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_SIZE        1
+/* Customer Type V422018 */
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_NAME        "Customer Type"
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_DESCRIPTION "Indicates if the order is a retail designated order (optional field)"
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_FILTER      "nsmequities.orders.customertype"
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_TYPE        FT_CHAR
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_DISPLAY     BASE_HEX
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_ENCODING    ENC_ASCII
+#define NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_SIZE        1
 
-static const value_string nsmequities_orders_customer_type_v42_vals[] = {
+static const value_string nsmequities_orders_customer_type_v422018_vals[] = {
     { 'R', "Retail Designated Order" },
     { 'N', "Not Retail Designated" },
     { ' ', "Default" },
@@ -1125,11 +1123,11 @@ static const value_string nsmequities_orders_customer_type_v42_vals[] = {
 };
 
 static unsigned
-parse_nsmequities_orders_customer_type_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_customer_type_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_customer_type_v42, tvb, offset, NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_SIZE, NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_customer_type_v422018, tvb, offset, NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_SIZE, NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_SIZE;
 }
 
 /* Debug Text */
@@ -1289,13 +1287,13 @@ static const value_string nsmequities_orders_display_vals[] = {
     { 'Z', "Conformant" },
     { 'P', "Post Only" },
     { 'I', "Imbalance Only" },
-    { 'M', "Mid Point" },
-    { 'W', "Mid Point" },
+    { 'M', "Mid Point Peg" },
+    { 'W', "Mid Point Peg Post Only" },
     { 'L', "Post Only And Attributable" },
-    { 'O', "Retail Order" },
-    { 'T', "Retail Order" },
+    { 'O', "Retail Order Type 1" },
+    { 'T', "Retail Order Type 2" },
     { 'Q', "Retail Price" },
-    { 'm', "Mid Point" },
+    { 'm', "Mid Point Peg And Mid Point Trade Now" },
     { 'n', "Non Display And Mid Point" },
     { 0, NULL }
 };
@@ -1519,22 +1517,22 @@ parse_nsmequities_orders_execution_price(tvbuff_t *tvb, packet_info *pinfo _U_, 
     return offset + NSMEQUITIES_ORDERS_EXECUTION_PRICE_SIZE;
 }
 
-/* Execution Price V42 */
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_NAME        "Execution Price"
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_DESCRIPTION "Price at which the trade would have occurred"
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_FILTER      "nsmequities.orders.executionprice"
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_TYPE        FT_UINT32
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_DISPLAY     BASE_CUSTOM
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_SIZE        4
+/* Execution Price V422018 */
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_NAME        "Execution Price"
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_DESCRIPTION "Price at which the trade would have occurred"
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_FILTER      "nsmequities.orders.executionprice"
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_TYPE        FT_UINT32
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_DISPLAY     BASE_CUSTOM
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_SIZE        4
 
 static unsigned
-parse_nsmequities_orders_execution_price_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_execution_price_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_execution_price_v42, tvb, offset, NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_SIZE, NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_execution_price_v422018, tvb, offset, NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_SIZE, NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_SIZE;
 }
 
 /* Existing Order Token */
@@ -1725,12 +1723,12 @@ static const value_string nsmequities_orders_liquidity_flag_vals[] = {
     { '3', "Removed In The Premarket" },
     { '5', "Displayed Liquidityadding Order Improves The Nbbo In The Premarket" },
     { '9', "Nondisplayed Adding Liquidity In The Premarket" },
-    { 'W', "Added" },
-    { 'd', "Retail Designated" },
-    { 'f', "Retail Designated" },
-    { '4', "Added" },
-    { '6', "Removed" },
-    { 'g', "Added" },
+    { 'W', "Added Post Only" },
+    { 'd', "Retail Designated Removed Liquidity" },
+    { 'f', "Retail Designated Added Non Displayed Liquidity" },
+    { '4', "Added Displayed In Group A" },
+    { '6', "Removed In Group A" },
+    { 'g', "Added Non Displayed Mid Point In Group A" },
     { 0, NULL }
 };
 
@@ -2371,22 +2369,22 @@ parse_nsmequities_orders_price(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
     return offset + NSMEQUITIES_ORDERS_PRICE_SIZE;
 }
 
-/* Price V42 */
-#define NSMEQUITIES_ORDERS_PRICE_V42_NAME        "Price"
-#define NSMEQUITIES_ORDERS_PRICE_V42_DESCRIPTION "The price of the order. Please refer to the section in Data Types for more clarification."
-#define NSMEQUITIES_ORDERS_PRICE_V42_FILTER      "nsmequities.orders.price"
-#define NSMEQUITIES_ORDERS_PRICE_V42_TYPE        FT_UINT32
-#define NSMEQUITIES_ORDERS_PRICE_V42_DISPLAY     BASE_CUSTOM
-#define NSMEQUITIES_ORDERS_PRICE_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_PRICE_V42_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_ORDERS_PRICE_V42_SIZE        4
+/* Price V422018 */
+#define NSMEQUITIES_ORDERS_PRICE_V422018_NAME        "Price"
+#define NSMEQUITIES_ORDERS_PRICE_V422018_DESCRIPTION "The price of the order. Please refer to the section in Data Types for more clarification."
+#define NSMEQUITIES_ORDERS_PRICE_V422018_FILTER      "nsmequities.orders.price"
+#define NSMEQUITIES_ORDERS_PRICE_V422018_TYPE        FT_UINT32
+#define NSMEQUITIES_ORDERS_PRICE_V422018_DISPLAY     BASE_CUSTOM
+#define NSMEQUITIES_ORDERS_PRICE_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_PRICE_V422018_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_ORDERS_PRICE_V422018_SIZE        4
 
 static unsigned
-parse_nsmequities_orders_price_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_price_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_price_v42, tvb, offset, NSMEQUITIES_ORDERS_PRICE_V42_SIZE, NSMEQUITIES_ORDERS_PRICE_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_price_v422018, tvb, offset, NSMEQUITIES_ORDERS_PRICE_V422018_SIZE, NSMEQUITIES_ORDERS_PRICE_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_PRICE_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_PRICE_V422018_SIZE;
 }
 
 /* Price Type */
@@ -2481,6 +2479,11 @@ parse_nsmequities_orders_random_reserves(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define NSMEQUITIES_ORDERS_REASON_ENCODING    ENC_ASCII
 #define NSMEQUITIES_ORDERS_REASON_SIZE        1
 
+static const value_string nsmequities_orders_reason_vals[] = {
+    { 'N', "Adjusted To Nav" },
+    { 0, NULL }
+};
+
 static unsigned
 parse_nsmequities_orders_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
@@ -2516,6 +2519,11 @@ parse_nsmequities_orders_reference_price(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_MASK        0x0
 #define NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_ENCODING    ENC_ASCII
 #define NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_SIZE        1
+
+static const value_string nsmequities_orders_reference_price_type_vals[] = {
+    { 'I', "Intraday Indicative Value" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_nsmequities_orders_reference_price_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -2638,6 +2646,36 @@ static const value_string nsmequities_orders_rejected_order_reason_vals[] = {
     { 0x0032, "Reg Sho State Not Available" },
     { 0x0033, "Risk Ipo Market Buy Not Allowed" },
     { 0x0040, "Invalid Aiq" },
+    { 'T', "Test Mode" },
+    { 'H', "Halted" },
+    { 'Z', "Shares Exceeds Configured Safety Threshold" },
+    { 'S', "Invalid Stock" },
+    { 'D', "Invalid Display Type" },
+    { 'C', "Nasdaq Is Closed" },
+    { 'L', "Requested Firm Not Authorized For Requested Clearing Type On This Account" },
+    { 'M', "Outside Of Permitted Times" },
+    { 'R', "This Order Is Not Allowed In This Type Of Cross" },
+    { 'X', "Invalid Price" },
+    { 'N', "Invalid Minimum" },
+    { 'O', "Other" },
+    { 'W', "Invalid Midpoint" },
+    { 'o', "There Is No Reference Price" },
+    { 'q', "Midpoint Peg Orders Are Not Accepted" },
+    { 'u', "Loc Order Priced More Aggressively" },
+    { 'a', "Reject" },
+    { 'b', "Easy To Borrow Etb" },
+    { 'c', "Restricted" },
+    { 'd', "Iso" },
+    { 'e', "Odd" },
+    { 'f', "Mid Point" },
+    { 'g', "Pre Market" },
+    { 'h', "Post Market" },
+    { 'i', "Short Sale" },
+    { 'j', "On Open" },
+    { 'k', "On Close" },
+    { 'l', "Two Sided" },
+    { 'm', "Exceeded Shares Limit" },
+    { 'n', "Exceeded Dollar Value Limit" },
     { 0, NULL }
 };
 
@@ -2649,17 +2687,17 @@ parse_nsmequities_orders_rejected_order_reason(tvbuff_t *tvb, packet_info *pinfo
     return offset + NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_SIZE;
 }
 
-/* Rejected Order Reason V42 */
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_NAME        "Rejected Order Reason"
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_DESCRIPTION "The reason the order was rejected. See currently supported Rejected Order Reasons below. Clients should anticipate additions to this list and thus support all capital letters of the English alphabet."
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_FILTER      "nsmequities.orders.rejectedorderreason"
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_TYPE        FT_CHAR
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_DISPLAY     BASE_HEX
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_ENCODING    ENC_ASCII
-#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_SIZE        1
+/* Rejected Order Reason V422018 */
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_NAME        "Rejected Order Reason"
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_DESCRIPTION "The reason the order was rejected. See currently supported Rejected Order Reasons below. Clients should anticipate additions to this list and thus support all capital letters of the English alphabet."
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_FILTER      "nsmequities.orders.rejectedorderreason"
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_TYPE        FT_CHAR
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_DISPLAY     BASE_HEX
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_ENCODING    ENC_ASCII
+#define NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_SIZE        1
 
-static const value_string nsmequities_orders_rejected_order_reason_v42_vals[] = {
+static const value_string nsmequities_orders_rejected_order_reason_v422018_vals[] = {
     { 0x0001, "Quote Unavailable" },
     { 0x0002, "Destination Closed" },
     { 0x0003, "Invalid Display" },
@@ -2712,15 +2750,45 @@ static const value_string nsmequities_orders_rejected_order_reason_v42_vals[] = 
     { 0x0032, "Reg Sho State Not Available" },
     { 0x0033, "Risk Ipo Market Buy Not Allowed" },
     { 0x0040, "Invalid Aiq" },
+    { 'T', "Test Mode" },
+    { 'H', "Halted" },
+    { 'Z', "Shares Exceeds Configured Safety Threshold" },
+    { 'S', "Invalid Stock" },
+    { 'D', "Invalid Display Type" },
+    { 'C', "Nasdaq Is Closed" },
+    { 'L', "Requested Firm Not Authorized For Requested Clearing Type On This Account" },
+    { 'M', "Outside Of Permitted Times" },
+    { 'R', "This Order Is Not Allowed In This Type Of Cross" },
+    { 'X', "Invalid Price" },
+    { 'N', "Invalid Minimum" },
+    { 'O', "Other" },
+    { 'W', "Invalid Midpoint" },
+    { 'o', "There Is No Reference Price" },
+    { 'q', "Midpoint Peg Orders Are Not Accepted" },
+    { 'u', "Loc Order Priced More Aggressively" },
+    { 'a', "Reject" },
+    { 'b', "Easy To Borrow Etb" },
+    { 'c', "Restricted" },
+    { 'd', "Iso" },
+    { 'e', "Odd" },
+    { 'f', "Mid Point" },
+    { 'g', "Pre Market" },
+    { 'h', "Post Market" },
+    { 'i', "Short Sale" },
+    { 'j', "On Open" },
+    { 'k', "On Close" },
+    { 'l', "Two Sided" },
+    { 'm', "Exceeded Shares Limit" },
+    { 'n', "Exceeded Dollar Value Limit" },
     { 0, NULL }
 };
 
 static unsigned
-parse_nsmequities_orders_rejected_order_reason_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_rejected_order_reason_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_rejected_order_reason_v42, tvb, offset, NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_SIZE, NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_rejected_order_reason_v422018, tvb, offset, NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_SIZE, NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_SIZE;
 }
 
 /* Replace Order Optional Field values the dispatch switches on */
@@ -2831,40 +2899,22 @@ parse_nsmequities_orders_replaced_message_optional_field(tvbuff_t *tvb, packet_i
     return offset + NSMEQUITIES_ORDERS_REPLACED_MESSAGE_OPTIONAL_FIELD_SIZE;
 }
 
-/* Replacement Order Token Alphanumeric 14 */
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_NAME        "Replacement Order Token Alphanumeric 14"
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_DESCRIPTION "The Replacement Order Token field as entered"
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_FILTER      "nsmequities.orders.replacementordertokenalphanumeric14"
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_TYPE        FT_STRING
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_DISPLAY     BASE_NONE
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_MASK        0x0
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_ENCODING    ENC_ASCII
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_SIZE        14
+/* Replacement Order Token */
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_NAME        "Replacement Order Token"
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_DESCRIPTION "The Replacement Order Token field as entered"
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_FILTER      "nsmequities.orders.replacementordertoken"
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TYPE        FT_STRING
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_DISPLAY     BASE_NONE
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_MASK        0x0
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ENCODING    ENC_ASCII
+#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_replacement_order_token_alphanumeric_14(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_replacement_order_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_replacement_order_token_alphanumeric_14, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_SIZE, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_replacement_order_token, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_SIZE;
-}
-
-/* Replacement Order Token Token 14 */
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_NAME        "Replacement Order Token Token 14"
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_DESCRIPTION "As described above in Data Types. You can put any information you like. Token must be day-unique for each OUCH account."
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_FILTER      "nsmequities.orders.replacementordertokentoken14"
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_TYPE        FT_STRING
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_DISPLAY     BASE_NONE
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_MASK        0x0
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_ENCODING    ENC_ASCII
-#define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_SIZE        14
-
-static unsigned
-parse_nsmequities_orders_replacement_order_token_token_14(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_orders_replacement_order_token_token_14, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_SIZE, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_ENCODING);
-
-    return offset + NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_SIZE;
+    return offset + NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE;
 }
 
 /* Requested Sequence Number */
@@ -3159,6 +3209,8 @@ static const value_string nsmequities_orders_time_in_force_vals[] = {
     { '5', "Gtx Extended Hours" },
     { '6', "Gtt" },
     { 'E', "After Hours" },
+    { 99998, "Market Hours" },
+    { 99999, "System Hours" },
     { 0, NULL }
 };
 
@@ -3170,31 +3222,33 @@ parse_nsmequities_orders_time_in_force(tvbuff_t *tvb, packet_info *pinfo _U_, pr
     return offset + NSMEQUITIES_ORDERS_TIME_IN_FORCE_SIZE;
 }
 
-/* Time In Force V42 */
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_NAME        "Time In Force"
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_DESCRIPTION "The number of seconds that this order should live before being automatically canceled. Special values for Time in Force are listed in Data Types above."
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_FILTER      "nsmequities.orders.timeinforce"
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_TYPE        FT_UINT32
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_DISPLAY     BASE_DEC
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_SIZE        4
+/* Time In Force V422018 */
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_NAME        "Time In Force"
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_DESCRIPTION "The number of seconds that this order should live before being automatically canceled. Special values for Time in Force are listed in Data Types above."
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_FILTER      "nsmequities.orders.timeinforce"
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_TYPE        FT_UINT32
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_DISPLAY     BASE_DEC
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_SIZE        4
 
-static const value_string nsmequities_orders_time_in_force_v42_vals[] = {
+static const value_string nsmequities_orders_time_in_force_v422018_vals[] = {
     { 0, "Day" },
     { 3, "Ioc" },
     { 5, "Gtx Extended Hours" },
     { 6, "Gtt" },
     { 'E', "After Hours" },
+    { 99998, "Market Hours" },
+    { 99999, "System Hours" },
     { 0, NULL }
 };
 
 static unsigned
-parse_nsmequities_orders_time_in_force_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_time_in_force_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_time_in_force_v42, tvb, offset, NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_SIZE, NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_time_in_force_v422018, tvb, offset, NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_SIZE, NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_SIZE;
 }
 
 /* Timestamp */
@@ -3243,22 +3297,22 @@ parse_nsmequities_orders_timestamp(tvbuff_t *tvb, packet_info *pinfo, proto_tree
     return offset + NSMEQUITIES_ORDERS_TIMESTAMP_SIZE;
 }
 
-/* Timestamp V42 */
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_NAME        "Timestamp"
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_DESCRIPTION "Timestamp – reflected as the number of nanoseconds past midnight."
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_FILTER      "nsmequities.orders.timestampv42"
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_TYPE        FT_UINT64
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_DISPLAY     BASE_DEC
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_MASK        0x0
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_ENCODING    ENC_BIG_ENDIAN
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V42_SIZE        8
+/* Timestamp V422018 */
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_NAME        "Timestamp"
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DESCRIPTION "Timestamp – reflected as the number of nanoseconds past midnight."
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_FILTER      "nsmequities.orders.timestampv422018"
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_TYPE        FT_UINT64
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DISPLAY     BASE_DEC
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_MASK        0x0
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE        8
 
 static unsigned
-parse_nsmequities_orders_timestamp_v42(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_timestamp_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_timestamp_v42, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V42_SIZE, NSMEQUITIES_ORDERS_TIMESTAMP_V42_ENCODING);
+    proto_tree_add_item(tree, hf_nsmequities_orders_timestamp_v422018, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_ENCODING);
 
-    return offset + NSMEQUITIES_ORDERS_TIMESTAMP_V42_SIZE;
+    return offset + NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE;
 }
 
 /* Trade Now */
@@ -3443,32 +3497,32 @@ static unsigned dissect_nsmequities_orders_disable_order_entry_response(tvbuff_t
 static unsigned dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, int size);
 static unsigned dissect_nsmequities_orders_enable_order_entry_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, int size);
-static unsigned dissect_nsmequities_orders_unsequenced_data_packet_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_enter_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_replace_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_modify_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_unsequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_enter_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_replace_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_cancel_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_modify_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_trade_now(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_sequenced_data_packet_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_system_event_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_sequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_system_event_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_replaced_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_canceled_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_replaced_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_canceled_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_aiq_cancelled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_broken_trade_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_broken_trade_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_executed_with_reference_price(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_trade_correction(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_rejected_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_pending_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_reject_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_priority_update_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_modified_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_rejected_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_cancel_pending_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_cancel_reject_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_order_priority_update_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_nsmequities_orders_order_modified_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_sequenced_trade_now(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type);
-static unsigned dissect_nsmequities_orders_client_packet_client_payload_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type);
+static unsigned dissect_nsmequities_orders_client_packet_client_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type);
 static unsigned dissect_nsmequities_orders_unsequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type);
-static unsigned dissect_nsmequities_orders_unsequenced_message_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type);
+static unsigned dissect_nsmequities_orders_unsequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type);
 static unsigned dissect_nsmequities_orders_enter_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t enter_order_optional_field);
 static unsigned dissect_nsmequities_orders_replace_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t replace_order_optional_field);
 static unsigned dissect_nsmequities_orders_cancel_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t cancel_order_optional_field);
@@ -3478,9 +3532,9 @@ static unsigned dissect_nsmequities_orders_mass_cancel_request_optional_value(tv
 static unsigned dissect_nsmequities_orders_disable_order_entry_request_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t disable_order_entry_request_optional_field);
 static unsigned dissect_nsmequities_orders_enable_order_entry_request_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t enable_order_entry_request_optional_field);
 static unsigned dissect_nsmequities_orders_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type);
-static unsigned dissect_nsmequities_orders_server_packet_server_payload_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type);
+static unsigned dissect_nsmequities_orders_server_packet_server_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type);
 static unsigned dissect_nsmequities_orders_sequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type);
-static unsigned dissect_nsmequities_orders_sequenced_message_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type);
+static unsigned dissect_nsmequities_orders_sequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type);
 static unsigned dissect_nsmequities_orders_order_accepted_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_accepted_optional_field);
 static unsigned dissect_nsmequities_orders_replaced_message_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t replaced_message_optional_field);
 static unsigned dissect_nsmequities_orders_canceled_message_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t canceled_message_optional_field);
@@ -4937,7 +4991,7 @@ dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, 
 
 /* Unsequenced Data Packet */
 static unsigned
-dissect_nsmequities_orders_unsequenced_data_packet_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_unsequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     unsigned start = offset;
 
@@ -4945,41 +4999,41 @@ dissect_nsmequities_orders_unsequenced_data_packet_v42(tvbuff_t *tvb, packet_inf
 
     uint32_t unsequenced_message_type = tvb_get_uint8(tvb, start);
 
-    offset = dissect_nsmequities_orders_unsequenced_message_v42(tvb, pinfo, tree, offset, unsequenced_message_type);
+    offset = dissect_nsmequities_orders_unsequenced_message_v422018(tvb, pinfo, tree, offset, unsequenced_message_type);
 
     return offset;
 }
 
-/* Enter Order Message V42 */
+/* Enter Order Message V422018 */
 static unsigned
-dissect_nsmequities_orders_enter_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_enter_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_buy_sell_indicator(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_stock(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_price_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_time_in_force_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_price_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_time_in_force_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_capacity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_intermarket_sweep_eligibility(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_minimum_quantity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_cross_type(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_customer_type_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_customer_type_v422018(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
-/* Replace Order Message V42 */
+/* Replace Order Message V422018 */
 static unsigned
-dissect_nsmequities_orders_replace_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_replace_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_nsmequities_orders_existing_order_token(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_replacement_order_token_token_14(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_replacement_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_price_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_time_in_force_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_price_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_time_in_force_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_intermarket_sweep_eligibility(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_minimum_quantity(tvb, pinfo, tree, offset);
@@ -4987,9 +5041,9 @@ dissect_nsmequities_orders_replace_order_v42(tvbuff_t *tvb, packet_info *pinfo, 
     return offset;
 }
 
-/* Cancel Order Message V42 */
+/* Cancel Order Message V422018 */
 static unsigned
-dissect_nsmequities_orders_cancel_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_cancel_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
@@ -4997,9 +5051,9 @@ dissect_nsmequities_orders_cancel_order_v42(tvbuff_t *tvb, packet_info *pinfo, p
     return offset;
 }
 
-/* Modify Order Message V42 */
+/* Modify Order Message V422018 */
 static unsigned
-dissect_nsmequities_orders_modify_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_modify_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_buy_sell_indicator(tvb, pinfo, tree, offset);
@@ -5019,7 +5073,7 @@ dissect_nsmequities_orders_trade_now(tvbuff_t *tvb, packet_info *pinfo, proto_tr
 
 /* Sequenced Data Packet */
 static unsigned
-dissect_nsmequities_orders_sequenced_data_packet_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_sequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     unsigned start = offset;
 
@@ -5027,16 +5081,16 @@ dissect_nsmequities_orders_sequenced_data_packet_v42(tvbuff_t *tvb, packet_info 
 
     uint32_t sequenced_message_type = tvb_get_uint8(tvb, start);
 
-    offset = dissect_nsmequities_orders_sequenced_message_v42(tvb, pinfo, tree, offset, sequenced_message_type);
+    offset = dissect_nsmequities_orders_sequenced_message_v422018(tvb, pinfo, tree, offset, sequenced_message_type);
 
     return offset;
 }
 
 /* System Event Message */
 static unsigned
-dissect_nsmequities_orders_system_event_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_system_event_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_event_code(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5046,13 +5100,13 @@ dissect_nsmequities_orders_system_event_v42(tvbuff_t *tvb, packet_info *pinfo, p
 static unsigned
 dissect_nsmequities_orders_accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_buy_sell_indicator(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_stock(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_price_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_time_in_force_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_price_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_time_in_force_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_reference_number(tvb, pinfo, tree, offset);
@@ -5066,17 +5120,17 @@ dissect_nsmequities_orders_accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tre
     return offset;
 }
 
-/* Replaced Message V42 */
+/* Replaced Message V422018 */
 static unsigned
-dissect_nsmequities_orders_replaced_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_replaced_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_replacement_order_token_alphanumeric_14(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_replacement_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_buy_sell_indicator(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_stock(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_price_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_time_in_force_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_price_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_time_in_force_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_reference_number(tvb, pinfo, tree, offset);
@@ -5091,11 +5145,11 @@ dissect_nsmequities_orders_replaced_v42(tvbuff_t *tvb, packet_info *pinfo, proto
     return offset;
 }
 
-/* Canceled Message V42 */
+/* Canceled Message V422018 */
 static unsigned
-dissect_nsmequities_orders_canceled_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_canceled_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_decrement_shares(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_cancel_order_reason(tvb, pinfo, tree, offset);
@@ -5107,12 +5161,12 @@ dissect_nsmequities_orders_canceled_v42(tvbuff_t *tvb, packet_info *pinfo, proto
 static unsigned
 dissect_nsmequities_orders_aiq_cancelled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_decrement_shares(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_cancel_order_reason(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity_prevented_from_trading(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_execution_price_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_execution_price_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5122,21 +5176,21 @@ dissect_nsmequities_orders_aiq_cancelled(tvbuff_t *tvb, packet_info *pinfo, prot
 static unsigned
 dissect_nsmequities_orders_executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_executed_shares(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_execution_price_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_execution_price_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
-/* Broken Trade Message V42 */
+/* Broken Trade Message V422018 */
 static unsigned
-dissect_nsmequities_orders_broken_trade_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_broken_trade_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_broken_trade_reason(tvb, pinfo, tree, offset);
@@ -5148,10 +5202,10 @@ dissect_nsmequities_orders_broken_trade_v42(tvbuff_t *tvb, packet_info *pinfo, p
 static unsigned
 dissect_nsmequities_orders_executed_with_reference_price(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_executed_shares(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_execution_price_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_execution_price_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_reference_price(tvb, pinfo, tree, offset);
@@ -5164,10 +5218,10 @@ dissect_nsmequities_orders_executed_with_reference_price(tvbuff_t *tvb, packet_i
 static unsigned
 dissect_nsmequities_orders_trade_correction(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_executed_shares(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_execution_price_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_execution_price_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_reason(tvb, pinfo, tree, offset);
@@ -5175,55 +5229,55 @@ dissect_nsmequities_orders_trade_correction(tvbuff_t *tvb, packet_info *pinfo, p
     return offset;
 }
 
-/* Rejected Order Message V42 */
+/* Rejected Order Message V422018 */
 static unsigned
-dissect_nsmequities_orders_rejected_order_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_rejected_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_rejected_order_reason_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_rejected_order_reason_v422018(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
-/* Cancel Pending Message V42 */
+/* Cancel Pending Message V422018 */
 static unsigned
-dissect_nsmequities_orders_cancel_pending_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_cancel_pending_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Cancel Reject Message V42 */
-static unsigned
-dissect_nsmequities_orders_cancel_reject_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
-/* Order Priority Update Message V42 */
+/* Cancel Reject Message V422018 */
 static unsigned
-dissect_nsmequities_orders_order_priority_update_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_cancel_reject_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_orders_price_v42(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Order Priority Update Message V422018 */
+static unsigned
+dissect_nsmequities_orders_order_priority_update_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_price_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_reference_number(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
-/* Order Modified Message V42 */
+/* Order Modified Message V422018 */
 static unsigned
-dissect_nsmequities_orders_order_modified_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+dissect_nsmequities_orders_order_modified_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_buy_sell_indicator(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_shares(tvb, pinfo, tree, offset);
@@ -5235,7 +5289,7 @@ dissect_nsmequities_orders_order_modified_v42(tvbuff_t *tvb, packet_info *pinfo,
 static unsigned
 dissect_nsmequities_orders_sequenced_trade_now(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_nsmequities_orders_timestamp_v42(tvb, pinfo, tree, offset);
+    offset = parse_nsmequities_orders_timestamp_v422018(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_token(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5276,7 +5330,7 @@ dissect_nsmequities_orders_client_packet_client_payload(tvbuff_t *tvb, packet_in
     return offset;
 }
 
-static const value_string nsmequities_orders_client_packet_messages_v42[] = {
+static const value_string nsmequities_orders_client_packet_messages_v422018[] = {
     { NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_DEBUG_PACKET, "Debug Packet" },
     { NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_LOGIN_REQUEST_PACKET, "Login Request Packet" },
     { NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_UNSEQUENCED_DATA_PACKET, "Unsequenced Data Packet" },
@@ -5287,9 +5341,9 @@ static const value_string nsmequities_orders_client_packet_messages_v42[] = {
 
 /* Client Payload: dispatch on client_packet_type */
 static unsigned
-dissect_nsmequities_orders_client_packet_client_payload_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
+dissect_nsmequities_orders_client_packet_client_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_orders_client_packet_messages_v42, "Unknown (%u)"));
+    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_orders_client_packet_messages_v422018, "Unknown (%u)"));
 
     switch (client_packet_type) {
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_DEBUG_PACKET:
@@ -5297,7 +5351,7 @@ dissect_nsmequities_orders_client_packet_client_payload_v42(tvbuff_t *tvb, packe
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_LOGIN_REQUEST_PACKET:
         return dissect_nsmequities_orders_login_request_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_UNSEQUENCED_DATA_PACKET:
-        return dissect_nsmequities_orders_unsequenced_data_packet_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_unsequenced_data_packet_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_CLIENT_HEARTBEAT_PACKET: /* Client Heartbeat */
         return offset;
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_LOGOUT_REQUEST_PACKET: /* Logout Request */
@@ -5347,7 +5401,7 @@ dissect_nsmequities_orders_unsequenced_message(tvbuff_t *tvb, packet_info *pinfo
     return offset;
 }
 
-static const value_string nsmequities_orders_unsequenced_message_messages_v42[] = {
+static const value_string nsmequities_orders_unsequenced_message_messages_v422018[] = {
     { NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_ENTER_ORDER, "Enter Order Message" },
     { NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_REPLACE_ORDER, "Replace Order Message" },
     { NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_CANCEL_ORDER, "Cancel Order Message" },
@@ -5358,19 +5412,19 @@ static const value_string nsmequities_orders_unsequenced_message_messages_v42[] 
 
 /* Unsequenced Message: dispatch on unsequenced_message_type */
 static unsigned
-dissect_nsmequities_orders_unsequenced_message_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type)
+dissect_nsmequities_orders_unsequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, unsequenced_message_type, nsmequities_orders_unsequenced_message_messages_v42, "Unknown (%u)"));
+    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, unsequenced_message_type, nsmequities_orders_unsequenced_message_messages_v422018, "Unknown (%u)"));
 
     switch (unsequenced_message_type) {
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_ENTER_ORDER:
-        return dissect_nsmequities_orders_enter_order_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_enter_order_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_REPLACE_ORDER:
-        return dissect_nsmequities_orders_replace_order_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_replace_order_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_CANCEL_ORDER:
-        return dissect_nsmequities_orders_cancel_order_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_cancel_order_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_MODIFY_ORDER:
-        return dissect_nsmequities_orders_modify_order_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_modify_order_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_TRADE_NOW:
         return dissect_nsmequities_orders_trade_now(tvb, pinfo, tree, offset);
     }
@@ -5684,7 +5738,7 @@ dissect_nsmequities_orders_server_packet_server_payload(tvbuff_t *tvb, packet_in
     return offset;
 }
 
-static const value_string nsmequities_orders_server_packet_messages_v42[] = {
+static const value_string nsmequities_orders_server_packet_messages_v422018[] = {
     { NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_DEBUG_PACKET, "Debug Packet" },
     { NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_LOGIN_ACCEPTED_PACKET, "Login Accepted Packet" },
     { NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_LOGIN_REJECTED_PACKET, "Login Rejected Packet" },
@@ -5696,9 +5750,9 @@ static const value_string nsmequities_orders_server_packet_messages_v42[] = {
 
 /* Server Payload: dispatch on server_packet_type */
 static unsigned
-dissect_nsmequities_orders_server_packet_server_payload_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
+dissect_nsmequities_orders_server_packet_server_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_orders_server_packet_messages_v42, "Unknown (%u)"));
+    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_orders_server_packet_messages_v422018, "Unknown (%u)"));
 
     switch (server_packet_type) {
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_DEBUG_PACKET:
@@ -5708,7 +5762,7 @@ dissect_nsmequities_orders_server_packet_server_payload_v42(tvbuff_t *tvb, packe
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_LOGIN_REJECTED_PACKET:
         return dissect_nsmequities_orders_login_rejected_packet(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_SEQUENCED_DATA_PACKET:
-        return dissect_nsmequities_orders_sequenced_data_packet_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_sequenced_data_packet_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_SERVER_HEARTBEAT_PACKET: /* Server Heartbeat */
         return offset;
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_END_OF_SESSION_PACKET: /* End Of Session */
@@ -5785,7 +5839,7 @@ dissect_nsmequities_orders_sequenced_message(tvbuff_t *tvb, packet_info *pinfo, 
     return offset;
 }
 
-static const value_string nsmequities_orders_sequenced_message_messages_v42[] = {
+static const value_string nsmequities_orders_sequenced_message_messages_v422018[] = {
     { NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT, "System Event Message" },
     { NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_ORDER_ACCEPTED, "Accepted Message" },
     { NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_REPLACED, "Replaced Message" },
@@ -5806,39 +5860,39 @@ static const value_string nsmequities_orders_sequenced_message_messages_v42[] = 
 
 /* Sequenced Message: dispatch on sequenced_message_type */
 static unsigned
-dissect_nsmequities_orders_sequenced_message_v42(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
+dissect_nsmequities_orders_sequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_orders_sequenced_message_messages_v42, "Unknown (%u)"));
+    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_orders_sequenced_message_messages_v422018, "Unknown (%u)"));
 
     switch (sequenced_message_type) {
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
-        return dissect_nsmequities_orders_system_event_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_system_event_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_ORDER_ACCEPTED:
         return dissect_nsmequities_orders_accepted(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_REPLACED:
-        return dissect_nsmequities_orders_replaced_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_replaced_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_CANCELED:
-        return dissect_nsmequities_orders_canceled_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_canceled_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_AIQ_CANCELED:
         return dissect_nsmequities_orders_aiq_cancelled(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_ORDER_EXECUTED:
         return dissect_nsmequities_orders_executed(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_BROKEN_TRADE:
-        return dissect_nsmequities_orders_broken_trade_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_broken_trade_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_DISABLE_ORDER_ENTRY_RESPONSE:
         return dissect_nsmequities_orders_executed_with_reference_price(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_TRADE_CORRECTION:
         return dissect_nsmequities_orders_trade_correction(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_REJECTED_ORDER:
-        return dissect_nsmequities_orders_rejected_order_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_rejected_order_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_CANCEL_PENDING:
-        return dissect_nsmequities_orders_cancel_pending_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_cancel_pending_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_CANCEL_REJECT:
-        return dissect_nsmequities_orders_cancel_reject_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_cancel_reject_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_ORDER_PRIORITY_UPDATE:
-        return dissect_nsmequities_orders_order_priority_update_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_order_priority_update_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_ORDER_MODIFIED:
-        return dissect_nsmequities_orders_order_modified_v42(tvb, pinfo, tree, offset);
+        return dissect_nsmequities_orders_order_modified_v422018(tvb, pinfo, tree, offset);
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_SEQUENCED_TRADE_NOW:
         return dissect_nsmequities_orders_sequenced_trade_now(tvb, pinfo, tree, offset);
     }
@@ -6288,15 +6342,15 @@ struct nsmequities_orders_client_packet_parse {
 };
 
 static const nsmequities_orders_client_packet_parse nsmequities_orders_client_packet_parse_v50 = { nsmequities_orders_client_packet_messages, dissect_nsmequities_orders_client_packet_client_payload };
-static const nsmequities_orders_client_packet_parse nsmequities_orders_client_packet_parse_v42 = { nsmequities_orders_client_packet_messages_v42, dissect_nsmequities_orders_client_packet_client_payload_v42 };
+static const nsmequities_orders_client_packet_parse nsmequities_orders_client_packet_parse_v422018 = { nsmequities_orders_client_packet_messages_v422018, dissect_nsmequities_orders_client_packet_client_payload_v422018 };
 
 /* Parse tree of the selected version */
 static const nsmequities_orders_client_packet_parse *
 nsmequities_orders_client_packet_parse_for(int version)
 {
     switch (version) {
-    case NSMEQUITIES_ORDERS_VERSION_4_2:
-        return &nsmequities_orders_client_packet_parse_v42;
+    case NSMEQUITIES_ORDERS_VERSION_4_2_2018:
+        return &nsmequities_orders_client_packet_parse_v422018;
     default:
         return &nsmequities_orders_client_packet_parse_v50;
     }
@@ -6328,15 +6382,15 @@ struct nsmequities_orders_server_packet_parse {
 };
 
 static const nsmequities_orders_server_packet_parse nsmequities_orders_server_packet_parse_v50 = { nsmequities_orders_server_packet_messages, dissect_nsmequities_orders_server_packet_server_payload };
-static const nsmequities_orders_server_packet_parse nsmequities_orders_server_packet_parse_v42 = { nsmequities_orders_server_packet_messages_v42, dissect_nsmequities_orders_server_packet_server_payload_v42 };
+static const nsmequities_orders_server_packet_parse nsmequities_orders_server_packet_parse_v422018 = { nsmequities_orders_server_packet_messages_v422018, dissect_nsmequities_orders_server_packet_server_payload_v422018 };
 
 /* Parse tree of the selected version */
 static const nsmequities_orders_server_packet_parse *
 nsmequities_orders_server_packet_parse_for(int version)
 {
     switch (version) {
-    case NSMEQUITIES_ORDERS_VERSION_4_2:
-        return &nsmequities_orders_server_packet_parse_v42;
+    case NSMEQUITIES_ORDERS_VERSION_4_2_2018:
+        return &nsmequities_orders_server_packet_parse_v422018;
     default:
         return &nsmequities_orders_server_packet_parse_v50;
     }
@@ -6856,7 +6910,7 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_DISPLAY,
               VALS(nsmequities_orders_buy_sell_indicator_vals),
               NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_MASK,
-              NSMEQUITIES_ORDERS_BUY_SELL_INDICATOR_DESCRIPTION,
+              NULL,
               HFILL } },
         { &hf_nsmequities_orders_cancel_order_optional_field,
             { NSMEQUITIES_ORDERS_CANCEL_ORDER_OPTIONAL_FIELD_NAME,
@@ -6948,14 +7002,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_CUSTOMER_TYPE_MASK,
               NSMEQUITIES_ORDERS_CUSTOMER_TYPE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_customer_type_v42,
-            { NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_NAME,
-              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_FILTER,
-              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_TYPE,
-              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_DISPLAY,
-              VALS(nsmequities_orders_customer_type_v42_vals),
-              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_MASK,
-              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V42_DESCRIPTION,
+        { &hf_nsmequities_orders_customer_type_v422018,
+            { NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_NAME,
+              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_FILTER,
+              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_TYPE,
+              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_DISPLAY,
+              VALS(nsmequities_orders_customer_type_v422018_vals),
+              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_MASK,
+              NSMEQUITIES_ORDERS_CUSTOMER_TYPE_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_debug_text,
             { NSMEQUITIES_ORDERS_DEBUG_TEXT_NAME,
@@ -7101,14 +7155,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_EXECUTION_PRICE_MASK,
               NSMEQUITIES_ORDERS_EXECUTION_PRICE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_execution_price_v42,
-            { NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_NAME,
-              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_FILTER,
-              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_TYPE,
-              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_DISPLAY,
+        { &hf_nsmequities_orders_execution_price_v422018,
+            { NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_NAME,
+              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_FILTER,
+              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_TYPE,
+              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_DISPLAY,
               CF_FUNC(nsmequities_orders_format_decimal_4_32_unsigned),
-              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_MASK,
-              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V42_DESCRIPTION,
+              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_MASK,
+              NSMEQUITIES_ORDERS_EXECUTION_PRICE_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_existing_order_token,
             { NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_NAME,
@@ -7425,14 +7479,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_PRICE_MASK,
               NSMEQUITIES_ORDERS_PRICE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_price_v42,
-            { NSMEQUITIES_ORDERS_PRICE_V42_NAME,
-              NSMEQUITIES_ORDERS_PRICE_V42_FILTER,
-              NSMEQUITIES_ORDERS_PRICE_V42_TYPE,
-              NSMEQUITIES_ORDERS_PRICE_V42_DISPLAY,
+        { &hf_nsmequities_orders_price_v422018,
+            { NSMEQUITIES_ORDERS_PRICE_V422018_NAME,
+              NSMEQUITIES_ORDERS_PRICE_V422018_FILTER,
+              NSMEQUITIES_ORDERS_PRICE_V422018_TYPE,
+              NSMEQUITIES_ORDERS_PRICE_V422018_DISPLAY,
               CF_FUNC(nsmequities_orders_format_decimal_4_32_unsigned),
-              NSMEQUITIES_ORDERS_PRICE_V42_MASK,
-              NSMEQUITIES_ORDERS_PRICE_V42_DESCRIPTION,
+              NSMEQUITIES_ORDERS_PRICE_V422018_MASK,
+              NSMEQUITIES_ORDERS_PRICE_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_price_type,
             { NSMEQUITIES_ORDERS_PRICE_TYPE_NAME,
@@ -7475,7 +7529,7 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_REASON_FILTER,
               NSMEQUITIES_ORDERS_REASON_TYPE,
               NSMEQUITIES_ORDERS_REASON_DISPLAY,
-              NULL,
+              VALS(nsmequities_orders_reason_vals),
               NSMEQUITIES_ORDERS_REASON_MASK,
               NSMEQUITIES_ORDERS_REASON_DESCRIPTION,
               HFILL } },
@@ -7493,7 +7547,7 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_FILTER,
               NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_TYPE,
               NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_DISPLAY,
-              NULL,
+              VALS(nsmequities_orders_reference_price_type_vals),
               NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_MASK,
               NSMEQUITIES_ORDERS_REFERENCE_PRICE_TYPE_DESCRIPTION,
               HFILL } },
@@ -7524,14 +7578,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_MASK,
               NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_rejected_order_reason_v42,
-            { NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_NAME,
-              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_FILTER,
-              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_TYPE,
-              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_DISPLAY,
-              VALS(nsmequities_orders_rejected_order_reason_v42_vals),
-              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_MASK,
-              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V42_DESCRIPTION,
+        { &hf_nsmequities_orders_rejected_order_reason_v422018,
+            { NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_NAME,
+              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_FILTER,
+              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_TYPE,
+              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_DISPLAY,
+              VALS(nsmequities_orders_rejected_order_reason_v422018_vals),
+              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_MASK,
+              NSMEQUITIES_ORDERS_REJECTED_ORDER_REASON_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_replace_order_optional_field,
             { NSMEQUITIES_ORDERS_REPLACE_ORDER_OPTIONAL_FIELD_NAME,
@@ -7551,23 +7605,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_REPLACED_MESSAGE_OPTIONAL_FIELD_MASK,
               NSMEQUITIES_ORDERS_REPLACED_MESSAGE_OPTIONAL_FIELD_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_replacement_order_token_alphanumeric_14,
-            { NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_NAME,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_FILTER,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_TYPE,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_DISPLAY,
+        { &hf_nsmequities_orders_replacement_order_token,
+            { NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_NAME,
+              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_FILTER,
+              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TYPE,
+              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_DISPLAY,
               NULL,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_MASK,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ALPHANUMERIC_14_DESCRIPTION,
-              HFILL } },
-        { &hf_nsmequities_orders_replacement_order_token_token_14,
-            { NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_NAME,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_FILTER,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_TYPE,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_DISPLAY,
-              NULL,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_MASK,
-              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_TOKEN_14_DESCRIPTION,
+              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_MASK,
+              NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_requested_sequence_number,
             { NSMEQUITIES_ORDERS_REQUESTED_SEQUENCE_NUMBER_NAME,
@@ -7677,14 +7722,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_TIME_IN_FORCE_MASK,
               NSMEQUITIES_ORDERS_TIME_IN_FORCE_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_time_in_force_v42,
-            { NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_NAME,
-              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_FILTER,
-              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_TYPE,
-              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_DISPLAY,
-              VALS(nsmequities_orders_time_in_force_v42_vals),
-              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_MASK,
-              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V42_DESCRIPTION,
+        { &hf_nsmequities_orders_time_in_force_v422018,
+            { NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_NAME,
+              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_FILTER,
+              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_TYPE,
+              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_DISPLAY,
+              VALS(nsmequities_orders_time_in_force_v422018_vals),
+              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_MASK,
+              NSMEQUITIES_ORDERS_TIME_IN_FORCE_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_timestamp,
             { NSMEQUITIES_ORDERS_TIMESTAMP_NAME,
@@ -7695,14 +7740,14 @@ proto_register_nsmequities_orders(void)
               NSMEQUITIES_ORDERS_TIMESTAMP_MASK,
               NSMEQUITIES_ORDERS_TIMESTAMP_DESCRIPTION,
               HFILL } },
-        { &hf_nsmequities_orders_timestamp_v42,
-            { NSMEQUITIES_ORDERS_TIMESTAMP_V42_NAME,
-              NSMEQUITIES_ORDERS_TIMESTAMP_V42_FILTER,
-              NSMEQUITIES_ORDERS_TIMESTAMP_V42_TYPE,
-              NSMEQUITIES_ORDERS_TIMESTAMP_V42_DISPLAY,
+        { &hf_nsmequities_orders_timestamp_v422018,
+            { NSMEQUITIES_ORDERS_TIMESTAMP_V422018_NAME,
+              NSMEQUITIES_ORDERS_TIMESTAMP_V422018_FILTER,
+              NSMEQUITIES_ORDERS_TIMESTAMP_V422018_TYPE,
+              NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DISPLAY,
               NULL,
-              NSMEQUITIES_ORDERS_TIMESTAMP_V42_MASK,
-              NSMEQUITIES_ORDERS_TIMESTAMP_V42_DESCRIPTION,
+              NSMEQUITIES_ORDERS_TIMESTAMP_V422018_MASK,
+              NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DESCRIPTION,
               HFILL } },
         { &hf_nsmequities_orders_trade_now,
             { NSMEQUITIES_ORDERS_TRADE_NOW_NAME,

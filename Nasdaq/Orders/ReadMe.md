@@ -11,7 +11,7 @@ Registered as `NSMEQUITIES ORDERS` (`NSMEQUITIES.ORDERS`), display filter `nsmeq
 | Version | Model | Effective |
 | --- | --- | --- |
 | 5.0 | `Nasdaq.NsmEquities.Orders.Ouch.v5.0` | 2022-11-14 |
-| 4.2 | `Nasdaq.NsmEquities.Orders.Ouch.v4.2` | 2019-07-08 |
+| 4.2.2018 | `Nasdaq.NsmEquities.Orders.Ouch.v4.2.2018` | 2019-07-08 |
 
 `packet-nsmequities-orders.c` is generated, edits belong in the model or the configuration it
 was generated from, never in the C, which is overwritten on the next run.

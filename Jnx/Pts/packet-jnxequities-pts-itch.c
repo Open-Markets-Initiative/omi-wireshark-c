@@ -1302,6 +1302,16 @@ parse_jnxequities_pts_itch_short_selling_state(tvbuff_t *tvb, packet_info *pinfo
 #define JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_ENCODING    ENC_ASCII
 #define JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_SIZE        1
 
+static const value_string jnxequities_pts_itch_system_event_vals[] = {
+    { 'O', "Start Of Messages" },
+    { 'S', "Start Of System Hours" },
+    { 'Q', "Start Of Market Hours" },
+    { 'M', "End Of Market Hours" },
+    { 'E', "End Of System Hours" },
+    { 'C', "End Of Messages" },
+    { 0, NULL }
+};
+
 static unsigned
 parse_jnxequities_pts_itch_system_event(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
@@ -2869,7 +2879,7 @@ proto_register_jnxequities_pts_itch(void)
               JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_FILTER,
               JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_TYPE,
               JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_DISPLAY,
-              NULL,
+              VALS(jnxequities_pts_itch_system_event_vals),
               JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_MASK,
               JNXEQUITIES_PTS_ITCH_SYSTEM_EVENT_DESCRIPTION,
               HFILL } },
