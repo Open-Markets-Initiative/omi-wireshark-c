@@ -330,7 +330,6 @@ static int hf_globex_mdp3_strike_price_ex;
 static int hf_globex_mdp3_sub_fraction;
 static int hf_globex_mdp3_subscription_req_type;
 static int hf_globex_mdp3_symbol;
-static int hf_globex_mdp3_tcp_message_size;
 static int hf_globex_mdp3_tcp_sending_time;
 static int hf_globex_mdp3_template_id;
 static int hf_globex_mdp3_term_code;
@@ -397,6 +396,7 @@ static int ett_globex_mdp3_inst_attrib_value_v19;
 static int ett_globex_mdp3_settl_price_type_v18;
 static int ett_globex_mdp3_inst_attrib_value_v18;
 static int ett_globex_mdp3_message_header;
+static int ett_globex_mdp3_simple_binary_header;
 static int ett_globex_mdp3_channel_reset_groups;
 static int ett_globex_mdp3_group_size;
 static int ett_globex_mdp3_channel_reset_group;
@@ -5507,24 +5507,6 @@ parse_globex_mdp3_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
     return offset + GLOBEX_MDP3_SYMBOL_SIZE;
 }
 
-/* Tcp Message Size */
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_NAME        "Tcp Message Size"
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_DESCRIPTION "Message Size"
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_FILTER      "globex.mdp3.tcpmessagesize"
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_DISPLAY     BASE_DEC
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_MASK        0x0
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_TCP_MESSAGE_SIZE_SIZE        2
-
-static unsigned
-parse_globex_mdp3_tcp_message_size(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_tcp_message_size, tvb, offset, GLOBEX_MDP3_TCP_MESSAGE_SIZE_SIZE, GLOBEX_MDP3_TCP_MESSAGE_SIZE_ENCODING);
-
-    return offset + GLOBEX_MDP3_TCP_MESSAGE_SIZE_SIZE;
-}
-
 /* Tcp Sending Time */
 #define GLOBEX_MDP3_TCP_SENDING_TIME_NAME        "Tcp Sending Time"
 #define GLOBEX_MDP3_TCP_SENDING_TIME_DESCRIPTION "Packet Sending Time, nanoseconds since the Unix epoch"
@@ -6819,6 +6801,7 @@ parse_globex_mdp3_inst_attrib_value_v18(tvbuff_t *tvb, packet_info *pinfo _U_, p
 
 /* Message and group dissect methods */
 static unsigned dissect_globex_mdp3_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_globex_mdp3_simple_binary_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_mktdata(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_mdpsessionmgmt(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_channel_reset(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -7123,6 +7106,27 @@ dissect_globex_mdp3_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree
 
     if (globex_mdp3_show_headers) {
         group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_message_header, &item, "Message Header");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_globex_mdp3_message_size(tvb, pinfo, group, offset);
+    offset = dissect_globex_mdp3_simple_binary_header(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
+
+/* Simple Binary Header */
+static unsigned
+dissect_globex_mdp3_simple_binary_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (globex_mdp3_show_headers) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_simple_binary_header, &item, "Simple Binary Header");
     }
 
     unsigned start = offset;
@@ -10402,7 +10406,6 @@ dissect_globex_mdp3_client_technical_header(tvbuff_t *tvb, packet_info *pinfo, p
     offset = parse_globex_mdp3_encoding_type(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_message_sequence_number(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_tcp_sending_time(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_tcp_message_size(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
 
@@ -10425,7 +10428,6 @@ dissect_globex_mdp3_server_technical_header(tvbuff_t *tvb, packet_info *pinfo, p
     offset = parse_globex_mdp3_encoding_type(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_message_sequence_number(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_tcp_sending_time(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_tcp_message_size(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
 
@@ -16164,7 +16166,6 @@ dissect_globex_mdp3_udp_packet_message(tvbuff_t *tvb, packet_info *pinfo, proto_
 
     unsigned position = offset;
 
-    position = parse_globex_mdp3_message_size(tvb, pinfo, message, position);
     position = dissect_globex_mdp3_message_header(tvb, pinfo, message, position);
 
     position = parse->dissect(tvb, pinfo, message, position, schema_id);
@@ -16233,13 +16234,13 @@ dissect_globex_mdp3_client_tcp_packet_header(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_globex_mdp3_client_tcp_packet_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const globex_mdp3_client_tcp_packet_parse *parse)
 {
-    uint32_t tcp_message_size = tvb_get_letohs(tvb, offset + 14);
+    uint32_t message_size = tvb_get_letohs(tvb, offset + 14);
     uint32_t template_id = tvb_get_letohs(tvb, offset + 18);
 
     const char *name = val_to_str(pinfo->pool, template_id, parse->messages, "Unknown (%u)");
 
     proto_tree *message = globex_mdp3_client_tcp_packet_show(template_id)
-        ? proto_tree_add_subtree(tree, tvb, offset, tcp_message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT, ett_globex_mdp3_message, NULL, name)
+        ? proto_tree_add_subtree(tree, tvb, offset, message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT, ett_globex_mdp3_message, NULL, name)
         : tree;
 
     unsigned position = offset;
@@ -16250,11 +16251,11 @@ dissect_globex_mdp3_client_tcp_packet_message(tvbuff_t *tvb, packet_info *pinfo,
     position = parse->dissect(tvb, pinfo, message, position, template_id);
 
     /* The parsed fields must account for the declared length exactly */
-    if (position != offset + tcp_message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT) {
+    if (position != offset + message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT) {
         expert_add_info(pinfo, message, &ei_globex_mdp3_length);
     }
 
-    return tcp_message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT;
+    return message_size + GLOBEX_MDP3_CLIENT_TCP_PACKET_MESSAGE_ADJUSTMENT;
 }
 
 /* Framed messages to the end of the stream, a partial
@@ -16334,13 +16335,13 @@ dissect_globex_mdp3_server_tcp_packet_header(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_globex_mdp3_server_tcp_packet_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const globex_mdp3_server_tcp_packet_parse *parse)
 {
-    uint32_t tcp_message_size = tvb_get_letohs(tvb, offset + 14);
+    uint32_t message_size = tvb_get_letohs(tvb, offset + 14);
     uint32_t template_id = tvb_get_letohs(tvb, offset + 18);
 
     const char *name = val_to_str(pinfo->pool, template_id, parse->messages, "Unknown (%u)");
 
     proto_tree *message = globex_mdp3_server_tcp_packet_show(template_id)
-        ? proto_tree_add_subtree(tree, tvb, offset, tcp_message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT, ett_globex_mdp3_message, NULL, name)
+        ? proto_tree_add_subtree(tree, tvb, offset, message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT, ett_globex_mdp3_message, NULL, name)
         : tree;
 
     unsigned position = offset;
@@ -16351,11 +16352,11 @@ dissect_globex_mdp3_server_tcp_packet_message(tvbuff_t *tvb, packet_info *pinfo,
     position = parse->dissect(tvb, pinfo, message, position, template_id);
 
     /* The parsed fields must account for the declared length exactly */
-    if (position != offset + tcp_message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT) {
+    if (position != offset + message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT) {
         expert_add_info(pinfo, message, &ei_globex_mdp3_length);
     }
 
-    return tcp_message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT;
+    return message_size + GLOBEX_MDP3_SERVER_TCP_PACKET_MESSAGE_ADJUSTMENT;
 }
 
 /* Framed messages to the end of the stream, a partial
@@ -18582,15 +18583,6 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_SYMBOL_MASK,
               GLOBEX_MDP3_SYMBOL_DESCRIPTION,
               HFILL } },
-        { &hf_globex_mdp3_tcp_message_size,
-            { GLOBEX_MDP3_TCP_MESSAGE_SIZE_NAME,
-              GLOBEX_MDP3_TCP_MESSAGE_SIZE_FILTER,
-              GLOBEX_MDP3_TCP_MESSAGE_SIZE_TYPE,
-              GLOBEX_MDP3_TCP_MESSAGE_SIZE_DISPLAY,
-              NULL,
-              GLOBEX_MDP3_TCP_MESSAGE_SIZE_MASK,
-              GLOBEX_MDP3_TCP_MESSAGE_SIZE_DESCRIPTION,
-              HFILL } },
         { &hf_globex_mdp3_tcp_sending_time,
             { GLOBEX_MDP3_TCP_SENDING_TIME_NAME,
               GLOBEX_MDP3_TCP_SENDING_TIME_FILTER,
@@ -19500,6 +19492,7 @@ proto_register_globex_mdp3(void)
         &ett_globex_mdp3_settl_price_type_v18,
         &ett_globex_mdp3_inst_attrib_value_v18,
         &ett_globex_mdp3_message_header,
+        &ett_globex_mdp3_simple_binary_header,
         &ett_globex_mdp3_channel_reset_groups,
         &ett_globex_mdp3_group_size,
         &ett_globex_mdp3_channel_reset_group,
