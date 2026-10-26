@@ -1752,7 +1752,7 @@ parse_globex_ilink3_dk_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define GLOBEX_ILINK3_ENCODING_TYPE_NAME     "Encoding Type"
 #define GLOBEX_ILINK3_ENCODING_TYPE_FILTER   "globex.ilink3.encodingtype"
 #define GLOBEX_ILINK3_ENCODING_TYPE_TYPE     FT_UINT16
-#define GLOBEX_ILINK3_ENCODING_TYPE_DISPLAY  BASE_DEC
+#define GLOBEX_ILINK3_ENCODING_TYPE_DISPLAY  BASE_HEX
 #define GLOBEX_ILINK3_ENCODING_TYPE_MASK     0x0
 #define GLOBEX_ILINK3_ENCODING_TYPE_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_ENCODING_TYPE_SIZE     2
@@ -19155,11 +19155,11 @@ dissect_globex_ilink3(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void 
 /* The fewest bytes any frame of the protocol holds, a header without messages */
 #define GLOBEX_ILINK3_MINIMUM_SIZE 12
 
-/* Schema Id: SchemaId */
+/* Encoding Type: Cme Sbe Message */
 static bool
 globex_ilink3_client_packet_heur_identifier(tvbuff_t *tvb)
 {
-    return tvb_get_letohs(tvb, 8) == 0x0008;
+    return tvb_get_letohs(tvb, 2) == 0xCAFE;
 }
 
 /* The first frame's declared length fits the stream */
@@ -19231,11 +19231,11 @@ globex_ilink3_client_packet_heur_accepts(tvbuff_t *tvb, packet_info *pinfo _U_)
     return true;
 }
 
-/* Schema Id: SchemaId */
+/* Encoding Type: Cme Sbe Message */
 static bool
 globex_ilink3_server_packet_heur_identifier(tvbuff_t *tvb)
 {
-    return tvb_get_letohs(tvb, 8) == 0x0008;
+    return tvb_get_letohs(tvb, 2) == 0xCAFE;
 }
 
 /* The first frame's declared length fits the stream */
