@@ -113,7 +113,7 @@ static int hf_iexequities_topssnap_security_directory_flags;
 static int hf_iexequities_topssnap_send_time;
 static int hf_iexequities_topssnap_session_id;
 static int hf_iexequities_topssnap_short_sale_price_test_status;
-static int hf_iexequities_topssnap_singleprice_cross_trade;
+static int hf_iexequities_topssnap_single_price_cross_trade;
 static int hf_iexequities_topssnap_size;
 static int hf_iexequities_topssnap_snapshot_length;
 static int hf_iexequities_topssnap_snapshot_sequence_number;
@@ -1177,13 +1177,13 @@ parse_iexequities_topssnap_short_sale_price_test_status(tvbuff_t *tvb, packet_in
     return offset + IEXEQUITIES_TOPSSNAP_SHORT_SALE_PRICE_TEST_STATUS_SIZE;
 }
 
-/* Singleprice Cross Trade */
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_NAME        "Singleprice Cross Trade"
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_DESCRIPTION "Trade resulting from a single-price cross"
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_FILTER      "iexequities.topssnap.singlepricecrosstrade"
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_TYPE        FT_BOOLEAN
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_DISPLAY     8
-#define IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_MASK        0x08
+/* Single Price Cross Trade */
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_NAME        "Single Price Cross Trade"
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_DESCRIPTION "Trade resulting from a single-price cross"
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_FILTER      "iexequities.topssnap.singlepricecrosstrade"
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_TYPE        FT_BOOLEAN
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_DISPLAY     8
+#define IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_MASK        0x08
 
 /* Size */
 #define IEXEQUITIES_TOPSSNAP_SIZE_NAME        "Size"
@@ -1500,7 +1500,7 @@ static int * const iexequities_topssnap_sale_condition_flags_fields[] = {
     &hf_iexequities_topssnap_extended_hours,
     &hf_iexequities_topssnap_odd_lot,
     &hf_iexequities_topssnap_trade_through_exempt,
-    &hf_iexequities_topssnap_singleprice_cross_trade,
+    &hf_iexequities_topssnap_single_price_cross_trade,
     NULL
 };
 
@@ -2580,14 +2580,14 @@ proto_register_iexequities_topssnap(void)
               IEXEQUITIES_TOPSSNAP_ODD_LOT_MASK,
               NULL,
               HFILL } },
-        { &hf_iexequities_topssnap_singleprice_cross_trade,
-            { IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_NAME,
-              IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_FILTER,
-              IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_TYPE,
-              IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_DISPLAY,
+        { &hf_iexequities_topssnap_single_price_cross_trade,
+            { IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_NAME,
+              IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_FILTER,
+              IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_TYPE,
+              IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_DISPLAY,
               NULL,
-              IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_MASK,
-              IEXEQUITIES_TOPSSNAP_SINGLEPRICE_CROSS_TRADE_DESCRIPTION,
+              IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_MASK,
+              IEXEQUITIES_TOPSSNAP_SINGLE_PRICE_CROSS_TRADE_DESCRIPTION,
               HFILL } },
         { &hf_iexequities_topssnap_symbol_availability,
             { IEXEQUITIES_TOPSSNAP_SYMBOL_AVAILABILITY_NAME,
