@@ -350,13 +350,6 @@ static const enum_val_t nsmequities_orders_assume_role_vals[] = {
     { NULL, NULL, 0 }
 };
 
-/* Entries of a repeating group are numbered */
-#define NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_NAME "show.indexes"
-#define NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_TITLE "Show Indexes"
-#define NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_DESCRIPTION "Number the entries of a repeating group in the protocol tree"
-
-static bool nsmequities_orders_pref_show_indexes = true;
-
 /* Ports the feed arrives on, assigned per deployment */
 #define NSMEQUITIES_ORDERS_PORTS_PREFERENCE_NAME "ports"
 #define NSMEQUITIES_ORDERS_PORTS_PREFERENCE_TITLE "Ports"
@@ -3452,58 +3445,58 @@ static unsigned dissect_nsmequities_orders_debug_packet(tvbuff_t *tvb, packet_in
 static unsigned dissect_nsmequities_orders_login_request_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_unsequenced_data_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_enter_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_enter_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_enter_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_replace_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_replace_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_replace_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_cancel_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_cancel_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_modify_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_modify_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_modify_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_account_query(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_account_query_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_account_query_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_mass_cancel_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_mass_cancel_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_mass_cancel_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_disable_order_entry_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_disable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_disable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_enable_order_entry_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_enable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_enable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_server_packet_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_login_accepted_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_login_rejected_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_sequenced_data_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_system_event(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_order_accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_accepted_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_order_accepted_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_replaced_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_replaced_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_canceled_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_canceled_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_aiq_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_aiq_canceled_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_aiq_canceled_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_order_executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_executed_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_order_executed_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_broken_trade(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_broken_trade_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_broken_trade_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_rejected_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_rejected_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_rejected_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_cancel_pending(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_pending_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_cancel_pending_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_cancel_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_cancel_reject_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_cancel_reject_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_order_priority_update(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_priority_update_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_order_priority_update_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_order_modified(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_modified_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_order_modified_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_order_restated(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_order_restated_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_order_restated_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_account_query_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_account_query_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_account_query_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_mass_cancel_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_mass_cancel_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_mass_cancel_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_disable_order_entry_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_enable_order_entry_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
+static unsigned dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_unsequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_enter_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_nsmequities_orders_replace_order_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -3620,8 +3613,6 @@ dissect_nsmequities_orders_unsequenced_data_packet(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_nsmequities_orders_enter_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
@@ -3634,28 +3625,20 @@ dissect_nsmequities_orders_enter_order(tvbuff_t *tvb, packet_info *pinfo, proto_
     offset = parse_nsmequities_orders_cross_type(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Enter Order Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 44);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_enter_order_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_enter_order_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Enter Order Appendage */
 static unsigned
-dissect_nsmequities_orders_enter_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_enter_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_enter_order_appendage, &item, "Enter Order Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enter_order_appendage, &item, "Enter Order Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enter_order_appendage, &item, "Enter Order Appendage");
     }
 
     unsigned start = offset;
@@ -3676,8 +3659,6 @@ dissect_nsmequities_orders_enter_order_appendage(tvbuff_t *tvb, packet_info *pin
 static unsigned
 dissect_nsmequities_orders_replace_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_orig_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
@@ -3687,28 +3668,20 @@ dissect_nsmequities_orders_replace_order(tvbuff_t *tvb, packet_info *pinfo, prot
     offset = parse_nsmequities_orders_inter_market_sweep_eligibility(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Replace Order Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 37);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_replace_order_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_replace_order_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Replace Order Appendage */
 static unsigned
-dissect_nsmequities_orders_replace_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_replace_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_replace_order_appendage, &item, "Replace Order Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_replace_order_appendage, &item, "Replace Order Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_replace_order_appendage, &item, "Replace Order Appendage");
     }
 
     unsigned start = offset;
@@ -3729,33 +3702,23 @@ dissect_nsmequities_orders_replace_order_appendage(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_nsmequities_orders_cancel_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Cancel Order Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 8);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_cancel_order_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_cancel_order_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Cancel Order Appendage */
 static unsigned
-dissect_nsmequities_orders_cancel_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_cancel_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_order_appendage, &item, "Cancel Order Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_order_appendage, &item, "Cancel Order Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_order_appendage, &item, "Cancel Order Appendage");
     }
 
     unsigned start = offset;
@@ -3776,34 +3739,24 @@ dissect_nsmequities_orders_cancel_order_appendage(tvbuff_t *tvb, packet_info *pi
 static unsigned
 dissect_nsmequities_orders_modify_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Modify Order Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 9);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_modify_order_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_modify_order_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Modify Order Appendage */
 static unsigned
-dissect_nsmequities_orders_modify_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_modify_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_modify_order_appendage, &item, "Modify Order Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_modify_order_appendage, &item, "Modify Order Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_modify_order_appendage, &item, "Modify Order Appendage");
     }
 
     unsigned start = offset;
@@ -3824,31 +3777,21 @@ dissect_nsmequities_orders_modify_order_appendage(tvbuff_t *tvb, packet_info *pi
 static unsigned
 dissect_nsmequities_orders_account_query(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Account Query Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_account_query_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_account_query_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Account Query Appendage */
 static unsigned
-dissect_nsmequities_orders_account_query_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_account_query_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_appendage, &item, "Account Query Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_appendage, &item, "Account Query Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_appendage, &item, "Account Query Appendage");
     }
 
     unsigned start = offset;
@@ -3869,34 +3812,24 @@ dissect_nsmequities_orders_account_query_appendage(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_nsmequities_orders_mass_cancel_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_symbol(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Mass Cancel Request Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 16);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_mass_cancel_request_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_mass_cancel_request_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Mass Cancel Request Appendage */
 static unsigned
-dissect_nsmequities_orders_mass_cancel_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_mass_cancel_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_request_appendage, &item, "Mass Cancel Request Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_request_appendage, &item, "Mass Cancel Request Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_request_appendage, &item, "Mass Cancel Request Appendage");
     }
 
     unsigned start = offset;
@@ -3917,33 +3850,23 @@ dissect_nsmequities_orders_mass_cancel_request_appendage(tvbuff_t *tvb, packet_i
 static unsigned
 dissect_nsmequities_orders_disable_order_entry_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Disable Order Entry Request Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 8);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_disable_order_entry_request_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_disable_order_entry_request_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Disable Order Entry Request Appendage */
 static unsigned
-dissect_nsmequities_orders_disable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_disable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_request_appendage, &item, "Disable Order Entry Request Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_request_appendage, &item, "Disable Order Entry Request Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_request_appendage, &item, "Disable Order Entry Request Appendage");
     }
 
     unsigned start = offset;
@@ -3964,33 +3887,23 @@ dissect_nsmequities_orders_disable_order_entry_request_appendage(tvbuff_t *tvb, 
 static unsigned
 dissect_nsmequities_orders_enable_order_entry_request(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Enable Order Entry Request Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 8);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_enable_order_entry_request_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_enable_order_entry_request_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Enable Order Entry Request Appendage */
 static unsigned
-dissect_nsmequities_orders_enable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_enable_order_entry_request_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_request_appendage, &item, "Enable Order Entry Request Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_request_appendage, &item, "Enable Order Entry Request Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_request_appendage, &item, "Enable Order Entry Request Appendage");
     }
 
     unsigned start = offset;
@@ -4076,8 +3989,6 @@ dissect_nsmequities_orders_system_event(tvbuff_t *tvb, packet_info *pinfo, proto
 static unsigned
 dissect_nsmequities_orders_order_accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
@@ -4093,28 +4004,20 @@ dissect_nsmequities_orders_order_accepted(tvbuff_t *tvb, packet_info *pinfo, pro
     offset = parse_nsmequities_orders_order_state(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Order Accepted Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 61);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_order_accepted_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_order_accepted_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Order Accepted Appendage */
 static unsigned
-dissect_nsmequities_orders_order_accepted_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_order_accepted_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_order_accepted_appendage, &item, "Order Accepted Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_accepted_appendage, &item, "Order Accepted Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_accepted_appendage, &item, "Order Accepted Appendage");
     }
 
     unsigned start = offset;
@@ -4135,8 +4038,6 @@ dissect_nsmequities_orders_order_accepted_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_orig_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
@@ -4153,28 +4054,20 @@ dissect_nsmequities_orders_replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tre
     offset = parse_nsmequities_orders_order_state(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Replaced Message Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 65);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_replaced_message_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_replaced_message_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Replaced Message Appendage */
 static unsigned
-dissect_nsmequities_orders_replaced_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_replaced_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_replaced_message_appendage, &item, "Replaced Message Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_replaced_message_appendage, &item, "Replaced Message Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_replaced_message_appendage, &item, "Replaced Message Appendage");
     }
 
     unsigned start = offset;
@@ -4195,35 +4088,25 @@ dissect_nsmequities_orders_replaced_message_appendage(tvbuff_t *tvb, packet_info
 static unsigned
 dissect_nsmequities_orders_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_cancel_order_reason(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Canceled Message Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 17);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_canceled_message_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_canceled_message_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Canceled Message Appendage */
 static unsigned
-dissect_nsmequities_orders_canceled_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_canceled_message_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_canceled_message_appendage, &item, "Canceled Message Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_canceled_message_appendage, &item, "Canceled Message Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_canceled_message_appendage, &item, "Canceled Message Appendage");
     }
 
     unsigned start = offset;
@@ -4244,8 +4127,6 @@ dissect_nsmequities_orders_canceled_message_appendage(tvbuff_t *tvb, packet_info
 static unsigned
 dissect_nsmequities_orders_aiq_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_decrement_shares(tvb, pinfo, tree, offset);
@@ -4255,28 +4136,20 @@ dissect_nsmequities_orders_aiq_canceled(tvbuff_t *tvb, packet_info *pinfo, proto
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_aiq_strategy(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Aiq Canceled Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 31);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_aiq_canceled_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_aiq_canceled_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Aiq Canceled Appendage */
 static unsigned
-dissect_nsmequities_orders_aiq_canceled_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_aiq_canceled_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_aiq_canceled_appendage, &item, "Aiq Canceled Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_aiq_canceled_appendage, &item, "Aiq Canceled Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_aiq_canceled_appendage, &item, "Aiq Canceled Appendage");
     }
 
     unsigned start = offset;
@@ -4297,8 +4170,6 @@ dissect_nsmequities_orders_aiq_canceled_appendage(tvbuff_t *tvb, packet_info *pi
 static unsigned
 dissect_nsmequities_orders_order_executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
@@ -4306,28 +4177,20 @@ dissect_nsmequities_orders_order_executed(tvbuff_t *tvb, packet_info *pinfo, pro
     offset = parse_nsmequities_orders_liquidity_flag(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Order Executed Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 33);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_order_executed_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_order_executed_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Order Executed Appendage */
 static unsigned
-dissect_nsmequities_orders_order_executed_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_order_executed_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_order_executed_appendage, &item, "Order Executed Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_executed_appendage, &item, "Order Executed Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_executed_appendage, &item, "Order Executed Appendage");
     }
 
     unsigned start = offset;
@@ -4348,36 +4211,26 @@ dissect_nsmequities_orders_order_executed_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_broken_trade(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_match_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_broken_trade_reason(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Broken Trade Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 35);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_broken_trade_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_broken_trade_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Broken Trade Appendage */
 static unsigned
-dissect_nsmequities_orders_broken_trade_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_broken_trade_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_broken_trade_appendage, &item, "Broken Trade Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_broken_trade_appendage, &item, "Broken Trade Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_broken_trade_appendage, &item, "Broken Trade Appendage");
     }
 
     unsigned start = offset;
@@ -4398,35 +4251,25 @@ dissect_nsmequities_orders_broken_trade_appendage(tvbuff_t *tvb, packet_info *pi
 static unsigned
 dissect_nsmequities_orders_rejected_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_rejected_order_reason(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_clordid(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Rejected Order Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 28);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_rejected_order_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_rejected_order_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Rejected Order Appendage */
 static unsigned
-dissect_nsmequities_orders_rejected_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_rejected_order_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_rejected_order_appendage, &item, "Rejected Order Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_rejected_order_appendage, &item, "Rejected Order Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_rejected_order_appendage, &item, "Rejected Order Appendage");
     }
 
     unsigned start = offset;
@@ -4447,33 +4290,23 @@ dissect_nsmequities_orders_rejected_order_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_cancel_pending(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Cancel Pending Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 12);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_cancel_pending_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_cancel_pending_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Cancel Pending Appendage */
 static unsigned
-dissect_nsmequities_orders_cancel_pending_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_cancel_pending_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_pending_appendage, &item, "Cancel Pending Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_pending_appendage, &item, "Cancel Pending Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_pending_appendage, &item, "Cancel Pending Appendage");
     }
 
     unsigned start = offset;
@@ -4494,33 +4327,23 @@ dissect_nsmequities_orders_cancel_pending_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_cancel_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Cancel Reject Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 12);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_cancel_reject_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_cancel_reject_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Cancel Reject Appendage */
 static unsigned
-dissect_nsmequities_orders_cancel_reject_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_cancel_reject_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_reject_appendage, &item, "Cancel Reject Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_reject_appendage, &item, "Cancel Reject Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_cancel_reject_appendage, &item, "Cancel Reject Appendage");
     }
 
     unsigned start = offset;
@@ -4541,36 +4364,26 @@ dissect_nsmequities_orders_cancel_reject_appendage(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_nsmequities_orders_order_priority_update(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_price(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_display(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_reference_number(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Order Priority Update Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 29);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_order_priority_update_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_order_priority_update_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Order Priority Update Appendage */
 static unsigned
-dissect_nsmequities_orders_order_priority_update_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_order_priority_update_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_order_priority_update_appendage, &item, "Order Priority Update Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_priority_update_appendage, &item, "Order Priority Update Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_priority_update_appendage, &item, "Order Priority Update Appendage");
     }
 
     unsigned start = offset;
@@ -4591,35 +4404,25 @@ dissect_nsmequities_orders_order_priority_update_appendage(tvbuff_t *tvb, packet
 static unsigned
 dissect_nsmequities_orders_order_modified(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_quantity(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Order Modified Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 17);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_order_modified_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_order_modified_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Order Modified Appendage */
 static unsigned
-dissect_nsmequities_orders_order_modified_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_order_modified_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_order_modified_appendage, &item, "Order Modified Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_modified_appendage, &item, "Order Modified Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_modified_appendage, &item, "Order Modified Appendage");
     }
 
     unsigned start = offset;
@@ -4640,34 +4443,24 @@ dissect_nsmequities_orders_order_modified_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_order_restated(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_order_restated_reason(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Order Restated Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 13);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_order_restated_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_order_restated_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Order Restated Appendage */
 static unsigned
-dissect_nsmequities_orders_order_restated_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_order_restated_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_order_restated_appendage, &item, "Order Restated Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_restated_appendage, &item, "Order Restated Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_order_restated_appendage, &item, "Order Restated Appendage");
     }
 
     unsigned start = offset;
@@ -4688,33 +4481,23 @@ dissect_nsmequities_orders_order_restated_appendage(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_orders_account_query_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_next_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length_v50(tvb, pinfo, tree, offset);
-
-    /* Account Query Response Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 12);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_account_query_response_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_account_query_response_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Account Query Response Appendage */
 static unsigned
-dissect_nsmequities_orders_account_query_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_account_query_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_response_appendage, &item, "Account Query Response Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_response_appendage, &item, "Account Query Response Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_account_query_response_appendage, &item, "Account Query Response Appendage");
     }
 
     unsigned start = offset;
@@ -4735,35 +4518,25 @@ dissect_nsmequities_orders_account_query_response_appendage(tvbuff_t *tvb, packe
 static unsigned
 dissect_nsmequities_orders_mass_cancel_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_symbol(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Mass Cancel Response Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 24);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_mass_cancel_response_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_mass_cancel_response_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Mass Cancel Response Appendage */
 static unsigned
-dissect_nsmequities_orders_mass_cancel_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_mass_cancel_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_response_appendage, &item, "Mass Cancel Response Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_response_appendage, &item, "Mass Cancel Response Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_mass_cancel_response_appendage, &item, "Mass Cancel Response Appendage");
     }
 
     unsigned start = offset;
@@ -4784,34 +4557,24 @@ dissect_nsmequities_orders_mass_cancel_response_appendage(tvbuff_t *tvb, packet_
 static unsigned
 dissect_nsmequities_orders_disable_order_entry_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Disable Order Entry Response Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 16);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_disable_order_entry_response_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_disable_order_entry_response_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Disable Order Entry Response Appendage */
 static unsigned
-dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_response_appendage, &item, "Disable Order Entry Response Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_response_appendage, &item, "Disable Order Entry Response Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_disable_order_entry_response_appendage, &item, "Disable Order Entry Response Appendage");
     }
 
     unsigned start = offset;
@@ -4832,34 +4595,24 @@ dissect_nsmequities_orders_disable_order_entry_response_appendage(tvbuff_t *tvb,
 static unsigned
 dissect_nsmequities_orders_enable_order_entry_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    unsigned start = offset;
-
     offset = parse_nsmequities_orders_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_user_ref_num(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_orders_appendage_length(tvb, pinfo, tree, offset);
-
-    /* Enable Order Entry Response Appendage: Appendage Length entries */
-    uint32_t appendage_length = tvb_get_ntohs(tvb, start + 16);
-
-    for (uint32_t index = 0; index < appendage_length; index++) {
-        offset = dissect_nsmequities_orders_enable_order_entry_response_appendage(tvb, pinfo, tree, offset, index + 1);
-    }
+    offset = dissect_nsmequities_orders_enable_order_entry_response_appendage(tvb, pinfo, tree, offset);
 
     return offset;
 }
 
 /* Enable Order Entry Response Appendage */
 static unsigned
-dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+dissect_nsmequities_orders_enable_order_entry_response_appendage(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     proto_item *item = NULL;
     proto_tree *group = tree;
 
     if (nsmequities_orders_show_structs) {
-        group = nsmequities_orders_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_response_appendage, &item, "Enable Order Entry Response Appendage %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_response_appendage, &item, "Enable Order Entry Response Appendage");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_nsmequities_orders_enable_order_entry_response_appendage, &item, "Enable Order Entry Response Appendage");
     }
 
     unsigned start = offset;
@@ -7851,13 +7604,6 @@ proto_register_nsmequities_orders(void)
         NSMEQUITIES_ORDERS_SWAP_SIDES_PREFERENCE_TITLE,
         NSMEQUITIES_ORDERS_SWAP_SIDES_PREFERENCE_DESCRIPTION,
         &nsmequities_orders_pref_swap_sides);
-
-    prefs_register_bool_preference(
-        preferences,
-        NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_NAME,
-        NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_TITLE,
-        NSMEQUITIES_ORDERS_INDEXES_PREFERENCE_DESCRIPTION,
-        &nsmequities_orders_pref_show_indexes);
 
     range_convert_str(
         wmem_epan_scope(),
