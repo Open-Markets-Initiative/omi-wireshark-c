@@ -182,6 +182,12 @@ static int hf_nsmequities_orders_time_of_day;
 static int hf_nsmequities_orders_utc;
 static int hf_nsmequities_orders_local;
 static int hf_nsmequities_orders_elapsed_nanoseconds;
+static int hf_nsmequities_orders_sequenced_data_packet_sequence_number;
+
+/* The number a Sequenced Data Packet takes, counted on from the stream's anchor */
+#define NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_NAME "Sequenced Data Packet Sequence Number"
+#define NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_FILTER "nsmequities.orders.sequenceddatapacketsequencenumber"
+#define NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_DESCRIPTION "The sequenced message's number, counted on from the first the login accepted"
 
 /* The time of day a timestamp reads as, beneath the instant it names */
 #define NSMEQUITIES_ORDERS_TIME_OF_DAY_NAME "Time Of Day"
@@ -395,6 +401,8 @@ typedef struct nsmequities_orders_conversation {
     address initiator;
     uint32_t port;
     bool swapped;
+    uint64_t sequence;
+    bool sequenced;
 } nsmequities_orders_conversation;
 
 /* Record of the frame's conversation, created on its first frame */
@@ -412,6 +420,59 @@ nsmequities_orders_conversation_of(packet_info *pinfo)
     }
 
     return state;
+}
+
+/* The frame a revisit is replaying, and which of its numbers comes next */
+static uint32_t nsmequities_orders_sequence_frame;
+static unsigned nsmequities_orders_sequence_occurrence;
+
+/* The anchor states the number of the stream's next sequenced message */
+static void
+nsmequities_orders_sequence_set(packet_info *pinfo, uint64_t first)
+{
+    if (!pinfo->fd->visited) {
+        nsmequities_orders_conversation *state = nsmequities_orders_conversation_of(pinfo);
+
+        state->sequence = first;
+        state->sequenced = true;
+    }
+}
+
+/* The number of the sequenced message being dissected, false before any anchor:
+   taken in order on the first pass, replayed in the same order on a revisit */
+static bool
+nsmequities_orders_sequence_next(packet_info *pinfo, uint64_t *value)
+{
+    wmem_array_t *taken = (wmem_array_t *)p_get_proto_data(wmem_file_scope(), pinfo, proto_nsmequities_orders, 2);
+
+    if (!pinfo->fd->visited) {
+        nsmequities_orders_conversation *state = nsmequities_orders_conversation_of(pinfo);
+
+        if (!state->sequenced) {
+            return false;
+        }
+
+        if (taken == NULL) {
+            taken = wmem_array_new(wmem_file_scope(), sizeof(uint64_t));
+            p_add_proto_data(wmem_file_scope(), pinfo, proto_nsmequities_orders, 2, taken);
+        }
+
+        *value = state->sequence++;
+        wmem_array_append_one(taken, *value);
+        return true;
+    }
+
+    if (taken == NULL || wmem_array_get_count(taken) == 0) {
+        return false;
+    }
+
+    if (nsmequities_orders_sequence_frame != pinfo->num || nsmequities_orders_sequence_occurrence >= wmem_array_get_count(taken)) {
+        nsmequities_orders_sequence_frame = pinfo->num;
+        nsmequities_orders_sequence_occurrence = 0;
+    }
+
+    *value = *(uint64_t *)wmem_array_index(taken, nsmequities_orders_sequence_occurrence++);
+    return true;
 }
 
 /* Date a count from midnight by the frame that carried it. The day is
@@ -527,6 +588,9 @@ parse_nsmequities_orders_accepted_sequence_number(tvbuff_t *tvb, packet_info *pi
     const char *text = (const char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_ACCEPTED_SEQUENCE_NUMBER_SIZE, ENC_ASCII);
 
     uint64_t value = (uint64_t)strtoull(text, NULL, 10);
+
+    /* The stream's sequenced messages after it count on from this number */
+    nsmequities_orders_sequence_set(pinfo, value);
 
     proto_tree_add_uint64(tree, hf_nsmequities_orders_accepted_sequence_number, tvb, offset, NSMEQUITIES_ORDERS_ACCEPTED_SEQUENCE_NUMBER_SIZE, value);
 
@@ -3966,6 +4030,13 @@ dissect_nsmequities_orders_sequenced_data_packet(tvbuff_t *tvb, packet_info *pin
 {
     unsigned start = offset;
 
+    /* Implicit Sequenced Data Packet Sequence Number */
+    uint64_t sequence;
+
+    if (nsmequities_orders_sequence_next(pinfo, &sequence)) {
+        proto_item_set_generated(proto_tree_add_uint64(tree, hf_nsmequities_orders_sequenced_data_packet_sequence_number, tvb, offset, 0, sequence));
+    }
+
     offset = parse_nsmequities_orders_sequenced_message_type(tvb, pinfo, tree, offset);
 
     uint32_t sequenced_message_type = tvb_get_uint8(tvb, start);
@@ -4716,6 +4787,13 @@ static unsigned
 dissect_nsmequities_orders_sequenced_data_packet_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     unsigned start = offset;
+
+    /* Implicit Sequenced Data Packet Sequence Number */
+    uint64_t sequence;
+
+    if (nsmequities_orders_sequence_next(pinfo, &sequence)) {
+        proto_item_set_generated(proto_tree_add_uint64(tree, hf_nsmequities_orders_sequenced_data_packet_sequence_number, tvb, offset, 0, sequence));
+    }
 
     offset = parse_nsmequities_orders_sequenced_message_type(tvb, pinfo, tree, offset);
 
@@ -7474,6 +7552,16 @@ proto_register_nsmequities_orders(void)
               NULL,
               0x0,
               NSMEQUITIES_ORDERS_ELAPSED_NANOSECONDS_DESCRIPTION,
+              HFILL } },
+
+        { &hf_nsmequities_orders_sequenced_data_packet_sequence_number,
+            { NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_NAME,
+              NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_FILTER,
+              FT_UINT64,
+              BASE_DEC,
+              NULL,
+              0x0,
+              NSMEQUITIES_ORDERS_SEQUENCED_DATA_PACKET_SEQUENCE_NUMBER_DESCRIPTION,
               HFILL } },
     };
 
