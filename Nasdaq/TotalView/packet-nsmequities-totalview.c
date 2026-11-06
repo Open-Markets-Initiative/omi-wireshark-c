@@ -455,6 +455,13 @@ static bool nsmequities_totalview_pref_read_millisecond = true;
 
 static bool nsmequities_totalview_pref_read_nanoseconds = true;
 
+/* Near Execution Time read as a time of day, which is the default */
+#define NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_NAME "read.nearexecutiontime"
+#define NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_TITLE "Read Near Execution Time as a time"
+#define NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_DESCRIPTION "Read Near Execution Time as a time of day, with the instant it names beneath it. Off states the nanoseconds since midnight the wire carries and nothing else"
+
+static bool nsmequities_totalview_pref_read_nearexecutiontime = true;
+
 /* Second read as a time of day, which is the default */
 #define NSMEQUITIES_TOTALVIEW_READ_SECOND_PREFERENCE_NAME "read.second"
 #define NSMEQUITIES_TOTALVIEW_READ_SECOND_PREFERENCE_TITLE "Read Second as a time"
@@ -2648,16 +2655,44 @@ parse_nsmequities_totalview_near_execution_price(tvbuff_t *tvb, packet_info *pin
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_NAME        "Near Execution Time"
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_DESCRIPTION "The time at which the Near Execution Price was determined"
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_FILTER      "nsmequities.totalview.nearexecutiontime"
-#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_TYPE        FT_UINT64
-#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_DISPLAY     BASE_DEC
+#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_TYPE        FT_ABSOLUTE_TIME
+#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_DISPLAY     ABSOLUTE_TIME_UTC
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_ENCODING    ENC_TIME_NSECS | ENC_BIG_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE        8
 
 static unsigned
-parse_nsmequities_totalview_near_execution_time(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_near_execution_time(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_near_execution_time, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_ENCODING);
+    uint64_t counted = tvb_get_ntoh64(tvb, offset);
+
+    if (!nsmequities_totalview_pref_read_nearexecutiontime) {
+        proto_tree_add_uint64(tree, hf_nsmequities_totalview_elapsed_nanoseconds, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, counted);
+
+        return offset + NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE;
+    }
+
+    nstime_t time = {
+        .secs = (time_t)(counted / 1000000000),
+        .nsecs = (int)(counted % 1000000000) * 1,
+    };
+
+    nstime_t instant;
+
+    nsmequities_totalview_utc(pinfo, (uint64_t)time.secs, (uint32_t)time.nsecs, &instant);
+
+    /* The instant reads unambiguously, the time of day it was sent at does not */
+    proto_item *reading = proto_tree_add_time(tree, hf_nsmequities_totalview_near_execution_time, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, &instant);
+
+    proto_tree *readings = proto_item_add_subtree(reading, ett_nsmequities_totalview_timestamp);
+
+    char clock[32];
+
+    nsmequities_totalview_time_of_day_label(clock, sizeof(clock), &time);
+
+    proto_item_set_generated(proto_tree_add_time_format_value(readings, hf_nsmequities_totalview_time_of_day, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, &time, "%s", clock));
+    proto_item_set_generated(proto_tree_add_time(readings, hf_nsmequities_totalview_local, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, &instant));
+    proto_tree_add_uint64(readings, hf_nsmequities_totalview_elapsed_nanoseconds, tvb, offset, NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE, counted);
 
     return offset + NSMEQUITIES_TOTALVIEW_NEAR_EXECUTION_TIME_SIZE;
 }
@@ -12020,6 +12055,13 @@ proto_register_nsmequities_totalview(void)
         NSMEQUITIES_TOTALVIEW_READ_NANOSECONDS_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_READ_NANOSECONDS_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_read_nanoseconds);
+
+    prefs_register_bool_preference(
+        preferences,
+        NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_NAME,
+        NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_TITLE,
+        NSMEQUITIES_TOTALVIEW_READ_NEAREXECUTIONTIME_PREFERENCE_DESCRIPTION,
+        &nsmequities_totalview_pref_read_nearexecutiontime);
 
     prefs_register_bool_preference(
         preferences,
