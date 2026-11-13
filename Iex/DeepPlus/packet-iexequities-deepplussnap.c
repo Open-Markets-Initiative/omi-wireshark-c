@@ -1,3 +1,4 @@
+// packet-iexequities-deepplussnap.c
 /* packet-iexequities-deepplussnap.c
  * Routines for IEX DEEP+ SNAP dissection
  *
@@ -777,19 +778,11 @@ parse_iexequities_deepplussnap_reject_reason_code(tvbuff_t *tvb, packet_info *pi
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_NAME        "Reserved 1"
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_DESCRIPTION "Reserved for future use"
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_FILTER      "iexequities.deepplussnap.reserved1"
-#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_TYPE        FT_CHAR
-#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_DISPLAY     BASE_HEX
+#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_TYPE        FT_BYTES
+#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_DISPLAY     BASE_NONE
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_MASK        0x0
-#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_ENCODING    ENC_ASCII
+#define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_ENCODING    ENC_NA
 #define IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE        1
-
-static unsigned
-parse_iexequities_deepplussnap_reserved_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_deepplussnap_reserved_1, tvb, offset, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_ENCODING);
-
-    return offset + IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
-}
 
 /* Retail Liquidity Indicator */
 #define IEXEQUITIES_DEEPPLUSSNAP_RETAIL_LIQUIDITY_INDICATOR_NAME        "Retail Liquidity Indicator"
@@ -1497,7 +1490,7 @@ dissect_iexequities_deepplussnap_order_modify(tvbuff_t *tvb, packet_info *pinfo,
 static unsigned
 dissect_iexequities_deepplussnap_order_delete(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_iexequities_deepplussnap_reserved_1(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplussnap_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_symbol(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_order_id_reference(tvb, pinfo, tree, offset);
@@ -1552,7 +1545,7 @@ dissect_iexequities_deepplussnap_trade_break(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_iexequities_deepplussnap_clear_book(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_iexequities_deepplussnap_reserved_1(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplussnap_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_symbol(tvb, pinfo, tree, offset);
 

@@ -1,3 +1,4 @@
+// packet-iexequities-tops.c
 /* packet-iexequities-tops.c
  * Routines for IEX TOPS dissection
  *
@@ -1052,19 +1053,11 @@ parse_iexequities_tops_reference_price(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define IEXEQUITIES_TOPS_RESERVED_4_NAME        "Reserved 4"
 #define IEXEQUITIES_TOPS_RESERVED_4_DESCRIPTION "Reserved bytes"
 #define IEXEQUITIES_TOPS_RESERVED_4_FILTER      "iexequities.tops.reserved4"
-#define IEXEQUITIES_TOPS_RESERVED_4_TYPE        FT_UINT32
-#define IEXEQUITIES_TOPS_RESERVED_4_DISPLAY     BASE_DEC
+#define IEXEQUITIES_TOPS_RESERVED_4_TYPE        FT_BYTES
+#define IEXEQUITIES_TOPS_RESERVED_4_DISPLAY     BASE_NONE
 #define IEXEQUITIES_TOPS_RESERVED_4_MASK        0x0
-#define IEXEQUITIES_TOPS_RESERVED_4_ENCODING    ENC_LITTLE_ENDIAN
+#define IEXEQUITIES_TOPS_RESERVED_4_ENCODING    ENC_NA
 #define IEXEQUITIES_TOPS_RESERVED_4_SIZE        4
-
-static unsigned
-parse_iexequities_tops_reserved_4(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_tops_reserved_4, tvb, offset, IEXEQUITIES_TOPS_RESERVED_4_SIZE, IEXEQUITIES_TOPS_RESERVED_4_ENCODING);
-
-    return offset + IEXEQUITIES_TOPS_RESERVED_4_SIZE;
-}
 
 /* Retail Liquidity Indicator */
 #define IEXEQUITIES_TOPS_RETAIL_LIQUIDITY_INDICATOR_NAME        "Retail Liquidity Indicator"
@@ -1770,7 +1763,7 @@ dissect_iexequities_tops_trade_report_v156(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_iexequities_tops_size(tvb, pinfo, tree, offset);
     offset = parse_iexequities_tops_price(tvb, pinfo, tree, offset);
     offset = parse_iexequities_tops_trade_id(tvb, pinfo, tree, offset);
-    offset = parse_iexequities_tops_reserved_4(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_TOPS_RESERVED_4_SIZE;
 
     return offset;
 }
@@ -1785,7 +1778,7 @@ dissect_iexequities_tops_trade_break_v156(tvbuff_t *tvb, packet_info *pinfo, pro
     offset = parse_iexequities_tops_size(tvb, pinfo, tree, offset);
     offset = parse_iexequities_tops_price(tvb, pinfo, tree, offset);
     offset = parse_iexequities_tops_trade_id(tvb, pinfo, tree, offset);
-    offset = parse_iexequities_tops_reserved_4(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_TOPS_RESERVED_4_SIZE;
 
     return offset;
 }

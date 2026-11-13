@@ -1,3 +1,4 @@
+// packet-coinbasederivatives-ordersapi.c
 /* packet-coinbasederivatives-ordersapi.c
  * Routines for CoinbaseDerivatives OrdersApi dissection
  *
@@ -141,7 +142,6 @@ static int hf_coinbasederivatives_ordersapi_request_trading_lock;
 static int hf_coinbasederivatives_ordersapi_resend_reject_reason;
 static int hf_coinbasederivatives_ordersapi_resent_event_count;
 static int hf_coinbasederivatives_ordersapi_reserved;
-static int hf_coinbasederivatives_ordersapi_reserved_7;
 static int hf_coinbasederivatives_ordersapi_reserved_byte;
 static int hf_coinbasederivatives_ordersapi_reset_seq_num;
 static int hf_coinbasederivatives_ordersapi_schema_id;
@@ -1739,14 +1739,6 @@ parse_coinbasederivatives_ordersapi_reserved(tvbuff_t *tvb, packet_info *pinfo _
     return offset + COINBASEDERIVATIVES_ORDERSAPI_RESERVED_SIZE;
 }
 
-/* Reserved 7 */
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME        "Reserved 7"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER      "coinbasederivatives.ordersapi.reserved7"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY     8
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK        0xFE
-
 /* Reserved Byte */
 #define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BYTE_NAME        "Reserved Byte"
 #define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BYTE_DESCRIPTION "reserved"
@@ -2249,7 +2241,6 @@ parse_coinbasederivatives_ordersapi_version(tvbuff_t *tvb, packet_info *pinfo _U
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_ordersapi_flags_fields[] = {
-    &hf_coinbasederivatives_ordersapi_reserved_7,
     &hf_coinbasederivatives_ordersapi_post_only,
     NULL
 };
@@ -5345,15 +5336,6 @@ proto_register_coinbasederivatives_ordersapi(void)
               NULL,
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_ordersapi_reserved_7,
-            { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */

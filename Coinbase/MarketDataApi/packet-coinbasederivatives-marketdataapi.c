@@ -1,3 +1,4 @@
+// packet-coinbasederivatives-marketdataapi.c
 /* packet-coinbasederivatives-marketdataapi.c
  * Routines for CoinbaseDerivatives MarketDataApi dissection
  *
@@ -175,11 +176,6 @@ static int hf_coinbasederivatives_marketdataapi_product_id;
 static int hf_coinbasederivatives_marketdataapi_quantity;
 static int hf_coinbasederivatives_marketdataapi_reason;
 static int hf_coinbasederivatives_marketdataapi_reserved;
-static int hf_coinbasederivatives_marketdataapi_reserved_11;
-static int hf_coinbasederivatives_marketdataapi_reserved_12;
-static int hf_coinbasederivatives_marketdataapi_reserved_13;
-static int hf_coinbasederivatives_marketdataapi_reserved_15;
-static int hf_coinbasederivatives_marketdataapi_reserved_7;
 static int hf_coinbasederivatives_marketdataapi_retransmit;
 static int hf_coinbasederivatives_marketdataapi_retry_delay_nanos;
 static int hf_coinbasederivatives_marketdataapi_schema_id;
@@ -2322,46 +2318,6 @@ parse_coinbasederivatives_marketdataapi_reserved(tvbuff_t *tvb, packet_info *pin
     return offset + COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_SIZE;
 }
 
-/* Reserved 11 */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_NAME        "Reserved 11"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DESCRIPTION "11 reserved bits"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_FILTER      "coinbasederivatives.marketdataapi.reserved11"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DISPLAY     8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_MASK        0xFFE0
-
-/* Reserved 12 */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_NAME        "Reserved 12"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DESCRIPTION "12 reserved bits"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_FILTER      "coinbasederivatives.marketdataapi.reserved12"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DISPLAY     8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_MASK        0xFFF0
-
-/* Reserved 13 */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_NAME        "Reserved 13"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DESCRIPTION "13 reserved bits"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_FILTER      "coinbasederivatives.marketdataapi.reserved13"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DISPLAY     8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_MASK        0xFFF8
-
-/* Reserved 15 */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_NAME        "Reserved 15"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DESCRIPTION "15 reserved bits"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_FILTER      "coinbasederivatives.marketdataapi.reserved15"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DISPLAY     8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_MASK        0xFFFE
-
-/* Reserved 7 */
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_NAME        "Reserved 7"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_FILTER      "coinbasederivatives.marketdataapi.reserved7"
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DISPLAY     8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_MASK        0xFE
-
 /* Retransmit */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_NAME        "Retransmit"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_DESCRIPTION "Retransmit packet indicator (Bit 2)"
@@ -2988,7 +2944,6 @@ parse_coinbasederivatives_marketdataapi_packet_flags(tvbuff_t *tvb, packet_info 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_fields[] = {
-    &hf_coinbasederivatives_marketdataapi_reserved_11,
     &hf_coinbasederivatives_marketdataapi_funding_rate_applicable,
     &hf_coinbasederivatives_marketdataapi_is_strike_delisted,
     &hf_coinbasederivatives_marketdataapi_is_call,
@@ -3017,7 +2972,6 @@ parse_coinbasederivatives_marketdataapi_definition_flags(tvbuff_t *tvb, packet_i
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_marketdataapi_flags_fields[] = {
-    &hf_coinbasederivatives_marketdataapi_reserved_7,
     &hf_coinbasederivatives_marketdataapi_is_final,
     NULL
 };
@@ -3042,7 +2996,6 @@ parse_coinbasederivatives_marketdataapi_flags(tvbuff_t *tvb, packet_info *pinfo 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V17_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v17_fields[] = {
-    &hf_coinbasederivatives_marketdataapi_reserved_12,
     &hf_coinbasederivatives_marketdataapi_is_strike_delisted,
     &hf_coinbasederivatives_marketdataapi_is_call,
     &hf_coinbasederivatives_marketdataapi_is_announced,
@@ -3070,7 +3023,6 @@ parse_coinbasederivatives_marketdataapi_definition_flags_v17(tvbuff_t *tvb, pack
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V13_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v13_fields[] = {
-    &hf_coinbasederivatives_marketdataapi_reserved_13,
     &hf_coinbasederivatives_marketdataapi_is_call,
     &hf_coinbasederivatives_marketdataapi_is_announced,
     &hf_coinbasederivatives_marketdataapi_is_prior_settlement_theoretical,
@@ -3097,7 +3049,6 @@ parse_coinbasederivatives_marketdataapi_definition_flags_v13(tvbuff_t *tvb, pack
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V12_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v12_fields[] = {
-    &hf_coinbasederivatives_marketdataapi_reserved_15,
     &hf_coinbasederivatives_marketdataapi_is_prior_settlement_theoretical,
     NULL
 };
@@ -5957,51 +5908,6 @@ proto_register_coinbasederivatives_marketdataapi(void)
               NULL,
               COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_marketdataapi_reserved_11,
-            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_NAME,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_FILTER,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_TYPE,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_marketdataapi_reserved_12,
-            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_NAME,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_FILTER,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_TYPE,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_marketdataapi_reserved_13,
-            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_NAME,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_FILTER,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_TYPE,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_marketdataapi_reserved_15,
-            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_NAME,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_FILTER,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_TYPE,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_marketdataapi_reserved_7,
-            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_NAME,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_FILTER,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_TYPE,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_MASK,
-              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_marketdataapi_retransmit,
             { COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_NAME,

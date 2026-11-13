@@ -1,3 +1,4 @@
+// packet-nsmequities-totalview.c
 /* packet-nsmequities-totalview.c
  * Routines for Nasdaq TotalView Itch dissection
  *
@@ -3447,19 +3448,11 @@ parse_nsmequities_totalview_requested_session_v32(tvbuff_t *tvb, packet_info *pi
 /* Reserved */
 #define NSMEQUITIES_TOTALVIEW_RESERVED_NAME     "Reserved"
 #define NSMEQUITIES_TOTALVIEW_RESERVED_FILTER   "nsmequities.totalview.reserved"
-#define NSMEQUITIES_TOTALVIEW_RESERVED_TYPE     FT_CHAR
-#define NSMEQUITIES_TOTALVIEW_RESERVED_DISPLAY  BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_RESERVED_TYPE     FT_BYTES
+#define NSMEQUITIES_TOTALVIEW_RESERVED_DISPLAY  BASE_NONE
 #define NSMEQUITIES_TOTALVIEW_RESERVED_MASK     0x0
-#define NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING ENC_ASCII
+#define NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING ENC_NA
 #define NSMEQUITIES_TOTALVIEW_RESERVED_SIZE     1
-
-static unsigned
-parse_nsmequities_totalview_reserved(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING);
-
-    return offset + NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
-}
 
 /* Reserved 1 */
 #define NSMEQUITIES_TOTALVIEW_RESERVED_1_NAME        "Reserved 1"
@@ -4871,7 +4864,7 @@ dissect_nsmequities_totalview_stock_trading_action(tvbuff_t *tvb, packet_info *p
     offset = parse_nsmequities_totalview_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason_code(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5327,7 +5320,7 @@ dissect_nsmequities_totalview_stock_trading_action_v41(tvbuff_t *tvb, packet_inf
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6064,7 +6057,7 @@ dissect_nsmequities_totalview_stock_trading_action_v40(tvbuff_t *tvb, packet_inf
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock_v40(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6741,7 +6734,7 @@ dissect_nsmequities_totalview_stock_trading_action_v40f(tvbuff_t *tvb, packet_in
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock_v40(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset = parse_nsmequities_totalview_reserved(tvb, pinfo, tree, offset);
+    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;

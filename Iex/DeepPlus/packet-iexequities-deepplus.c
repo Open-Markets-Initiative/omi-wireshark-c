@@ -1,3 +1,4 @@
+// packet-iexequities-deepplus.c
 /* packet-iexequities-deepplus.c
  * Routines for IEX DEEP Plus dissection
  *
@@ -731,19 +732,11 @@ parse_iexequities_deepplus_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define IEXEQUITIES_DEEPPLUS_RESERVED_1_NAME        "Reserved 1"
 #define IEXEQUITIES_DEEPPLUS_RESERVED_1_DESCRIPTION "Reserved for future use"
 #define IEXEQUITIES_DEEPPLUS_RESERVED_1_FILTER      "iexequities.deepplus.reserved1"
-#define IEXEQUITIES_DEEPPLUS_RESERVED_1_TYPE        FT_CHAR
-#define IEXEQUITIES_DEEPPLUS_RESERVED_1_DISPLAY     BASE_HEX
+#define IEXEQUITIES_DEEPPLUS_RESERVED_1_TYPE        FT_BYTES
+#define IEXEQUITIES_DEEPPLUS_RESERVED_1_DISPLAY     BASE_NONE
 #define IEXEQUITIES_DEEPPLUS_RESERVED_1_MASK        0x0
-#define IEXEQUITIES_DEEPPLUS_RESERVED_1_ENCODING    ENC_ASCII
+#define IEXEQUITIES_DEEPPLUS_RESERVED_1_ENCODING    ENC_NA
 #define IEXEQUITIES_DEEPPLUS_RESERVED_1_SIZE        1
-
-static unsigned
-parse_iexequities_deepplus_reserved_1(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_iexequities_deepplus_reserved_1, tvb, offset, IEXEQUITIES_DEEPPLUS_RESERVED_1_SIZE, IEXEQUITIES_DEEPPLUS_RESERVED_1_ENCODING);
-
-    return offset + IEXEQUITIES_DEEPPLUS_RESERVED_1_SIZE;
-}
 
 /* Retail Liquidity Indicator */
 #define IEXEQUITIES_DEEPPLUS_RETAIL_LIQUIDITY_INDICATOR_NAME        "Retail Liquidity Indicator"
@@ -1322,7 +1315,7 @@ dissect_iexequities_deepplus_order_modify(tvbuff_t *tvb, packet_info *pinfo, pro
 static unsigned
 dissect_iexequities_deepplus_order_delete(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_iexequities_deepplus_reserved_1(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_DEEPPLUS_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplus_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplus_symbol(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplus_order_id_reference(tvb, pinfo, tree, offset);
@@ -1377,7 +1370,7 @@ dissect_iexequities_deepplus_trade_break(tvbuff_t *tvb, packet_info *pinfo, prot
 static unsigned
 dissect_iexequities_deepplus_clear_book(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_iexequities_deepplus_reserved_1(tvb, pinfo, tree, offset);
+    offset += IEXEQUITIES_DEEPPLUS_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplus_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplus_symbol(tvb, pinfo, tree, offset);
 
