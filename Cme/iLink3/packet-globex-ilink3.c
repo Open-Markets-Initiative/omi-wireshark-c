@@ -1003,8 +1003,8 @@ parse_globex_ilink3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define GLOBEX_ILINK3_BROKEN_DATE_END_DESCRIPTION "End date of a financing deal, i.e. the date the seller reimburses the buyer and takes back control of the collateral."
 #define GLOBEX_ILINK3_BROKEN_DATE_END_FIX         6741
 #define GLOBEX_ILINK3_BROKEN_DATE_END_FILTER      "globex.ilink3.brokendateend"
-#define GLOBEX_ILINK3_BROKEN_DATE_END_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_BROKEN_DATE_END_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_BROKEN_DATE_END_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_BROKEN_DATE_END_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_BROKEN_DATE_END_MASK        0x0
 #define GLOBEX_ILINK3_BROKEN_DATE_END_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_BROKEN_DATE_END_SIZE        2
@@ -1012,7 +1012,9 @@ parse_globex_ilink3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 static unsigned
 parse_globex_ilink3_broken_date_end(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_broken_date_end, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_END_SIZE, GLOBEX_ILINK3_BROKEN_DATE_END_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_broken_date_end, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_END_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_BROKEN_DATE_END_SIZE;
 }
@@ -1060,8 +1062,8 @@ parse_globex_ilink3_broken_date_security_id(tvbuff_t *tvb, packet_info *pinfo _U
 #define GLOBEX_ILINK3_BROKEN_DATE_START_DESCRIPTION "Start date of a financing deal, i.e. the date the buyer pays the seller cash and takes control of the collateral"
 #define GLOBEX_ILINK3_BROKEN_DATE_START_FIX         6748
 #define GLOBEX_ILINK3_BROKEN_DATE_START_FILTER      "globex.ilink3.brokendatestart"
-#define GLOBEX_ILINK3_BROKEN_DATE_START_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_BROKEN_DATE_START_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_BROKEN_DATE_START_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_BROKEN_DATE_START_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_BROKEN_DATE_START_MASK        0x0
 #define GLOBEX_ILINK3_BROKEN_DATE_START_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_BROKEN_DATE_START_SIZE        2
@@ -1069,7 +1071,9 @@ parse_globex_ilink3_broken_date_security_id(tvbuff_t *tvb, packet_info *pinfo _U
 static unsigned
 parse_globex_ilink3_broken_date_start(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_broken_date_start, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_START_SIZE, GLOBEX_ILINK3_BROKEN_DATE_START_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_broken_date_start, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_START_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_BROKEN_DATE_START_SIZE;
 }
@@ -1771,8 +1775,8 @@ parse_globex_ilink3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define GLOBEX_ILINK3_END_DATE_DESCRIPTION "End date of a financing deal, i.e. the date the seller reimburses the buyer and takes back control of the collateral"
 #define GLOBEX_ILINK3_END_DATE_FIX         917
 #define GLOBEX_ILINK3_END_DATE_FILTER      "globex.ilink3.enddate"
-#define GLOBEX_ILINK3_END_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_END_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_END_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_END_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_END_DATE_MASK        0x0
 #define GLOBEX_ILINK3_END_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_END_DATE_SIZE        2
@@ -1780,7 +1784,9 @@ parse_globex_ilink3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 static unsigned
 parse_globex_ilink3_end_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_end_date, tvb, offset, GLOBEX_ILINK3_END_DATE_SIZE, GLOBEX_ILINK3_END_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_end_date, tvb, offset, GLOBEX_ILINK3_END_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_END_DATE_SIZE;
 }
@@ -2107,8 +2113,8 @@ parse_globex_ilink3_expiration_cycle(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define GLOBEX_ILINK3_EXPIRE_DATE_DESCRIPTION "Date of order expiration (last day the order can trade), always expressed in terms of the local market date. Applicable only to GTD orders which expire at the end of the trading session specified. This has to be a future or current session date and cannot be in the past."
 #define GLOBEX_ILINK3_EXPIRE_DATE_FIX         432
 #define GLOBEX_ILINK3_EXPIRE_DATE_FILTER      "globex.ilink3.expiredate"
-#define GLOBEX_ILINK3_EXPIRE_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_EXPIRE_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_EXPIRE_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_EXPIRE_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_EXPIRE_DATE_MASK        0x0
 #define GLOBEX_ILINK3_EXPIRE_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_EXPIRE_DATE_SIZE        2
@@ -2116,7 +2122,9 @@ parse_globex_ilink3_expiration_cycle(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 static unsigned
 parse_globex_ilink3_expire_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_expire_date, tvb, offset, GLOBEX_ILINK3_EXPIRE_DATE_SIZE, GLOBEX_ILINK3_EXPIRE_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_expire_date, tvb, offset, GLOBEX_ILINK3_EXPIRE_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_EXPIRE_DATE_SIZE;
 }
@@ -3350,8 +3358,8 @@ parse_globex_ilink3_mass_status_tif(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_ILINK3_MATURITY_DATE_DESCRIPTION "Date of maturity"
 #define GLOBEX_ILINK3_MATURITY_DATE_FIX         541
 #define GLOBEX_ILINK3_MATURITY_DATE_FILTER      "globex.ilink3.maturitydate"
-#define GLOBEX_ILINK3_MATURITY_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_MATURITY_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_MATURITY_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_MATURITY_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_MATURITY_DATE_MASK        0x0
 #define GLOBEX_ILINK3_MATURITY_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_MATURITY_DATE_SIZE        2
@@ -3359,7 +3367,9 @@ parse_globex_ilink3_mass_status_tif(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 static unsigned
 parse_globex_ilink3_maturity_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_maturity_date, tvb, offset, GLOBEX_ILINK3_MATURITY_DATE_SIZE, GLOBEX_ILINK3_MATURITY_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_maturity_date, tvb, offset, GLOBEX_ILINK3_MATURITY_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_MATURITY_DATE_SIZE;
 }
@@ -5707,8 +5717,8 @@ parse_globex_ilink3_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 #define GLOBEX_ILINK3_SETTL_DATE_DESCRIPTION "Specific date of trade settlement"
 #define GLOBEX_ILINK3_SETTL_DATE_FIX         64
 #define GLOBEX_ILINK3_SETTL_DATE_FILTER      "globex.ilink3.settldate"
-#define GLOBEX_ILINK3_SETTL_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_SETTL_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_SETTL_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_SETTL_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_SETTL_DATE_MASK        0x0
 #define GLOBEX_ILINK3_SETTL_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_SETTL_DATE_SIZE        2
@@ -5716,7 +5726,9 @@ parse_globex_ilink3_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 static unsigned
 parse_globex_ilink3_settl_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_settl_date, tvb, offset, GLOBEX_ILINK3_SETTL_DATE_SIZE, GLOBEX_ILINK3_SETTL_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_settl_date, tvb, offset, GLOBEX_ILINK3_SETTL_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_SETTL_DATE_SIZE;
 }
@@ -5960,8 +5972,8 @@ parse_globex_ilink3_split_msg(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define GLOBEX_ILINK3_START_DATE_DESCRIPTION "Start date of a financing deal, i.e. the date the buyer pays the seller cash and takes control of the collateral"
 #define GLOBEX_ILINK3_START_DATE_FIX         916
 #define GLOBEX_ILINK3_START_DATE_FILTER      "globex.ilink3.startdate"
-#define GLOBEX_ILINK3_START_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_START_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_START_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_START_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_START_DATE_MASK        0x0
 #define GLOBEX_ILINK3_START_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_START_DATE_SIZE        2
@@ -5969,7 +5981,9 @@ parse_globex_ilink3_split_msg(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 static unsigned
 parse_globex_ilink3_start_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_start_date, tvb, offset, GLOBEX_ILINK3_START_DATE_SIZE, GLOBEX_ILINK3_START_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_start_date, tvb, offset, GLOBEX_ILINK3_START_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_START_DATE_SIZE;
 }
@@ -6407,8 +6421,8 @@ parse_globex_ilink3_trade_addendum(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_ILINK3_TRADE_DATE_DESCRIPTION "Indicates date of trading day (expressed in local time at place of trade)."
 #define GLOBEX_ILINK3_TRADE_DATE_FIX         75
 #define GLOBEX_ILINK3_TRADE_DATE_FILTER      "globex.ilink3.tradedate"
-#define GLOBEX_ILINK3_TRADE_DATE_TYPE        FT_UINT16
-#define GLOBEX_ILINK3_TRADE_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_ILINK3_TRADE_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_ILINK3_TRADE_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_ILINK3_TRADE_DATE_MASK        0x0
 #define GLOBEX_ILINK3_TRADE_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_TRADE_DATE_SIZE        2
@@ -6416,7 +6430,9 @@ parse_globex_ilink3_trade_addendum(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 static unsigned
 parse_globex_ilink3_trade_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_ilink3_trade_date, tvb, offset, GLOBEX_ILINK3_TRADE_DATE_SIZE, GLOBEX_ILINK3_TRADE_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_ilink3_trade_date, tvb, offset, GLOBEX_ILINK3_TRADE_DATE_SIZE, &date);
 
     return offset + GLOBEX_ILINK3_TRADE_DATE_SIZE;
 }
@@ -19457,7 +19473,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BROKEN_DATE_END_FILTER,
               GLOBEX_ILINK3_BROKEN_DATE_END_TYPE,
               GLOBEX_ILINK3_BROKEN_DATE_END_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_BROKEN_DATE_END_MASK,
               GLOBEX_ILINK3_BROKEN_DATE_END_DESCRIPTION,
               HFILL } },
@@ -19484,7 +19500,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BROKEN_DATE_START_FILTER,
               GLOBEX_ILINK3_BROKEN_DATE_START_TYPE,
               GLOBEX_ILINK3_BROKEN_DATE_START_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_BROKEN_DATE_START_MASK,
               GLOBEX_ILINK3_BROKEN_DATE_START_DESCRIPTION,
               HFILL } },
@@ -19772,7 +19788,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_END_DATE_FILTER,
               GLOBEX_ILINK3_END_DATE_TYPE,
               GLOBEX_ILINK3_END_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_END_DATE_MASK,
               GLOBEX_ILINK3_END_DATE_DESCRIPTION,
               HFILL } },
@@ -19880,7 +19896,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_EXPIRE_DATE_FILTER,
               GLOBEX_ILINK3_EXPIRE_DATE_TYPE,
               GLOBEX_ILINK3_EXPIRE_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_EXPIRE_DATE_MASK,
               GLOBEX_ILINK3_EXPIRE_DATE_DESCRIPTION,
               HFILL } },
@@ -20366,7 +20382,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MATURITY_DATE_FILTER,
               GLOBEX_ILINK3_MATURITY_DATE_TYPE,
               GLOBEX_ILINK3_MATURITY_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_MATURITY_DATE_MASK,
               GLOBEX_ILINK3_MATURITY_DATE_DESCRIPTION,
               HFILL } },
@@ -21365,7 +21381,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SETTL_DATE_FILTER,
               GLOBEX_ILINK3_SETTL_DATE_TYPE,
               GLOBEX_ILINK3_SETTL_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_SETTL_DATE_MASK,
               GLOBEX_ILINK3_SETTL_DATE_DESCRIPTION,
               HFILL } },
@@ -21446,7 +21462,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_START_DATE_FILTER,
               GLOBEX_ILINK3_START_DATE_TYPE,
               GLOBEX_ILINK3_START_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_START_DATE_MASK,
               GLOBEX_ILINK3_START_DATE_DESCRIPTION,
               HFILL } },
@@ -21581,7 +21597,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_TRADE_DATE_FILTER,
               GLOBEX_ILINK3_TRADE_DATE_TYPE,
               GLOBEX_ILINK3_TRADE_DATE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              NULL,
               GLOBEX_ILINK3_TRADE_DATE_MASK,
               GLOBEX_ILINK3_TRADE_DATE_DESCRIPTION,
               HFILL } },

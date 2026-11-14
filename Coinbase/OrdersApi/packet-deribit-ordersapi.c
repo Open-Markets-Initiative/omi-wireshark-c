@@ -467,7 +467,6 @@ deribit_ordersapi_format_nullable_64(char *buf, uint64_t raw)
 /* Ask Order Id */
 #define DERIBIT_ORDERSAPI_ASK_ORDER_ID_NAME        "Ask Order Id"
 #define DERIBIT_ORDERSAPI_ASK_ORDER_ID_DESCRIPTION "askOrderId"
-#define DERIBIT_ORDERSAPI_ASK_ORDER_ID_FIX         1024
 #define DERIBIT_ORDERSAPI_ASK_ORDER_ID_FILTER      "deribit.ordersapi.askorderid"
 #define DERIBIT_ORDERSAPI_ASK_ORDER_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_ASK_ORDER_ID_DISPLAY     BASE_DEC
@@ -486,7 +485,6 @@ parse_deribit_ordersapi_ask_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 /* Ask Price */
 #define DERIBIT_ORDERSAPI_ASK_PRICE_NAME        "Ask Price"
 #define DERIBIT_ORDERSAPI_ASK_PRICE_DESCRIPTION "askPrice"
-#define DERIBIT_ORDERSAPI_ASK_PRICE_FIX         1040
 #define DERIBIT_ORDERSAPI_ASK_PRICE_FILTER      "deribit.ordersapi.askprice"
 #define DERIBIT_ORDERSAPI_ASK_PRICE_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_ASK_PRICE_DISPLAY     BASE_CUSTOM
@@ -505,7 +503,6 @@ parse_deribit_ordersapi_ask_price(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 /* Ask Price Optional */
 #define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_NAME        "Ask Price Optional"
 #define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_DESCRIPTION "askPrice"
-#define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_FIX         1024
 #define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_FILTER      "deribit.ordersapi.askpriceoptional"
 #define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_ASK_PRICE_OPTIONAL_DISPLAY     BASE_CUSTOM
@@ -524,7 +521,6 @@ parse_deribit_ordersapi_ask_price_optional(tvbuff_t *tvb, packet_info *pinfo _U_
 /* Ask Reject Reason */
 #define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_NAME        "Ask Reject Reason"
 #define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_DESCRIPTION "askRejectReason"
-#define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_FIX         1080
 #define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_FILTER      "deribit.ordersapi.askrejectreason"
 #define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_ASK_REJECT_REASON_DISPLAY     BASE_DEC
@@ -579,7 +575,6 @@ parse_deribit_ordersapi_ask_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_,
 /* Ask Status */
 #define DERIBIT_ORDERSAPI_ASK_STATUS_NAME        "Ask Status"
 #define DERIBIT_ORDERSAPI_ASK_STATUS_DESCRIPTION "askStatus"
-#define DERIBIT_ORDERSAPI_ASK_STATUS_FIX         1078
 #define DERIBIT_ORDERSAPI_ASK_STATUS_FILTER      "deribit.ordersapi.askstatus"
 #define DERIBIT_ORDERSAPI_ASK_STATUS_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_ASK_STATUS_DISPLAY     BASE_DEC
@@ -611,7 +606,6 @@ parse_deribit_ordersapi_ask_status(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 /* Bid Order Id */
 #define DERIBIT_ORDERSAPI_BID_ORDER_ID_NAME        "Bid Order Id"
 #define DERIBIT_ORDERSAPI_BID_ORDER_ID_DESCRIPTION "bidOrderId"
-#define DERIBIT_ORDERSAPI_BID_ORDER_ID_FIX         1016
 #define DERIBIT_ORDERSAPI_BID_ORDER_ID_FILTER      "deribit.ordersapi.bidorderid"
 #define DERIBIT_ORDERSAPI_BID_ORDER_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_BID_ORDER_ID_DISPLAY     BASE_DEC
@@ -630,7 +624,6 @@ parse_deribit_ordersapi_bid_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 /* Bid Price */
 #define DERIBIT_ORDERSAPI_BID_PRICE_NAME        "Bid Price"
 #define DERIBIT_ORDERSAPI_BID_PRICE_DESCRIPTION "bidPrice"
-#define DERIBIT_ORDERSAPI_BID_PRICE_FIX         1032
 #define DERIBIT_ORDERSAPI_BID_PRICE_FILTER      "deribit.ordersapi.bidprice"
 #define DERIBIT_ORDERSAPI_BID_PRICE_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_BID_PRICE_DISPLAY     BASE_CUSTOM
@@ -649,7 +642,6 @@ parse_deribit_ordersapi_bid_price(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 /* Bid Price Optional */
 #define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_NAME        "Bid Price Optional"
 #define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_DESCRIPTION "bidPrice"
-#define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_FIX         1016
 #define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_FILTER      "deribit.ordersapi.bidpriceoptional"
 #define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_BID_PRICE_OPTIONAL_DISPLAY     BASE_CUSTOM
@@ -668,7 +660,6 @@ parse_deribit_ordersapi_bid_price_optional(tvbuff_t *tvb, packet_info *pinfo _U_
 /* Bid Reject Reason */
 #define DERIBIT_ORDERSAPI_BID_REJECT_REASON_NAME        "Bid Reject Reason"
 #define DERIBIT_ORDERSAPI_BID_REJECT_REASON_DESCRIPTION "bidRejectReason"
-#define DERIBIT_ORDERSAPI_BID_REJECT_REASON_FIX         1079
 #define DERIBIT_ORDERSAPI_BID_REJECT_REASON_FILTER      "deribit.ordersapi.bidrejectreason"
 #define DERIBIT_ORDERSAPI_BID_REJECT_REASON_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_BID_REJECT_REASON_DISPLAY     BASE_DEC
@@ -723,7 +714,6 @@ parse_deribit_ordersapi_bid_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_,
 /* Bid Status */
 #define DERIBIT_ORDERSAPI_BID_STATUS_NAME        "Bid Status"
 #define DERIBIT_ORDERSAPI_BID_STATUS_DESCRIPTION "bidStatus"
-#define DERIBIT_ORDERSAPI_BID_STATUS_FIX         1077
 #define DERIBIT_ORDERSAPI_BID_STATUS_FILTER      "deribit.ordersapi.bidstatus"
 #define DERIBIT_ORDERSAPI_BID_STATUS_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_BID_STATUS_DISPLAY     BASE_DEC
@@ -781,7 +771,6 @@ parse_deribit_ordersapi_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 /* Cancel Reason */
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_NAME        "Cancel Reason"
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_DESCRIPTION "cancelReason"
-#define DERIBIT_ORDERSAPI_CANCEL_REASON_FIX         1034
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_FILTER      "deribit.ordersapi.cancelreason"
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_DISPLAY     BASE_DEC
@@ -840,7 +829,6 @@ parse_deribit_ordersapi_client_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 /* Client Order Id */
 #define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_NAME        "Client Order Id"
 #define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_DESCRIPTION "clientOrderId"
-#define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_FIX         1008
 #define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_FILTER      "deribit.ordersapi.clientorderid"
 #define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_CLIENT_ORDER_ID_DISPLAY     BASE_DEC
@@ -1000,7 +988,6 @@ parse_deribit_ordersapi_exponent(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 /* Fill Id */
 #define DERIBIT_ORDERSAPI_FILL_ID_NAME        "Fill Id"
 #define DERIBIT_ORDERSAPI_FILL_ID_DESCRIPTION "instrumentId"
-#define DERIBIT_ORDERSAPI_FILL_ID_FIX         2016
 #define DERIBIT_ORDERSAPI_FILL_ID_FILTER      "deribit.ordersapi.fillid"
 #define DERIBIT_ORDERSAPI_FILL_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_FILL_ID_DISPLAY     BASE_DEC
@@ -1019,7 +1006,6 @@ parse_deribit_ordersapi_fill_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 /* Fill Price */
 #define DERIBIT_ORDERSAPI_FILL_PRICE_NAME        "Fill Price"
 #define DERIBIT_ORDERSAPI_FILL_PRICE_DESCRIPTION "fillPrice"
-#define DERIBIT_ORDERSAPI_FILL_PRICE_FIX         1016
 #define DERIBIT_ORDERSAPI_FILL_PRICE_FILTER      "deribit.ordersapi.fillprice"
 #define DERIBIT_ORDERSAPI_FILL_PRICE_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_FILL_PRICE_DISPLAY     BASE_CUSTOM
@@ -1075,16 +1061,23 @@ parse_deribit_ordersapi_frozen_until(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_NAME        "Frozen Until Time"
 #define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_DESCRIPTION "frozenUntilTime"
 #define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_FILTER      "deribit.ordersapi.frozenuntiltime"
-#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_TYPE        FT_INT64
-#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_DISPLAY     BASE_CUSTOM
+#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_TYPE        FT_ABSOLUTE_TIME
+#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_DISPLAY     ABSOLUTE_TIME_UTC
 #define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_MASK        0x0
-#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE        8
 
 static unsigned
 parse_deribit_ordersapi_frozen_until_time(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_ENCODING);
+    if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, &empty, "No Value");
+    }
+    else {
+        proto_tree_add_item(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_ENCODING);
+    }
 
     return offset + DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE;
 }
@@ -1110,7 +1103,6 @@ parse_deribit_ordersapi_heartbeat_interval_seconds(tvbuff_t *tvb, packet_info *p
 /* Instrument Id */
 #define DERIBIT_ORDERSAPI_INSTRUMENT_ID_NAME        "Instrument Id"
 #define DERIBIT_ORDERSAPI_INSTRUMENT_ID_DESCRIPTION "instrumentId"
-#define DERIBIT_ORDERSAPI_INSTRUMENT_ID_FIX         1008
 #define DERIBIT_ORDERSAPI_INSTRUMENT_ID_FILTER      "deribit.ordersapi.instrumentid"
 #define DERIBIT_ORDERSAPI_INSTRUMENT_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_INSTRUMENT_ID_DISPLAY     BASE_DEC
@@ -1197,7 +1189,6 @@ parse_deribit_ordersapi_last_processed_seq_no(tvbuff_t *tvb, packet_info *pinfo 
 /* Leg Side */
 #define DERIBIT_ORDERSAPI_LEG_SIDE_NAME        "Leg Side"
 #define DERIBIT_ORDERSAPI_LEG_SIDE_DESCRIPTION "legSide"
-#define DERIBIT_ORDERSAPI_LEG_SIDE_FIX         2034
 #define DERIBIT_ORDERSAPI_LEG_SIDE_FILTER      "deribit.ordersapi.legside"
 #define DERIBIT_ORDERSAPI_LEG_SIDE_TYPE        FT_INT8
 #define DERIBIT_ORDERSAPI_LEG_SIDE_DISPLAY     BASE_DEC
@@ -1248,7 +1239,6 @@ parse_deribit_ordersapi_mantissa(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 /* Match Id */
 #define DERIBIT_ORDERSAPI_MATCH_ID_NAME        "Match Id"
 #define DERIBIT_ORDERSAPI_MATCH_ID_DESCRIPTION "matchId"
-#define DERIBIT_ORDERSAPI_MATCH_ID_FIX         1008
 #define DERIBIT_ORDERSAPI_MATCH_ID_FILTER      "deribit.ordersapi.matchid"
 #define DERIBIT_ORDERSAPI_MATCH_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_MATCH_ID_DISPLAY     BASE_DEC
@@ -1346,7 +1336,6 @@ parse_deribit_ordersapi_num_in_group(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 /* Order Id */
 #define DERIBIT_ORDERSAPI_ORDER_ID_NAME        "Order Id"
 #define DERIBIT_ORDERSAPI_ORDER_ID_DESCRIPTION "orderId"
-#define DERIBIT_ORDERSAPI_ORDER_ID_FIX         1016
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILTER      "deribit.ordersapi.orderid"
 #define DERIBIT_ORDERSAPI_ORDER_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_ORDER_ID_DISPLAY     BASE_DEC
@@ -1365,7 +1354,6 @@ parse_deribit_ordersapi_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 /* Order Id Fill Id */
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_NAME        "Order Id Fill Id"
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DESCRIPTION "orderId"
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_FIX         2016
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_FILTER      "deribit.ordersapi.orderidfillid"
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_TYPE        FT_INT64
 #define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DISPLAY     BASE_DEC
@@ -1436,7 +1424,6 @@ parse_deribit_ordersapi_order_id_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
 
 /* Price */
 #define DERIBIT_ORDERSAPI_PRICE_NAME     "Price"
-#define DERIBIT_ORDERSAPI_PRICE_FIX      1040
 #define DERIBIT_ORDERSAPI_PRICE_FILTER   "deribit.ordersapi.price"
 #define DERIBIT_ORDERSAPI_PRICE_TYPE     FT_INT64
 #define DERIBIT_ORDERSAPI_PRICE_DISPLAY  BASE_CUSTOM
@@ -1970,7 +1957,6 @@ parse_deribit_ordersapi_session_cancel_on_disconnect(tvbuff_t *tvb, packet_info 
 
 /* Side */
 #define DERIBIT_ORDERSAPI_SIDE_NAME     "Side"
-#define DERIBIT_ORDERSAPI_SIDE_FIX      1059
 #define DERIBIT_ORDERSAPI_SIDE_FILTER   "deribit.ordersapi.side"
 #define DERIBIT_ORDERSAPI_SIDE_TYPE     FT_INT8
 #define DERIBIT_ORDERSAPI_SIDE_DISPLAY  BASE_DEC
@@ -1995,7 +1981,6 @@ parse_deribit_ordersapi_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
 
 /* Status */
 #define DERIBIT_ORDERSAPI_STATUS_NAME     "Status"
-#define DERIBIT_ORDERSAPI_STATUS_FIX      1061
 #define DERIBIT_ORDERSAPI_STATUS_FILTER   "deribit.ordersapi.status"
 #define DERIBIT_ORDERSAPI_STATUS_TYPE     FT_INT8
 #define DERIBIT_ORDERSAPI_STATUS_DISPLAY  BASE_DEC
@@ -5945,7 +5930,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_FILTER,
               DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_TYPE,
               DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              NULL,
               DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_MASK,
               DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_DESCRIPTION,
               HFILL } },

@@ -359,14 +359,14 @@ deribit_marketdataapi_format_decimal_9_64_nullable(char *buf, uint64_t raw)
 static void
 deribit_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
 {
-    int64_t value = (int64_t)raw;
+    uint64_t value = (uint64_t)raw;
 
-    if (value == INT64_MIN) {
+    if (value == NaN) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /* Broadcast endpoints from the connectivity model */
@@ -738,16 +738,23 @@ parse_deribit_marketdataapi_estimated_delivery_price(tvbuff_t *tvb, packet_info 
 #define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_NAME        "Expiry Time"
 #define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_DESCRIPTION "expiryTime"
 #define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_FILTER      "deribit.marketdataapi.expirytime"
-#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_TYPE        FT_INT64
-#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_DISPLAY     BASE_CUSTOM
+#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_TYPE        FT_ABSOLUTE_TIME
+#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_DISPLAY     ABSOLUTE_TIME_UTC
 #define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_MASK        0x0
-#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE        8
 
 static unsigned
 parse_deribit_marketdataapi_expiry_time(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_ENCODING);
+    if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, &empty, "No Value");
+    }
+    else {
+        proto_tree_add_item(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_ENCODING);
+    }
 
     return offset + DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE;
 }
@@ -864,10 +871,10 @@ parse_deribit_marketdataapi_incremental_seq_num(tvbuff_t *tvb, packet_info *pinf
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_NAME        "Incremental Timestamp"
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_DESCRIPTION "incrementalTimestamp"
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_FILTER      "deribit.marketdataapi.incrementaltimestamp"
-#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_TYPE        FT_INT64
-#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_TYPE        FT_ABSOLUTE_TIME
+#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_DISPLAY     ABSOLUTE_TIME_UTC
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_MASK        0x0
-#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_TIMESTAMP_SIZE        8
 
 static unsigned
@@ -983,7 +990,6 @@ parse_deribit_marketdataapi_instrument_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 /* Large Tick Size */
 #define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_NAME        "Large Tick Size"
 #define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_DESCRIPTION "largeTickSize"
-#define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_FIX         1008
 #define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_FILTER      "deribit.marketdataapi.largeticksize"
 #define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_TYPE        FT_INT64
 #define DERIBIT_MARKETDATAAPI_LARGE_TICK_SIZE_DISPLAY     BASE_CUSTOM
@@ -1074,7 +1080,6 @@ parse_deribit_marketdataapi_large_tick_threshold_1(tvbuff_t *tvb, packet_info *p
 /* Leg Instrument Id */
 #define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_NAME        "Leg Instrument Id"
 #define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_DESCRIPTION "legInstrumentId"
-#define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_FIX         2008
 #define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_FILTER      "deribit.marketdataapi.leginstrumentid"
 #define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_TYPE        FT_INT64
 #define DERIBIT_MARKETDATAAPI_LEG_INSTRUMENT_ID_DISPLAY     BASE_DEC
@@ -1461,7 +1466,6 @@ parse_deribit_marketdataapi_quote_currency(tvbuff_t *tvb, packet_info *pinfo _U_
 
 /* Ratio */
 #define DERIBIT_MARKETDATAAPI_RATIO_NAME     "Ratio"
-#define DERIBIT_MARKETDATAAPI_RATIO_FIX      2009
 #define DERIBIT_MARKETDATAAPI_RATIO_FILTER   "deribit.marketdataapi.ratio"
 #define DERIBIT_MARKETDATAAPI_RATIO_TYPE     FT_INT8
 #define DERIBIT_MARKETDATAAPI_RATIO_DISPLAY  BASE_DEC
@@ -1782,7 +1786,6 @@ parse_deribit_marketdataapi_template_id(tvbuff_t *tvb, packet_info *pinfo _U_, p
 /* Threshold Price */
 #define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_NAME        "Threshold Price"
 #define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_DESCRIPTION "thresholdPrice"
-#define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_FIX         1016
 #define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_FILTER      "deribit.marketdataapi.thresholdprice"
 #define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_TYPE        FT_INT64
 #define DERIBIT_MARKETDATAAPI_THRESHOLD_PRICE_DISPLAY     BASE_CUSTOM
@@ -1819,10 +1822,10 @@ parse_deribit_marketdataapi_tick_size(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 /* Timestamp */
 #define DERIBIT_MARKETDATAAPI_TIMESTAMP_NAME     "Timestamp"
 #define DERIBIT_MARKETDATAAPI_TIMESTAMP_FILTER   "deribit.marketdataapi.timestamp"
-#define DERIBIT_MARKETDATAAPI_TIMESTAMP_TYPE     FT_INT64
-#define DERIBIT_MARKETDATAAPI_TIMESTAMP_DISPLAY  BASE_DEC
+#define DERIBIT_MARKETDATAAPI_TIMESTAMP_TYPE     FT_ABSOLUTE_TIME
+#define DERIBIT_MARKETDATAAPI_TIMESTAMP_DISPLAY  ABSOLUTE_TIME_UTC
 #define DERIBIT_MARKETDATAAPI_TIMESTAMP_MASK     0x0
-#define DERIBIT_MARKETDATAAPI_TIMESTAMP_ENCODING ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_TIMESTAMP_ENCODING ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_TIMESTAMP_SIZE     8
 
 static unsigned
@@ -3183,7 +3186,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_FILTER,
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_TYPE,
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              NULL,
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_MASK,
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_DESCRIPTION,
               HFILL } },

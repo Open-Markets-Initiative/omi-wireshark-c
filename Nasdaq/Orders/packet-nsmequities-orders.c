@@ -3365,17 +3365,45 @@ parse_nsmequities_orders_timestamp(tvbuff_t *tvb, packet_info *pinfo, proto_tree
 /* Timestamp V422018 */
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_NAME        "Timestamp"
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DESCRIPTION "Timestamp – reflected as the number of nanoseconds past midnight."
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_FILTER      "nsmequities.orders.timestampv422018"
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_TYPE        FT_UINT64
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DISPLAY     BASE_DEC
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_FILTER      "nsmequities.orders.timestamp"
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_TYPE        FT_ABSOLUTE_TIME
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_DISPLAY     ABSOLUTE_TIME_UTC
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_MASK        0x0
-#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_ENCODING    ENC_BIG_ENDIAN
+#define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_ENCODING    ENC_TIME_NSECS | ENC_BIG_ENDIAN
 #define NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE        8
 
 static unsigned
-parse_nsmequities_orders_timestamp_v422018(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_timestamp_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_timestamp_v422018, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_ENCODING);
+    uint64_t counted = tvb_get_ntoh64(tvb, offset);
+
+    if (!nsmequities_orders_pref_read_timestamp) {
+        proto_tree_add_uint64(tree, hf_nsmequities_orders_elapsed_nanoseconds, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, counted);
+
+        return offset + NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE;
+    }
+
+    nstime_t time = {
+        .secs = (time_t)(counted / 1000000000),
+        .nsecs = (int)(counted % 1000000000) * 1,
+    };
+
+    nstime_t instant;
+
+    nsmequities_orders_utc(pinfo, (uint64_t)time.secs, (uint32_t)time.nsecs, &instant);
+
+    /* The instant reads unambiguously, the time of day it was sent at does not */
+    proto_item *reading = proto_tree_add_time(tree, hf_nsmequities_orders_timestamp_v422018, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, &instant);
+
+    proto_tree *readings = proto_item_add_subtree(reading, ett_nsmequities_orders_timestamp);
+
+    char clock[32];
+
+    nsmequities_orders_time_of_day_label(clock, sizeof(clock), &time);
+
+    proto_item_set_generated(proto_tree_add_time_format_value(readings, hf_nsmequities_orders_time_of_day, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, &time, "%s", clock));
+    proto_item_set_generated(proto_tree_add_time(readings, hf_nsmequities_orders_local, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, &instant));
+    proto_tree_add_uint64(readings, hf_nsmequities_orders_elapsed_nanoseconds, tvb, offset, NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE, counted);
 
     return offset + NSMEQUITIES_ORDERS_TIMESTAMP_V422018_SIZE;
 }

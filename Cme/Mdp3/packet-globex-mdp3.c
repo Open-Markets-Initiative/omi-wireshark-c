@@ -107,7 +107,6 @@ static int hf_globex_mdp3_dated_date;
 static int hf_globex_mdp3_day;
 static int hf_globex_mdp3_decay_quantity;
 static int hf_globex_mdp3_decay_start_date;
-static int hf_globex_mdp3_decay_start_date_v112;
 static int hf_globex_mdp3_decaying_product_eligibility;
 static int hf_globex_mdp3_dirty_price;
 static int hf_globex_mdp3_display_factor;
@@ -340,12 +339,10 @@ static int hf_globex_mdp3_tick_rule;
 static int hf_globex_mdp3_tot_num_reports;
 static int hf_globex_mdp3_tot_num_reports_optional;
 static int hf_globex_mdp3_trade_date;
-static int hf_globex_mdp3_trade_date_v19;
 static int hf_globex_mdp3_trade_id;
 static int hf_globex_mdp3_trade_link_id;
 static int hf_globex_mdp3_tradeable_size;
 static int hf_globex_mdp3_trading_reference_date;
-static int hf_globex_mdp3_trading_reference_date_v112;
 static int hf_globex_mdp3_trading_reference_price;
 static int hf_globex_mdp3_trading_reference_price_v19;
 static int hf_globex_mdp3_trading_reference_price_ex;
@@ -495,12 +492,6 @@ static int ett_globex_mdp3_security_status_request_related_symbol_groups;
 static int ett_globex_mdp3_security_status_request_related_symbol_group;
 static int ett_globex_mdp3_client_technical_header;
 static int ett_globex_mdp3_server_technical_header;
-static int ett_globex_mdp3_incremental_refresh_daily_statistics_groups_v112;
-static int ett_globex_mdp3_incremental_refresh_daily_statistics_group_v112;
-static int ett_globex_mdp3_snapshot_full_refresh_groups_v112;
-static int ett_globex_mdp3_snapshot_full_refresh_group_v112;
-static int ett_globex_mdp3_snapshot_full_refresh_tcp_groups_v112;
-static int ett_globex_mdp3_snapshot_full_refresh_tcp_group_v112;
 static int ett_globex_mdp3_incremental_refresh_trade_summary_groups_v111;
 static int ett_globex_mdp3_incremental_refresh_trade_summary_group_v111;
 static int ett_globex_mdp3_inst_attrib_groups_v111;
@@ -1200,8 +1191,8 @@ parse_globex_mdp3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 #define GLOBEX_MDP3_BROKEN_DATE_END_DESCRIPTION "End date of a broken date period"
 #define GLOBEX_MDP3_BROKEN_DATE_END_FIX         6741
 #define GLOBEX_MDP3_BROKEN_DATE_END_FILTER      "globex.mdp3.brokendateend"
-#define GLOBEX_MDP3_BROKEN_DATE_END_TYPE        FT_UINT16
-#define GLOBEX_MDP3_BROKEN_DATE_END_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_BROKEN_DATE_END_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_BROKEN_DATE_END_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_BROKEN_DATE_END_MASK        0x0
 #define GLOBEX_MDP3_BROKEN_DATE_END_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_BROKEN_DATE_END_SIZE        2
@@ -1209,7 +1200,9 @@ parse_globex_mdp3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 static unsigned
 parse_globex_mdp3_broken_date_end(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_broken_date_end, tvb, offset, GLOBEX_MDP3_BROKEN_DATE_END_SIZE, GLOBEX_MDP3_BROKEN_DATE_END_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_broken_date_end, tvb, offset, GLOBEX_MDP3_BROKEN_DATE_END_SIZE, &date);
 
     return offset + GLOBEX_MDP3_BROKEN_DATE_END_SIZE;
 }
@@ -1257,8 +1250,8 @@ parse_globex_mdp3_broken_date_security_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define GLOBEX_MDP3_BROKEN_DATE_START_DESCRIPTION "Start date of a broken date period"
 #define GLOBEX_MDP3_BROKEN_DATE_START_FIX         6748
 #define GLOBEX_MDP3_BROKEN_DATE_START_FILTER      "globex.mdp3.brokendatestart"
-#define GLOBEX_MDP3_BROKEN_DATE_START_TYPE        FT_UINT16
-#define GLOBEX_MDP3_BROKEN_DATE_START_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_BROKEN_DATE_START_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_BROKEN_DATE_START_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_BROKEN_DATE_START_MASK        0x0
 #define GLOBEX_MDP3_BROKEN_DATE_START_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_BROKEN_DATE_START_SIZE        2
@@ -1266,7 +1259,9 @@ parse_globex_mdp3_broken_date_security_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 static unsigned
 parse_globex_mdp3_broken_date_start(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_broken_date_start, tvb, offset, GLOBEX_MDP3_BROKEN_DATE_START_SIZE, GLOBEX_MDP3_BROKEN_DATE_START_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_broken_date_start, tvb, offset, GLOBEX_MDP3_BROKEN_DATE_START_SIZE, &date);
 
     return offset + GLOBEX_MDP3_BROKEN_DATE_START_SIZE;
 }
@@ -1530,8 +1525,8 @@ parse_globex_mdp3_current_chunk(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define GLOBEX_MDP3_DATED_DATE_NAME     "Dated Date"
 #define GLOBEX_MDP3_DATED_DATE_FIX      873
 #define GLOBEX_MDP3_DATED_DATE_FILTER   "globex.mdp3.dateddate"
-#define GLOBEX_MDP3_DATED_DATE_TYPE     FT_UINT16
-#define GLOBEX_MDP3_DATED_DATE_DISPLAY  BASE_CUSTOM
+#define GLOBEX_MDP3_DATED_DATE_TYPE     FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_DATED_DATE_DISPLAY  ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_DATED_DATE_MASK     0x0
 #define GLOBEX_MDP3_DATED_DATE_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_DATED_DATE_SIZE     2
@@ -1539,7 +1534,9 @@ parse_globex_mdp3_current_chunk(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 static unsigned
 parse_globex_mdp3_dated_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_dated_date, tvb, offset, GLOBEX_MDP3_DATED_DATE_SIZE, GLOBEX_MDP3_DATED_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_dated_date, tvb, offset, GLOBEX_MDP3_DATED_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_DATED_DATE_SIZE;
 }
@@ -1600,25 +1597,6 @@ parse_globex_mdp3_decay_start_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
     proto_tree_add_time(tree, hf_globex_mdp3_decay_start_date, tvb, offset, GLOBEX_MDP3_DECAY_START_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_DECAY_START_DATE_SIZE;
-}
-
-/* Decay Start Date V112 */
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_NAME        "Decay Start Date"
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_DESCRIPTION "Indicates the date at which a decaying contract will begin to decay"
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_FIX         5819
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_FILTER      "globex.mdp3.decaystartdatev112"
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_TYPE        FT_UINT16
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_DISPLAY     BASE_CUSTOM
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_MASK        0x0
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_DECAY_START_DATE_V112_SIZE        2
-
-static unsigned
-parse_globex_mdp3_decay_start_date_v112(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_decay_start_date_v112, tvb, offset, GLOBEX_MDP3_DECAY_START_DATE_V112_SIZE, GLOBEX_MDP3_DECAY_START_DATE_V112_ENCODING);
-
-    return offset + GLOBEX_MDP3_DECAY_START_DATE_V112_SIZE;
 }
 
 /* Decaying Product Eligibility */
@@ -1774,8 +1752,8 @@ parse_globex_mdp3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define GLOBEX_MDP3_END_DATE_DESCRIPTION "End date of a financing deal, i.e. the date the seller reimburses the buyer and takes back control of the collateral"
 #define GLOBEX_MDP3_END_DATE_FIX         917
 #define GLOBEX_MDP3_END_DATE_FILTER      "globex.mdp3.enddate"
-#define GLOBEX_MDP3_END_DATE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_END_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_END_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_END_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_END_DATE_MASK        0x0
 #define GLOBEX_MDP3_END_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_END_DATE_SIZE        2
@@ -1783,7 +1761,9 @@ parse_globex_mdp3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 static unsigned
 parse_globex_mdp3_end_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_end_date, tvb, offset, GLOBEX_MDP3_END_DATE_SIZE, GLOBEX_MDP3_END_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_end_date, tvb, offset, GLOBEX_MDP3_END_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_END_DATE_SIZE;
 }
@@ -2246,8 +2226,8 @@ parse_globex_mdp3_intervening_days(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_MDP3_ISSUE_DATE_NAME     "Issue Date"
 #define GLOBEX_MDP3_ISSUE_DATE_FIX      225
 #define GLOBEX_MDP3_ISSUE_DATE_FILTER   "globex.mdp3.issuedate"
-#define GLOBEX_MDP3_ISSUE_DATE_TYPE     FT_UINT16
-#define GLOBEX_MDP3_ISSUE_DATE_DISPLAY  BASE_CUSTOM
+#define GLOBEX_MDP3_ISSUE_DATE_TYPE     FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_ISSUE_DATE_DISPLAY  ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_ISSUE_DATE_MASK     0x0
 #define GLOBEX_MDP3_ISSUE_DATE_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_ISSUE_DATE_SIZE     2
@@ -2255,7 +2235,9 @@ parse_globex_mdp3_intervening_days(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 static unsigned
 parse_globex_mdp3_issue_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_issue_date, tvb, offset, GLOBEX_MDP3_ISSUE_DATE_SIZE, GLOBEX_MDP3_ISSUE_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_issue_date, tvb, offset, GLOBEX_MDP3_ISSUE_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_ISSUE_DATE_SIZE;
 }
@@ -2707,8 +2689,8 @@ parse_globex_mdp3_match_algorithm(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define GLOBEX_MDP3_MATURITY_DATE_NAME     "Maturity Date"
 #define GLOBEX_MDP3_MATURITY_DATE_FIX      541
 #define GLOBEX_MDP3_MATURITY_DATE_FILTER   "globex.mdp3.maturitydate"
-#define GLOBEX_MDP3_MATURITY_DATE_TYPE     FT_UINT16
-#define GLOBEX_MDP3_MATURITY_DATE_DISPLAY  BASE_CUSTOM
+#define GLOBEX_MDP3_MATURITY_DATE_TYPE     FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_MATURITY_DATE_DISPLAY  ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_MATURITY_DATE_MASK     0x0
 #define GLOBEX_MDP3_MATURITY_DATE_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_MATURITY_DATE_SIZE     2
@@ -2716,7 +2698,9 @@ parse_globex_mdp3_match_algorithm(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 static unsigned
 parse_globex_mdp3_maturity_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_maturity_date, tvb, offset, GLOBEX_MDP3_MATURITY_DATE_SIZE, GLOBEX_MDP3_MATURITY_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_maturity_date, tvb, offset, GLOBEX_MDP3_MATURITY_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_MATURITY_DATE_SIZE;
 }
@@ -5254,8 +5238,8 @@ parse_globex_mdp3_settl_currency(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define GLOBEX_MDP3_SETTL_DATE_DESCRIPTION "Settle (Value) Date corresponding to Trade Date"
 #define GLOBEX_MDP3_SETTL_DATE_FIX         64
 #define GLOBEX_MDP3_SETTL_DATE_FILTER      "globex.mdp3.settldate"
-#define GLOBEX_MDP3_SETTL_DATE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_SETTL_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_SETTL_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_SETTL_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_SETTL_DATE_MASK        0x0
 #define GLOBEX_MDP3_SETTL_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_SETTL_DATE_SIZE        2
@@ -5263,7 +5247,9 @@ parse_globex_mdp3_settl_currency(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 static unsigned
 parse_globex_mdp3_settl_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_settl_date, tvb, offset, GLOBEX_MDP3_SETTL_DATE_SIZE, GLOBEX_MDP3_SETTL_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_settl_date, tvb, offset, GLOBEX_MDP3_SETTL_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_SETTL_DATE_SIZE;
 }
@@ -5374,8 +5360,8 @@ parse_globex_mdp3_side_optional(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define GLOBEX_MDP3_START_DATE_DESCRIPTION "Start date of a financing deal, i.e. the date the buyer pays the seller cash and takes control of the collateral"
 #define GLOBEX_MDP3_START_DATE_FIX         916
 #define GLOBEX_MDP3_START_DATE_FILTER      "globex.mdp3.startdate"
-#define GLOBEX_MDP3_START_DATE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_START_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_START_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_START_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_START_DATE_MASK        0x0
 #define GLOBEX_MDP3_START_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_START_DATE_SIZE        2
@@ -5383,7 +5369,9 @@ parse_globex_mdp3_side_optional(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 static unsigned
 parse_globex_mdp3_start_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_start_date, tvb, offset, GLOBEX_MDP3_START_DATE_SIZE, GLOBEX_MDP3_START_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_start_date, tvb, offset, GLOBEX_MDP3_START_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_START_DATE_SIZE;
 }
@@ -5794,8 +5782,8 @@ parse_globex_mdp3_tot_num_reports_optional(tvbuff_t *tvb, packet_info *pinfo _U_
 #define GLOBEX_MDP3_TRADE_DATE_DESCRIPTION "Trade Session Date"
 #define GLOBEX_MDP3_TRADE_DATE_FIX         75
 #define GLOBEX_MDP3_TRADE_DATE_FILTER      "globex.mdp3.tradedate"
-#define GLOBEX_MDP3_TRADE_DATE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_TRADE_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_TRADE_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_TRADE_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_TRADE_DATE_MASK        0x0
 #define GLOBEX_MDP3_TRADE_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_TRADE_DATE_SIZE        2
@@ -5803,30 +5791,11 @@ parse_globex_mdp3_tot_num_reports_optional(tvbuff_t *tvb, packet_info *pinfo _U_
 static unsigned
 parse_globex_mdp3_trade_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_trade_date, tvb, offset, GLOBEX_MDP3_TRADE_DATE_SIZE, GLOBEX_MDP3_TRADE_DATE_ENCODING);
-
-    return offset + GLOBEX_MDP3_TRADE_DATE_SIZE;
-}
-
-/* Trade Date V19 */
-#define GLOBEX_MDP3_TRADE_DATE_V19_NAME        "Trade Date"
-#define GLOBEX_MDP3_TRADE_DATE_V19_DESCRIPTION "Trade Session Date"
-#define GLOBEX_MDP3_TRADE_DATE_V19_FIX         75
-#define GLOBEX_MDP3_TRADE_DATE_V19_FILTER      "globex.mdp3.tradedatev19"
-#define GLOBEX_MDP3_TRADE_DATE_V19_TYPE        FT_ABSOLUTE_TIME
-#define GLOBEX_MDP3_TRADE_DATE_V19_DISPLAY     ABSOLUTE_TIME_UTC
-#define GLOBEX_MDP3_TRADE_DATE_V19_MASK        0x0
-#define GLOBEX_MDP3_TRADE_DATE_V19_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_TRADE_DATE_V19_SIZE        2
-
-static unsigned
-parse_globex_mdp3_trade_date_v19(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
     nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
 
-    proto_tree_add_time(tree, hf_globex_mdp3_trade_date_v19, tvb, offset, GLOBEX_MDP3_TRADE_DATE_V19_SIZE, &date);
+    proto_tree_add_time(tree, hf_globex_mdp3_trade_date, tvb, offset, GLOBEX_MDP3_TRADE_DATE_SIZE, &date);
 
-    return offset + GLOBEX_MDP3_TRADE_DATE_V19_SIZE;
+    return offset + GLOBEX_MDP3_TRADE_DATE_SIZE;
 }
 
 /* Trade Id */
@@ -5905,25 +5874,6 @@ parse_globex_mdp3_trading_reference_date(tvbuff_t *tvb, packet_info *pinfo _U_, 
     proto_tree_add_time(tree, hf_globex_mdp3_trading_reference_date, tvb, offset, GLOBEX_MDP3_TRADING_REFERENCE_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_TRADING_REFERENCE_DATE_SIZE;
-}
-
-/* Trading Reference Date V112 */
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_NAME        "Trading Reference Date"
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_DESCRIPTION "Indicates session date corresponding to the settlement price in tag 1150-TradingReferencePrice"
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_FIX         5796
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_FILTER      "globex.mdp3.tradingreferencedatev112"
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_TYPE        FT_UINT16
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_DISPLAY     BASE_CUSTOM
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_MASK        0x0
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_SIZE        2
-
-static unsigned
-parse_globex_mdp3_trading_reference_date_v112(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_trading_reference_date_v112, tvb, offset, GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_SIZE, GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_ENCODING);
-
-    return offset + GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_SIZE;
 }
 
 /* Trading Reference Price */
@@ -6110,8 +6060,8 @@ parse_globex_mdp3_underlying_issuer(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_DESCRIPTION "Underlying Security's Maturity Date. Will be populated with Maturity Date of the underlying security instrument for Repo Specials only"
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_FIX         542
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_FILTER      "globex.mdp3.underlyingmaturitydate"
-#define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_TYPE        FT_UINT16
-#define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_DISPLAY     BASE_CUSTOM
+#define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_TYPE        FT_ABSOLUTE_TIME
+#define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_DISPLAY     ABSOLUTE_TIME_UTC
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_MASK        0x0
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_ENCODING    ENC_LITTLE_ENDIAN
 #define GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_SIZE        2
@@ -6119,7 +6069,9 @@ parse_globex_mdp3_underlying_issuer(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 static unsigned
 parse_globex_mdp3_underlying_maturity_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_globex_mdp3_underlying_maturity_date, tvb, offset, GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_SIZE, GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_ENCODING);
+    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+
+    proto_tree_add_time(tree, hf_globex_mdp3_underlying_maturity_date, tvb, offset, GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_SIZE, &date);
 
     return offset + GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_SIZE;
 }
@@ -7035,20 +6987,7 @@ static unsigned dissect_globex_mdp3_security_status_request_related_symbol_group
 static unsigned dissect_globex_mdp3_client_technical_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_server_technical_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_mktdata_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_incremental_refresh_daily_statistics_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_incremental_refresh_daily_statistics_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
-static unsigned dissect_globex_mdp3_md_instrument_definition_future_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_md_instrument_definition_option_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_md_instrument_definition_spread_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_md_instrument_definition_fixed_income_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_md_instrument_definition_repo_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_tcp_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_snapshot_full_refresh_tcp_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_globex_mdp3_md_instrument_definition_fx_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_mktdata_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_md_incremental_refresh_trade_summary_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -7128,7 +7067,6 @@ static unsigned dissect_globex_mdp3_md_instrument_definition_future_v18(tvbuff_t
 static unsigned dissect_globex_mdp3_inst_attrib_groups_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_inst_attrib_group_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_globex_mdp3_md_instrument_definition_spread_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_security_status_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_md_incremental_refresh_book_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_incremental_refresh_book_groups_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_incremental_refresh_book_group_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
@@ -10567,385 +10505,6 @@ dissect_globex_mdp3_mktdata_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *
     return offset;
 }
 
-/* Md Incremental Refresh Daily Statistics */
-static unsigned
-dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset += GLOBEX_MDP3_PADDING_2_SIZE;
-    offset = dissect_globex_mdp3_incremental_refresh_daily_statistics_groups_v112(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Incremental Refresh Daily Statistics Groups */
-static unsigned
-dissect_globex_mdp3_incremental_refresh_daily_statistics_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_incremental_refresh_daily_statistics_groups_v112, &item, "Incremental Refresh Daily Statistics Groups");
-    }
-
-    unsigned start = offset;
-
-    offset = dissect_globex_mdp3_group_size(tvb, pinfo, group, offset);
-
-    /* Incremental Refresh Daily Statistics Group: Num In Group entries */
-    uint32_t num_in_group = tvb_get_uint8(tvb, start + 2);
-
-    for (uint32_t index = 0; index < num_in_group; index++) {
-        offset = dissect_globex_mdp3_incremental_refresh_daily_statistics_group_v112(tvb, pinfo, group, offset, index + 1);
-    }
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Incremental Refresh Daily Statistics Group */
-static unsigned
-dissect_globex_mdp3_incremental_refresh_daily_statistics_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = globex_mdp3_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_globex_mdp3_incremental_refresh_daily_statistics_group_v112, &item, "Incremental Refresh Daily Statistics Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_incremental_refresh_daily_statistics_group_v112, &item, "Incremental Refresh Daily Statistics Group");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_globex_mdp3_md_entry_px_optional_ex(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_size_short_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_rpt_seq(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_update_action(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_type_daily_statistics(tvb, pinfo, group, offset);
-    offset += GLOBEX_MDP3_PADDING_7_SIZE;
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_last_msg_seq_num_processed(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tot_num_reports(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_rpt_seq(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trade_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_snapshot_full_refresh_groups_v112(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh Groups */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_groups_v112, &item, "Snapshot Full Refresh Groups");
-    }
-
-    unsigned start = offset;
-
-    offset = dissect_globex_mdp3_group_size(tvb, pinfo, group, offset);
-
-    /* Snapshot Full Refresh Group: Num In Group entries */
-    uint32_t num_in_group = tvb_get_uint8(tvb, start + 2);
-
-    for (uint32_t index = 0; index < num_in_group; index++) {
-        offset = dissect_globex_mdp3_snapshot_full_refresh_group_v112(tvb, pinfo, group, offset, index + 1);
-    }
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh Group */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = globex_mdp3_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_group_v112, &item, "Snapshot Full Refresh Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_group_v112, &item, "Snapshot Full Refresh Group");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_globex_mdp3_md_entry_px_optional_ex(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_size_short_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_number_of_orders_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_price_level_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_open_close_settl_flag(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_type(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Md Instrument Definition Future */
-static unsigned
-dissect_globex_mdp3_md_instrument_definition_future_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tot_num_reports_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_update_action(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_appl_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_segment_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_underlying_product(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_exchange(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_symbol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cfi_code(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_maturity_month_year(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_algorithm(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_ex(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_display_factor(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_display_format(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_open_interest_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cleared_volume(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_flow_schedule_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_amount(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_inst_attrib_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Md Instrument Definition Option */
-static unsigned
-dissect_globex_mdp3_md_instrument_definition_option_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tot_num_reports_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_update_action(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_appl_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_segment_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_underlying_product(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_exchange(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_symbol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cfi_code(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_put_or_call(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_maturity_month_year(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_strike_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_strike_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_cab_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_algorithm(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_optional_ex(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_amount(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_display_factor(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tick_rule(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_display_format(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cleared_volume(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_open_interest_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_inst_attrib_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Md Instrument Definition Spread */
-static unsigned
-dissect_globex_mdp3_md_instrument_definition_spread_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tot_num_reports_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_update_action(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_appl_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_segment_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_underlying_product_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_exchange(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_symbol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cfi_code(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_maturity_month_year(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_sub_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_algorithm(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_optional_ex(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_display_factor(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_display_format(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_ratio(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tick_rule(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_open_interest_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cleared_volume(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_quote_method(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_risk_set(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_set(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_financial_instrument_full_name(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_inst_attrib_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_legs_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Md Instrument Definition Fixed Income */
-static unsigned
-dissect_globex_mdp3_md_instrument_definition_fixed_income_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_tot_num_reports_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_update_action(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_appl_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_segment_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_underlying_product(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_exchange(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_symbol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_cfi_code(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_settl_currency(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_algorithm(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_trade_vol(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_optional_ex(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_display_factor(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_display_format(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_min_price_increment_amount(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_issue_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_dated_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_maturity_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_coupon_rate(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_par_value(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_coupon_frequency_unit(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_coupon_frequency_period(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_coupon_day_count(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_country_of_issue(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_issuer(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_financial_instrument_full_name(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_alt_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_alt_id_source(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_price_quote_method(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_party_role_clearing_org(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_risk_set(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_market_set(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_inst_attrib_groups(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
 /* Md Instrument Definition Repo V112 */
 static unsigned
 dissect_globex_mdp3_md_instrument_definition_repo_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -10975,7 +10534,7 @@ dissect_globex_mdp3_md_instrument_definition_repo_v112(tvbuff_t *tvb, packet_inf
     offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
@@ -10999,78 +10558,6 @@ dissect_globex_mdp3_md_instrument_definition_repo_v112(tvbuff_t *tvb, packet_inf
     offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_related_instruments_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh Tcp */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_event_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_snapshot_full_refresh_tcp_groups_v112(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh Tcp Groups */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_tcp_groups_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_tcp_groups_v112, &item, "Snapshot Full Refresh Tcp Groups");
-    }
-
-    unsigned start = offset;
-
-    offset = dissect_globex_mdp3_group_size(tvb, pinfo, group, offset);
-
-    /* Snapshot Full Refresh Tcp Group: Num In Group entries */
-    uint32_t num_in_group = tvb_get_uint8(tvb, start + 2);
-
-    for (uint32_t index = 0; index < num_in_group; index++) {
-        offset = dissect_globex_mdp3_snapshot_full_refresh_tcp_group_v112(tvb, pinfo, group, offset, index + 1);
-    }
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Snapshot Full Refresh Tcp Group */
-static unsigned
-dissect_globex_mdp3_snapshot_full_refresh_tcp_group_v112(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = globex_mdp3_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_tcp_group_v112, &item, "Snapshot Full Refresh Tcp Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_snapshot_full_refresh_tcp_group_v112, &item, "Snapshot Full Refresh Tcp Group");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_globex_mdp3_md_entry_px_optional_ex(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_size_short_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_tradeable_size(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_number_of_orders_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_price_level_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_open_close_settl_flag(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_md_entry_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_settl_price_type(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -11255,14 +10742,14 @@ dissect_globex_mdp3_md_instrument_definition_future_v111(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_decay_start_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_flow_schedule_type(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_min_price_increment_amount(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
@@ -11416,7 +10903,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v111(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
@@ -11469,7 +10956,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v111(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_price_quote_method(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_risk_set(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_market_set(tvb, pinfo, tree, offset);
@@ -11516,7 +11003,7 @@ dissect_globex_mdp3_md_instrument_definition_fixed_income_v111(tvbuff_t *tvb, pa
     offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
@@ -11577,7 +11064,7 @@ dissect_globex_mdp3_md_instrument_definition_repo_v111(tvbuff_t *tvb, packet_inf
     offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
@@ -11672,14 +11159,14 @@ dissect_globex_mdp3_md_instrument_definition_future_v110(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_decay_start_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_flow_schedule_type(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_min_price_increment_amount(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
@@ -11734,7 +11221,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v110(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_instrument_guid(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
@@ -11787,7 +11274,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v110(tvbuff_t *tvb, packet_i
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_price_quote_method(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_risk_set(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_market_set(tvb, pinfo, tree, offset);
@@ -11834,7 +11321,7 @@ dissect_globex_mdp3_md_instrument_definition_fixed_income_v110(tvbuff_t *tvb, pa
     offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
@@ -11895,7 +11382,7 @@ dissect_globex_mdp3_md_instrument_definition_repo_v110(tvbuff_t *tvb, packet_inf
     offset = parse_globex_mdp3_unit_of_measure(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_unit_of_measure_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_trading_reference_price(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation(tvb, pinfo, tree, offset);
@@ -12231,7 +11718,7 @@ dissect_globex_mdp3_security_status_v19(tvbuff_t *tvb, packet_info *pinfo, proto
     offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_security_id_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trade_date_v19(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trade_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_match_event_indicator_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_security_trading_status(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_halt_reason(tvb, pinfo, tree, offset);
@@ -12532,7 +12019,7 @@ dissect_globex_mdp3_snapshot_full_refresh_legacy(tvbuff_t *tvb, packet_info *pin
     offset = parse_globex_mdp3_rpt_seq(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trade_date_v19(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trade_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
@@ -12954,7 +12441,7 @@ dissect_globex_mdp3_snapshot_full_refresh_v19(tvbuff_t *tvb, packet_info *pinfo,
     offset = parse_globex_mdp3_rpt_seq(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_last_update_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trade_date_v19(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trade_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_md_security_trading_status(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price_ex(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_low_limit_price_ex(tvb, pinfo, tree, offset);
@@ -13258,14 +12745,14 @@ dissect_globex_mdp3_md_instrument_definition_future_v18(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_decay_start_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_flow_schedule_type(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_min_price_increment_amount_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
@@ -13364,29 +12851,12 @@ dissect_globex_mdp3_md_instrument_definition_spread_v18(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_max_price_variation_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legacy_legs_groups(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Security Status */
-static unsigned
-dissect_globex_mdp3_security_status_v18(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_mdp3_transact_time(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_group(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_asset(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_id_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trade_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_match_event_indicator_v19(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_trading_status(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_halt_reason(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_security_trading_event(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -13519,7 +12989,7 @@ dissect_globex_mdp3_incremental_refresh_daily_statistics_group_v18(tvbuff_t *tvb
     offset = parse_globex_mdp3_md_entry_size_optional_v18(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_security_id(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_rpt_seq(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, group, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_settl_price_type_v18(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_md_update_action(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_md_entry_type_daily_statistics(tvb, pinfo, group, offset);
@@ -13863,7 +13333,7 @@ dissect_globex_mdp3_snapshot_full_refresh_group_v18(tvbuff_t *tvb, packet_info *
     offset = parse_globex_mdp3_md_entry_size_optional_v18(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_number_of_orders_v18(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_md_price_level_optional(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, group, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_open_close_settl_flag(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_settl_price_type_v18(tvb, pinfo, group, offset);
     offset = parse_globex_mdp3_md_entry_type(tvb, pinfo, group, offset);
@@ -13931,7 +13401,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v18(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
@@ -14211,14 +13681,14 @@ dissect_globex_mdp3_md_instrument_definition_future_v16(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_decay_start_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_flow_schedule_type(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_min_price_increment_amount_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
@@ -14268,7 +13738,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v16(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_max_price_variation_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_main_fraction(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_sub_fraction(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
@@ -14459,7 +13929,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v16(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_high_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_user_defined_instrument(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_trading_reference_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_trading_reference_date(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
@@ -14601,7 +14071,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v15(tvbuff_t *tvb, packet_in
     offset = parse_globex_mdp3_low_limit_price_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_max_price_variation_v19(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_decay_quantity(tvb, pinfo, tree, offset);
-    offset = parse_globex_mdp3_decay_start_date_v112(tvb, pinfo, tree, offset);
+    offset = parse_globex_mdp3_decay_start_date(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_original_contract_size(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier(tvb, pinfo, tree, offset);
     offset = parse_globex_mdp3_contract_multiplier_unit(tvb, pinfo, tree, offset);
@@ -15166,23 +14636,23 @@ dissect_globex_mdp3_mktdata_payload_v112(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
-        return dissect_globex_mdp3_md_instrument_definition_future_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_future(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_OPTION:
-        return dissect_globex_mdp3_md_instrument_definition_option_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_option(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD:
-        return dissect_globex_mdp3_md_instrument_definition_spread_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_spread(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FIXED_INCOME:
-        return dissect_globex_mdp3_md_instrument_definition_fixed_income_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_fixed_income(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_REPO:
         return dissect_globex_mdp3_md_instrument_definition_repo_v112(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_REFRESH_TOP_ORDERS:
@@ -15190,7 +14660,7 @@ dissect_globex_mdp3_mktdata_payload_v112(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_COLLATERAL_MARKET_VALUE:
         return dissect_globex_mdp3_collateral_market_value(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FX:
@@ -15268,13 +14738,13 @@ dissect_globex_mdp3_mktdata_payload_v111(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary_v111(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
@@ -15292,7 +14762,7 @@ dissect_globex_mdp3_mktdata_payload_v111(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_COLLATERAL_MARKET_VALUE:
         return dissect_globex_mdp3_collateral_market_value(tvb, pinfo, tree, offset);
     }
@@ -15355,13 +14825,13 @@ dissect_globex_mdp3_mktdata_payload_v110(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary_v110(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
@@ -15379,7 +14849,7 @@ dissect_globex_mdp3_mktdata_payload_v110(tvbuff_t *tvb, packet_info *pinfo, prot
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -15531,7 +15001,7 @@ dissect_globex_mdp3_mktdata_payload_v18(tvbuff_t *tvb, packet_info *pinfo, proto
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v18(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v18(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -15602,7 +15072,7 @@ dissect_globex_mdp3_mktdata_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v16(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v16(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -15669,7 +15139,7 @@ dissect_globex_mdp3_mktdata_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v15(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v15(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -15967,23 +15437,23 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v112(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
-        return dissect_globex_mdp3_md_instrument_definition_future_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_future(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_OPTION:
-        return dissect_globex_mdp3_md_instrument_definition_option_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_option(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD:
-        return dissect_globex_mdp3_md_instrument_definition_spread_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_spread(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FIXED_INCOME:
-        return dissect_globex_mdp3_md_instrument_definition_fixed_income_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_instrument_definition_fixed_income(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_REPO:
         return dissect_globex_mdp3_md_instrument_definition_repo_v112(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_REFRESH_TOP_ORDERS:
@@ -15991,7 +15461,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v112(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_COLLATERAL_MARKET_VALUE:
         return dissect_globex_mdp3_collateral_market_value(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FX:
@@ -16084,13 +15554,13 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v111(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary_v111(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
@@ -16108,7 +15578,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v111(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_COLLATERAL_MARKET_VALUE:
         return dissect_globex_mdp3_collateral_market_value(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_NEGOTIATION_REJECT:
@@ -16186,13 +15656,13 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v110(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_TRADE_SUMMARY:
         return dissect_globex_mdp3_md_incremental_refresh_trade_summary_v110(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS:
-        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_md_incremental_refresh_daily_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_LIMITS_BANDING:
         return dissect_globex_mdp3_md_incremental_refresh_limits_banding(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_SESSION_STATISTICS:
         return dissect_globex_mdp3_md_incremental_refresh_session_statistics(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH:
-        return dissect_globex_mdp3_snapshot_full_refresh_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_ORDER_BOOK:
         return dissect_globex_mdp3_snapshot_full_refresh_order_book(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_FUTURE:
@@ -16210,7 +15680,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v110(tvbuff_t *tvb, packet_
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS_WORKUP:
         return dissect_globex_mdp3_security_status_workup(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SNAPSHOT_FULL_REFRESH_TCP:
-        return dissect_globex_mdp3_snapshot_full_refresh_tcp_v112(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_snapshot_full_refresh_tcp(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_NEGOTIATION_REJECT:
         return dissect_globex_mdp3_negotiation_reject(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
@@ -16392,7 +15862,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v18(tvbuff_t *tvb, packet_i
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v18(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v18(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -16478,7 +15948,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v16(tvbuff_t *tvb, packet_i
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v16(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v16(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -16560,7 +16030,7 @@ dissect_globex_mdp3_server_tcp_packet_server_payload_v15(tvbuff_t *tvb, packet_i
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INSTRUMENT_DEFINITION_SPREAD_LEGACY:
         return dissect_globex_mdp3_md_instrument_definition_spread_v15(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_SECURITY_STATUS:
-        return dissect_globex_mdp3_security_status_v18(tvb, pinfo, tree, offset);
+        return dissect_globex_mdp3_security_status_v19(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_BOOK_LEGACY:
         return dissect_globex_mdp3_md_incremental_refresh_book_v15(tvb, pinfo, tree, offset);
     case GLOBEX_MDP3_TEMPLATE_ID_MD_INCREMENTAL_REFRESH_DAILY_STATISTICS_LEGACY:
@@ -17561,7 +17031,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_BROKEN_DATE_END_FILTER,
               GLOBEX_MDP3_BROKEN_DATE_END_TYPE,
               GLOBEX_MDP3_BROKEN_DATE_END_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_BROKEN_DATE_END_MASK,
               GLOBEX_MDP3_BROKEN_DATE_END_DESCRIPTION,
               HFILL } },
@@ -17588,7 +17058,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_BROKEN_DATE_START_FILTER,
               GLOBEX_MDP3_BROKEN_DATE_START_TYPE,
               GLOBEX_MDP3_BROKEN_DATE_START_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_BROKEN_DATE_START_MASK,
               GLOBEX_MDP3_BROKEN_DATE_START_DESCRIPTION,
               HFILL } },
@@ -17714,7 +17184,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_DATED_DATE_FILTER,
               GLOBEX_MDP3_DATED_DATE_TYPE,
               GLOBEX_MDP3_DATED_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_DATED_DATE_MASK,
               NULL,
               HFILL } },
@@ -17744,15 +17214,6 @@ proto_register_globex_mdp3(void)
               NULL,
               GLOBEX_MDP3_DECAY_START_DATE_MASK,
               GLOBEX_MDP3_DECAY_START_DATE_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_decay_start_date_v112,
-            { GLOBEX_MDP3_DECAY_START_DATE_V112_NAME,
-              GLOBEX_MDP3_DECAY_START_DATE_V112_FILTER,
-              GLOBEX_MDP3_DECAY_START_DATE_V112_TYPE,
-              GLOBEX_MDP3_DECAY_START_DATE_V112_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
-              GLOBEX_MDP3_DECAY_START_DATE_V112_MASK,
-              GLOBEX_MDP3_DECAY_START_DATE_V112_DESCRIPTION,
               HFILL } },
         { &hf_globex_mdp3_dirty_price,
             { GLOBEX_MDP3_DIRTY_PRICE_NAME,
@@ -17804,7 +17265,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_END_DATE_FILTER,
               GLOBEX_MDP3_END_DATE_TYPE,
               GLOBEX_MDP3_END_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_END_DATE_MASK,
               GLOBEX_MDP3_END_DATE_DESCRIPTION,
               HFILL } },
@@ -17975,7 +17436,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_ISSUE_DATE_FILTER,
               GLOBEX_MDP3_ISSUE_DATE_TYPE,
               GLOBEX_MDP3_ISSUE_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_ISSUE_DATE_MASK,
               NULL,
               HFILL } },
@@ -18173,7 +17634,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_MATURITY_DATE_FILTER,
               GLOBEX_MDP3_MATURITY_DATE_TYPE,
               GLOBEX_MDP3_MATURITY_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_MATURITY_DATE_MASK,
               NULL,
               HFILL } },
@@ -19244,7 +18705,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_SETTL_DATE_FILTER,
               GLOBEX_MDP3_SETTL_DATE_TYPE,
               GLOBEX_MDP3_SETTL_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_SETTL_DATE_MASK,
               GLOBEX_MDP3_SETTL_DATE_DESCRIPTION,
               HFILL } },
@@ -19298,7 +18759,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_START_DATE_FILTER,
               GLOBEX_MDP3_START_DATE_TYPE,
               GLOBEX_MDP3_START_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_START_DATE_MASK,
               GLOBEX_MDP3_START_DATE_DESCRIPTION,
               HFILL } },
@@ -19442,18 +18903,9 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_TRADE_DATE_FILTER,
               GLOBEX_MDP3_TRADE_DATE_TYPE,
               GLOBEX_MDP3_TRADE_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_TRADE_DATE_MASK,
               GLOBEX_MDP3_TRADE_DATE_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_trade_date_v19,
-            { GLOBEX_MDP3_TRADE_DATE_V19_NAME,
-              GLOBEX_MDP3_TRADE_DATE_V19_FILTER,
-              GLOBEX_MDP3_TRADE_DATE_V19_TYPE,
-              GLOBEX_MDP3_TRADE_DATE_V19_DISPLAY,
-              NULL,
-              GLOBEX_MDP3_TRADE_DATE_V19_MASK,
-              GLOBEX_MDP3_TRADE_DATE_V19_DESCRIPTION,
               HFILL } },
         { &hf_globex_mdp3_trade_id,
             { GLOBEX_MDP3_TRADE_ID_NAME,
@@ -19490,15 +18942,6 @@ proto_register_globex_mdp3(void)
               NULL,
               GLOBEX_MDP3_TRADING_REFERENCE_DATE_MASK,
               GLOBEX_MDP3_TRADING_REFERENCE_DATE_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_trading_reference_date_v112,
-            { GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_NAME,
-              GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_FILTER,
-              GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_TYPE,
-              GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
-              GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_MASK,
-              GLOBEX_MDP3_TRADING_REFERENCE_DATE_V112_DESCRIPTION,
               HFILL } },
         { &hf_globex_mdp3_trading_reference_price,
             { GLOBEX_MDP3_TRADING_REFERENCE_PRICE_NAME,
@@ -19586,7 +19029,7 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_FILTER,
               GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_TYPE,
               GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_DISPLAY,
-              CF_FUNC(globex_mdp3_format_nullable_32),
+              NULL,
               GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_MASK,
               GLOBEX_MDP3_UNDERLYING_MATURITY_DATE_DESCRIPTION,
               HFILL } },
@@ -20354,12 +19797,6 @@ proto_register_globex_mdp3(void)
         &ett_globex_mdp3_security_status_request_related_symbol_group,
         &ett_globex_mdp3_client_technical_header,
         &ett_globex_mdp3_server_technical_header,
-        &ett_globex_mdp3_incremental_refresh_daily_statistics_groups_v112,
-        &ett_globex_mdp3_incremental_refresh_daily_statistics_group_v112,
-        &ett_globex_mdp3_snapshot_full_refresh_groups_v112,
-        &ett_globex_mdp3_snapshot_full_refresh_group_v112,
-        &ett_globex_mdp3_snapshot_full_refresh_tcp_groups_v112,
-        &ett_globex_mdp3_snapshot_full_refresh_tcp_group_v112,
         &ett_globex_mdp3_incremental_refresh_trade_summary_groups_v111,
         &ett_globex_mdp3_incremental_refresh_trade_summary_group_v111,
         &ett_globex_mdp3_inst_attrib_groups_v111,
