@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <epan/packet.h>
 #include <epan/expert.h>
@@ -359,14 +360,28 @@ deribit_marketdataapi_format_decimal_9_64_nullable(char *buf, uint64_t raw)
 static void
 deribit_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
 {
-    uint64_t value = (uint64_t)raw;
+    int64_t value = (int64_t)raw;
 
-    if (value == NaN) {
+    if (value == INT64_MIN) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable floating point number, the label alone for the sentinel */
+static void
+deribit_marketdataapi_format_nullable_double(char *buf, double raw)
+{
+    double value = raw;
+
+    if (isnan(value)) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%g", value);
 }
 
 /* Broadcast endpoints from the connectivity model */
@@ -3132,7 +3147,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_FILTER,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_TYPE,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double),
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_MASK,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DESCRIPTION,
               HFILL } },
@@ -3213,7 +3228,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_FUNDING_8H_FILTER,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_TYPE,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double),
               DERIBIT_MARKETDATAAPI_FUNDING_8H_MASK,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_DESCRIPTION,
               HFILL } },
@@ -3222,7 +3237,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_FILTER,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_TYPE,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double),
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_MASK,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DESCRIPTION,
               HFILL } },

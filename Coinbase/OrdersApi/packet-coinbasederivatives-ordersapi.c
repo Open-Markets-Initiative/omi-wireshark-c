@@ -94,7 +94,6 @@ static int hf_coinbasederivatives_ordersapi_fill_qty;
 static int hf_coinbasederivatives_ordersapi_filled_vwap;
 static int hf_coinbasederivatives_ordersapi_filled_vwap_v13;
 static int hf_coinbasederivatives_ordersapi_flags;
-static int hf_coinbasederivatives_ordersapi_flags_v15;
 static int hf_coinbasederivatives_ordersapi_from_sequence_number;
 static int hf_coinbasederivatives_ordersapi_gap_fill_padding;
 static int hf_coinbasederivatives_ordersapi_good_til_date;
@@ -118,6 +117,7 @@ static int hf_coinbasederivatives_ordersapi_message_length;
 static int hf_coinbasederivatives_ordersapi_min_qty;
 static int hf_coinbasederivatives_ordersapi_new_limit_price;
 static int hf_coinbasederivatives_ordersapi_new_limit_price_v13;
+static int hf_coinbasederivatives_ordersapi_new_order_flags;
 static int hf_coinbasederivatives_ordersapi_new_quantity;
 static int hf_coinbasederivatives_ordersapi_new_sequence_number;
 static int hf_coinbasederivatives_ordersapi_num_users_affected;
@@ -170,10 +170,9 @@ static int ett_coinbasederivatives_ordersapi;
 static int ett_coinbasederivatives_ordersapi_header;
 static int ett_coinbasederivatives_ordersapi_message;
 static int ett_coinbasederivatives_ordersapi_flags;
-static int ett_coinbasederivatives_ordersapi_flags_v15;
+static int ett_coinbasederivatives_ordersapi_new_order_flags;
 static int ett_coinbasederivatives_ordersapi_message_header;
 static int ett_coinbasederivatives_ordersapi_data;
-static int ett_coinbasederivatives_ordersapi_message_header_v15;
 
 /*
  * CoinbaseDerivatives OrdersApi Expert Information
@@ -2232,7 +2231,7 @@ parse_coinbasederivatives_ordersapi_version(tvbuff_t *tvb, packet_info *pinfo _U
 
 /* Flags */
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_NAME        "Flags"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DESCRIPTION "NewOrderFlags bit set"
+#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DESCRIPTION "Uint8 bit set carrying the isResend indicator"
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_FILTER      "coinbasederivatives.ordersapi.flags"
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_TYPE        FT_UINT8
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DISPLAY     BASE_HEX
@@ -2241,7 +2240,7 @@ parse_coinbasederivatives_ordersapi_version(tvbuff_t *tvb, packet_info *pinfo _U
 #define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_ordersapi_flags_fields[] = {
-    &hf_coinbasederivatives_ordersapi_post_only,
+    &hf_coinbasederivatives_ordersapi_is_resend,
     NULL
 };
 
@@ -2254,28 +2253,28 @@ parse_coinbasederivatives_ordersapi_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
     return offset + COINBASEDERIVATIVES_ORDERSAPI_FLAGS_SIZE;
 }
 
-/* Flags */
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_NAME        "Flags"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_DESCRIPTION "Uint8 bit set carrying the isResend indicator"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_FILTER      "coinbasederivatives.ordersapi.flags"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_TYPE        FT_UINT8
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_DISPLAY     BASE_HEX
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_MASK        0x0
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_ENCODING    ENC_LITTLE_ENDIAN
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_SIZE        1
+/* New Order Flags */
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_NAME        "New Order Flags"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_DESCRIPTION "NewOrderFlags bit set"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_FILTER      "coinbasederivatives.ordersapi.neworderflags"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_DISPLAY     BASE_HEX
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_MASK        0x0
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_SIZE        1
 
-static int * const coinbasederivatives_ordersapi_flags_v15_fields[] = {
-    &hf_coinbasederivatives_ordersapi_is_resend,
+static int * const coinbasederivatives_ordersapi_new_order_flags_fields[] = {
+    &hf_coinbasederivatives_ordersapi_post_only,
     NULL
 };
 
 static unsigned
-parse_coinbasederivatives_ordersapi_flags_v15(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_coinbasederivatives_ordersapi_new_order_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_bitmask(tree, tvb, offset, hf_coinbasederivatives_ordersapi_flags_v15,
-        ett_coinbasederivatives_ordersapi_flags_v15, coinbasederivatives_ordersapi_flags_v15_fields, COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_ENCODING);
+    proto_tree_add_bitmask(tree, tvb, offset, hf_coinbasederivatives_ordersapi_new_order_flags,
+        ett_coinbasederivatives_ordersapi_new_order_flags, coinbasederivatives_ordersapi_new_order_flags_fields, COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_ENCODING);
 
-    return offset + COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_SIZE;
+    return offset + COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_SIZE;
 }
 
 /* Message and group dissect methods */
@@ -2332,7 +2331,6 @@ static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v17(tvbuff_t *t
 static unsigned dissect_coinbasederivatives_ordersapi_session_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logout_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_message_header_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logout_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2630,7 +2628,7 @@ dissect_coinbasederivatives_ordersapi_new_order(tvbuff_t *tvb, packet_info *pinf
     offset = parse_coinbasederivatives_ordersapi_quantity(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_side(tvb, pinfo, tree, offset);
-    offset = parse_coinbasederivatives_ordersapi_flags(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_new_order_flags(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_good_til_date(tvb, pinfo, tree, offset);
 
     return offset;
@@ -3041,36 +3039,6 @@ static unsigned
 dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Message Header */
-static unsigned
-dissect_coinbasederivatives_ordersapi_message_header_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (coinbasederivatives_ordersapi_show_headers) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_coinbasederivatives_ordersapi_message_header_v15, &item, "Message Header");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_coinbasederivatives_ordersapi_protocol_id(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_flags_v15(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_message_length(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_sequence_number(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_last_processed_seq_no(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_reserved(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_send_time_epoch_nanos(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_block_length(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_template_id(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_schema_id(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_version(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -5348,14 +5316,14 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_FLAGS_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DESCRIPTION,
               HFILL } },
-        { &hf_coinbasederivatives_ordersapi_flags_v15,
-            { COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_DISPLAY,
+        { &hf_coinbasederivatives_ordersapi_new_order_flags,
+            { COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_DISPLAY,
               NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_V15_DESCRIPTION,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_DESCRIPTION,
               HFILL } },
     };
 
@@ -5364,10 +5332,9 @@ proto_register_coinbasederivatives_ordersapi(void)
         &ett_coinbasederivatives_ordersapi_header,
         &ett_coinbasederivatives_ordersapi_message,
         &ett_coinbasederivatives_ordersapi_flags,
-        &ett_coinbasederivatives_ordersapi_flags_v15,
+        &ett_coinbasederivatives_ordersapi_new_order_flags,
         &ett_coinbasederivatives_ordersapi_message_header,
         &ett_coinbasederivatives_ordersapi_data,
-        &ett_coinbasederivatives_ordersapi_message_header_v15,
     };
 
     static ei_register_info ei[] = {
