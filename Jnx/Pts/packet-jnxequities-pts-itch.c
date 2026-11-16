@@ -542,9 +542,14 @@ parse_jnxequities_pts_itch_accepted_sequence_number(tvbuff_t *tvb, packet_info *
 #define JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_SIZE        10
 
 static unsigned
-parse_jnxequities_pts_itch_accepted_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_accepted_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_accepted_session, tvb, offset, JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_SIZE, JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_SIZE, JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_accepted_session, tvb, offset, JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_ACCEPTED_SESSION_SIZE;
 }
@@ -560,9 +565,14 @@ parse_jnxequities_pts_itch_accepted_session(tvbuff_t *tvb, packet_info *pinfo _U
 #define JNXEQUITIES_PTS_ITCH_ATTRIBUTION_SIZE        4
 
 static unsigned
-parse_jnxequities_pts_itch_attribution(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_attribution(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_attribution, tvb, offset, JNXEQUITIES_PTS_ITCH_ATTRIBUTION_SIZE, JNXEQUITIES_PTS_ITCH_ATTRIBUTION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_ATTRIBUTION_SIZE, JNXEQUITIES_PTS_ITCH_ATTRIBUTION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_attribution, tvb, offset, JNXEQUITIES_PTS_ITCH_ATTRIBUTION_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_ATTRIBUTION_SIZE;
 }
@@ -926,9 +936,14 @@ parse_jnxequities_pts_itch_order_type(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_SIZE        12
 
 static unsigned
-parse_jnxequities_pts_itch_orderbook_code(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_orderbook_code(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_orderbook_code, tvb, offset, JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_SIZE, JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_SIZE, JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_orderbook_code, tvb, offset, JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_ORDERBOOK_CODE_SIZE;
 }
@@ -998,9 +1013,14 @@ parse_jnxequities_pts_itch_packet_length(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define JNXEQUITIES_PTS_ITCH_PASSWORD_SIZE        10
 
 static unsigned
-parse_jnxequities_pts_itch_password(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_password(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_password, tvb, offset, JNXEQUITIES_PTS_ITCH_PASSWORD_SIZE, JNXEQUITIES_PTS_ITCH_PASSWORD_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_PASSWORD_SIZE, JNXEQUITIES_PTS_ITCH_PASSWORD_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_password, tvb, offset, JNXEQUITIES_PTS_ITCH_PASSWORD_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_PASSWORD_SIZE;
 }
@@ -1170,9 +1190,14 @@ parse_jnxequities_pts_itch_requested_sequence_number(tvbuff_t *tvb, packet_info 
 #define JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_SIZE        10
 
 static unsigned
-parse_jnxequities_pts_itch_requested_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_requested_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_requested_session, tvb, offset, JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_SIZE, JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_SIZE, JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_requested_session, tvb, offset, JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_REQUESTED_SESSION_SIZE;
 }
@@ -1494,9 +1519,14 @@ parse_jnxequities_pts_itch_upper_price_limit(tvbuff_t *tvb, packet_info *pinfo _
 #define JNXEQUITIES_PTS_ITCH_USERNAME_SIZE        6
 
 static unsigned
-parse_jnxequities_pts_itch_username(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_jnxequities_pts_itch_username(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_jnxequities_pts_itch_username, tvb, offset, JNXEQUITIES_PTS_ITCH_USERNAME_SIZE, JNXEQUITIES_PTS_ITCH_USERNAME_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, JNXEQUITIES_PTS_ITCH_USERNAME_SIZE, JNXEQUITIES_PTS_ITCH_USERNAME_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_jnxequities_pts_itch_username, tvb, offset, JNXEQUITIES_PTS_ITCH_USERNAME_SIZE, text);
 
     return offset + JNXEQUITIES_PTS_ITCH_USERNAME_SIZE;
 }
@@ -2398,12 +2428,12 @@ dissect_jnxequities_pts_itch_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tre
     const jnxequities_pts_itch_packet_parse *parse = jnxequities_pts_itch_packet_parse_for(version);
     unsigned position = dissect_jnxequities_pts_itch_packet_header(tvb, pinfo, packet, 0);
 
-    if (count == 0) {
+    if (count == JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_HEARTBEAT) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "Heartbeat");
         return tvb_captured_length(tvb);
     }
 
-    if (count == 65535) {
+    if (count == JNXEQUITIES_PTS_ITCH_MESSAGE_COUNT_END_OF_SESSION) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "End Of Session");
         return tvb_captured_length(tvb);
     }

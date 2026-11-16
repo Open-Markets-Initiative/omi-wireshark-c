@@ -427,9 +427,14 @@ parse_iexequities_topssnap_auction_type(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_SIZE        40
 
 static unsigned
-parse_iexequities_topssnap_authentication_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_topssnap_authentication_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_topssnap_authentication_token, tvb, offset, IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_SIZE, IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_SIZE, IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_topssnap_authentication_token, tvb, offset, IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_SIZE, text);
 
     return offset + IEXEQUITIES_TOPSSNAP_AUTHENTICATION_TOKEN_SIZE;
 }
@@ -1031,9 +1036,14 @@ parse_iexequities_topssnap_price_type(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define IEXEQUITIES_TOPSSNAP_REASON_SIZE        4
 
 static unsigned
-parse_iexequities_topssnap_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_topssnap_reason(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_topssnap_reason, tvb, offset, IEXEQUITIES_TOPSSNAP_REASON_SIZE, IEXEQUITIES_TOPSSNAP_REASON_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_TOPSSNAP_REASON_SIZE, IEXEQUITIES_TOPSSNAP_REASON_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_topssnap_reason, tvb, offset, IEXEQUITIES_TOPSSNAP_REASON_SIZE, text);
 
     return offset + IEXEQUITIES_TOPSSNAP_REASON_SIZE;
 }
@@ -1308,9 +1318,14 @@ parse_iexequities_topssnap_stream_offset(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define IEXEQUITIES_TOPSSNAP_SYMBOL_SIZE        8
 
 static unsigned
-parse_iexequities_topssnap_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_topssnap_symbol(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_topssnap_symbol, tvb, offset, IEXEQUITIES_TOPSSNAP_SYMBOL_SIZE, IEXEQUITIES_TOPSSNAP_SYMBOL_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_TOPSSNAP_SYMBOL_SIZE, IEXEQUITIES_TOPSSNAP_SYMBOL_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_topssnap_symbol, tvb, offset, IEXEQUITIES_TOPSSNAP_SYMBOL_SIZE, text);
 
     return offset + IEXEQUITIES_TOPSSNAP_SYMBOL_SIZE;
 }

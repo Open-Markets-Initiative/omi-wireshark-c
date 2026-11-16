@@ -384,9 +384,14 @@ parse_iexequities_deepsnap_auction_type(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_SIZE        40
 
 static unsigned
-parse_iexequities_deepsnap_authentication_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_deepsnap_authentication_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_deepsnap_authentication_token, tvb, offset, IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_SIZE, IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_SIZE, IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_deepsnap_authentication_token, tvb, offset, IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_SIZE, text);
 
     return offset + IEXEQUITIES_DEEPSNAP_AUTHENTICATION_TOKEN_SIZE;
 }
@@ -972,9 +977,14 @@ parse_iexequities_deepsnap_price_type(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define IEXEQUITIES_DEEPSNAP_REASON_SIZE        4
 
 static unsigned
-parse_iexequities_deepsnap_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_deepsnap_reason(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_deepsnap_reason, tvb, offset, IEXEQUITIES_DEEPSNAP_REASON_SIZE, IEXEQUITIES_DEEPSNAP_REASON_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_DEEPSNAP_REASON_SIZE, IEXEQUITIES_DEEPSNAP_REASON_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_deepsnap_reason, tvb, offset, IEXEQUITIES_DEEPSNAP_REASON_SIZE, text);
 
     return offset + IEXEQUITIES_DEEPSNAP_REASON_SIZE;
 }
@@ -1273,9 +1283,14 @@ parse_iexequities_deepsnap_stream_offset(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define IEXEQUITIES_DEEPSNAP_SYMBOL_SIZE        8
 
 static unsigned
-parse_iexequities_deepsnap_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_deepsnap_symbol(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_deepsnap_symbol, tvb, offset, IEXEQUITIES_DEEPSNAP_SYMBOL_SIZE, IEXEQUITIES_DEEPSNAP_SYMBOL_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_DEEPSNAP_SYMBOL_SIZE, IEXEQUITIES_DEEPSNAP_SYMBOL_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_deepsnap_symbol, tvb, offset, IEXEQUITIES_DEEPSNAP_SYMBOL_SIZE, text);
 
     return offset + IEXEQUITIES_DEEPSNAP_SYMBOL_SIZE;
 }

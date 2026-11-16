@@ -997,9 +997,14 @@ parse_nsmequities_totalview_accepted_sequence_number_v30(tvbuff_t *tvb, packet_i
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_accepted_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_accepted_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_accepted_session, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_accepted_session, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_SIZE;
 }
@@ -1015,9 +1020,14 @@ parse_nsmequities_totalview_accepted_session(tvbuff_t *tvb, packet_info *pinfo _
 #define NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_accepted_session_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_accepted_session_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_accepted_session_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_accepted_session_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_ACCEPTED_SESSION_V32_SIZE;
 }
@@ -1033,9 +1043,14 @@ parse_nsmequities_totalview_accepted_session_v32(tvbuff_t *tvb, packet_info *pin
 #define NSMEQUITIES_TOTALVIEW_ATTRIBUTION_SIZE        4
 
 static unsigned
-parse_nsmequities_totalview_attribution(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_attribution(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_attribution, tvb, offset, NSMEQUITIES_TOTALVIEW_ATTRIBUTION_SIZE, NSMEQUITIES_TOTALVIEW_ATTRIBUTION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_ATTRIBUTION_SIZE, NSMEQUITIES_TOTALVIEW_ATTRIBUTION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_attribution, tvb, offset, NSMEQUITIES_TOTALVIEW_ATTRIBUTION_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_ATTRIBUTION_SIZE;
 }
@@ -1256,9 +1271,14 @@ parse_nsmequities_totalview_client_packet_type(tvbuff_t *tvb, packet_info *pinfo
 #define NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE        4
 
 static unsigned
-parse_nsmequities_totalview_contra_broker_code(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_contra_broker_code(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_contra_broker_code, tvb, offset, NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE, NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE, NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_contra_broker_code, tvb, offset, NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_CONTRA_BROKER_CODE_SIZE;
 }
@@ -2516,7 +2536,7 @@ parse_nsmequities_totalview_message_type(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define NSMEQUITIES_TOTALVIEW_MILLISECOND_TYPE        FT_RELATIVE_TIME
 #define NSMEQUITIES_TOTALVIEW_MILLISECOND_DISPLAY     BASE_NONE
 #define NSMEQUITIES_TOTALVIEW_MILLISECOND_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_MILLISECOND_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_MILLISECOND_ENCODING    ENC_TIME_MSECS | ENC_LITTLE_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_MILLISECOND_SIZE        3
 
 static unsigned
@@ -2595,9 +2615,14 @@ parse_nsmequities_totalview_minimum_allowable_price(tvbuff_t *tvb, packet_info *
 #define NSMEQUITIES_TOTALVIEW_MMID_SIZE        4
 
 static unsigned
-parse_nsmequities_totalview_mmid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_mmid(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_mmid, tvb, offset, NSMEQUITIES_TOTALVIEW_MMID_SIZE, NSMEQUITIES_TOTALVIEW_MMID_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_MMID_SIZE, NSMEQUITIES_TOTALVIEW_MMID_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_mmid, tvb, offset, NSMEQUITIES_TOTALVIEW_MMID_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_MMID_SIZE;
 }
@@ -2613,9 +2638,14 @@ parse_nsmequities_totalview_mmid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define NSMEQUITIES_TOTALVIEW_MPID_SIZE        4
 
 static unsigned
-parse_nsmequities_totalview_mpid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_mpid(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_mpid, tvb, offset, NSMEQUITIES_TOTALVIEW_MPID_SIZE, NSMEQUITIES_TOTALVIEW_MPID_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_MPID_SIZE, NSMEQUITIES_TOTALVIEW_MPID_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_mpid, tvb, offset, NSMEQUITIES_TOTALVIEW_MPID_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_MPID_SIZE;
 }
@@ -3033,9 +3063,14 @@ parse_nsmequities_totalview_paired_shares_v32(tvbuff_t *tvb, packet_info *pinfo,
 #define NSMEQUITIES_TOTALVIEW_PASSWORD_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_password(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_password(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_password, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_SIZE, NSMEQUITIES_TOTALVIEW_PASSWORD_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_SIZE, NSMEQUITIES_TOTALVIEW_PASSWORD_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_password, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_PASSWORD_SIZE;
 }
@@ -3051,9 +3086,14 @@ parse_nsmequities_totalview_password(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define NSMEQUITIES_TOTALVIEW_PASSWORD_V32_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_password_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_password_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_password_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_V32_SIZE, NSMEQUITIES_TOTALVIEW_PASSWORD_V32_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_V32_SIZE, NSMEQUITIES_TOTALVIEW_PASSWORD_V32_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_password_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_PASSWORD_V32_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_PASSWORD_V32_SIZE;
 }
@@ -3456,9 +3496,14 @@ parse_nsmequities_totalview_requested_sequence_number_v30(tvbuff_t *tvb, packet_
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_requested_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_requested_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_requested_session, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_requested_session, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_SIZE;
 }
@@ -3474,9 +3519,14 @@ parse_nsmequities_totalview_requested_session(tvbuff_t *tvb, packet_info *pinfo 
 #define NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_requested_session_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_requested_session_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_requested_session_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_SIZE, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_requested_session_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_REQUESTED_SESSION_V32_SIZE;
 }
@@ -3844,9 +3894,14 @@ parse_nsmequities_totalview_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE        10
 
 static unsigned
-parse_nsmequities_totalview_session_v30(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_session_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_session_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE, NSMEQUITIES_TOTALVIEW_SESSION_V30_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE, NSMEQUITIES_TOTALVIEW_SESSION_V30_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_session_v30, tvb, offset, NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_SESSION_V30_SIZE;
 }
@@ -4063,9 +4118,14 @@ parse_nsmequities_totalview_soup_lf_v10(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define NSMEQUITIES_TOTALVIEW_STOCK_SIZE        8
 
 static unsigned
-parse_nsmequities_totalview_stock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_SIZE;
 }
@@ -4081,9 +4141,14 @@ parse_nsmequities_totalview_stock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define NSMEQUITIES_TOTALVIEW_STOCK_V40_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_stock_v40(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_v40(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_v40, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_V40_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_V40_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_V40_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_V40_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_v40, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_V40_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_V40_SIZE;
 }
@@ -4099,9 +4164,14 @@ parse_nsmequities_totalview_stock_v40(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_stock_alpha_6(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_alpha_6(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_alpha_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_alpha_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_6_SIZE;
 }
@@ -4117,9 +4187,14 @@ parse_nsmequities_totalview_stock_alpha_6(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_SIZE        8
 
 static unsigned
-parse_nsmequities_totalview_stock_alpha_8(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_alpha_8(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_alpha_8, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_alpha_8, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_ALPHA_8_SIZE;
 }
@@ -4135,9 +4210,14 @@ parse_nsmequities_totalview_stock_alpha_8(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_stock_alphabetic_6(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_alphabetic_6(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_alphabetic_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_alphabetic_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_ALPHABETIC_6_SIZE;
 }
@@ -4153,9 +4233,14 @@ parse_nsmequities_totalview_stock_alphabetic_6(tvbuff_t *tvb, packet_info *pinfo
 #define NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_stock_alphanumeric_6(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_alphanumeric_6(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_alphanumeric_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_alphanumeric_6, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_6_SIZE;
 }
@@ -4171,9 +4256,14 @@ parse_nsmequities_totalview_stock_alphanumeric_6(tvbuff_t *tvb, packet_info *pin
 #define NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_SIZE        8
 
 static unsigned
-parse_nsmequities_totalview_stock_alphanumeric_8(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_stock_alphanumeric_8(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_stock_alphanumeric_8, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_SIZE, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_stock_alphanumeric_8, tvb, offset, NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_STOCK_ALPHANUMERIC_8_SIZE;
 }
@@ -4273,7 +4363,7 @@ parse_nsmequities_totalview_timestamp(tvbuff_t *tvb, packet_info *pinfo, proto_t
 #define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_TYPE        FT_ABSOLUTE_TIME
 #define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_DISPLAY     ABSOLUTE_TIME_UTC
 #define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_MASK        0x0
-#define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
+#define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_ENCODING    ENC_TIME_MSECS | ENC_LITTLE_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_TIMESTAMP_V2_0A_SIZE        8
 
 static unsigned
@@ -4482,9 +4572,14 @@ parse_nsmequities_totalview_upper_price_range_collar(tvbuff_t *tvb, packet_info 
 #define NSMEQUITIES_TOTALVIEW_USERNAME_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_username(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_username(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_username, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_SIZE, NSMEQUITIES_TOTALVIEW_USERNAME_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_SIZE, NSMEQUITIES_TOTALVIEW_USERNAME_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_username, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_USERNAME_SIZE;
 }
@@ -4500,9 +4595,14 @@ parse_nsmequities_totalview_username(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define NSMEQUITIES_TOTALVIEW_USERNAME_V32_SIZE        6
 
 static unsigned
-parse_nsmequities_totalview_username_v32(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_totalview_username_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_totalview_username_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_V32_SIZE, NSMEQUITIES_TOTALVIEW_USERNAME_V32_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_V32_SIZE, NSMEQUITIES_TOTALVIEW_USERNAME_V32_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_totalview_username_v32, tvb, offset, NSMEQUITIES_TOTALVIEW_USERNAME_V32_SIZE, text);
 
     return offset + NSMEQUITIES_TOTALVIEW_USERNAME_V32_SIZE;
 }
@@ -10063,7 +10163,7 @@ dissect_nsmequities_totalview_packet_message_v30(tvbuff_t *tvb, packet_info *pin
     uint32_t message_length = tvb_get_letohs(tvb, offset);
 
     /* End Of Session: Mold Udp end of session */
-    if (message_length == 0) {
+    if (message_length == NSMEQUITIES_TOTALVIEW_MESSAGE_LENGTH_V30_END_OF_SESSION) {
         proto_tree *message = proto_tree_add_subtree(tree, tvb, offset, message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, "End Of Session");
         unsigned position = offset;
 
@@ -10112,7 +10212,7 @@ dissect_nsmequities_totalview_packet_message_v20a(tvbuff_t *tvb, packet_info *pi
     uint32_t message_length = tvb_get_letohs(tvb, offset);
 
     /* End Of Session: Mold Udp end of session */
-    if (message_length == 0) {
+    if (message_length == NSMEQUITIES_TOTALVIEW_MESSAGE_LENGTH_V30_END_OF_SESSION) {
         proto_tree *message = proto_tree_add_subtree(tree, tvb, offset, message_length + NSMEQUITIES_TOTALVIEW_PACKET_MESSAGE_ADJUSTMENT, ett_nsmequities_totalview_message, NULL, "End Of Session");
         unsigned position = offset;
 
@@ -10189,12 +10289,12 @@ dissect_nsmequities_totalview_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tr
     uint32_t count = parse->count(tvb);
     unsigned position = parse->header(tvb, pinfo, packet, 0);
 
-    if (count == 0) {
+    if (count == NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_HEARTBEAT) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "Heartbeat");
         return tvb_captured_length(tvb);
     }
 
-    if (count == 65535) {
+    if (count == NSMEQUITIES_TOTALVIEW_MESSAGE_COUNT_END_OF_SESSION) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "End Of Session");
         return tvb_captured_length(tvb);
     }

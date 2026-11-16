@@ -638,9 +638,14 @@ parse_nsmequities_orders_accepted_sequence_number(tvbuff_t *tvb, packet_info *pi
 #define NSMEQUITIES_ORDERS_ACCEPTED_SESSION_SIZE        10
 
 static unsigned
-parse_nsmequities_orders_accepted_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_accepted_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_accepted_session, tvb, offset, NSMEQUITIES_ORDERS_ACCEPTED_SESSION_SIZE, NSMEQUITIES_ORDERS_ACCEPTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_ACCEPTED_SESSION_SIZE, NSMEQUITIES_ORDERS_ACCEPTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_accepted_session, tvb, offset, NSMEQUITIES_ORDERS_ACCEPTED_SESSION_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_ACCEPTED_SESSION_SIZE;
 }
@@ -1103,9 +1108,14 @@ parse_nsmequities_orders_capacity(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define NSMEQUITIES_ORDERS_CLORDID_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_clordid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_clordid(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_clordid, tvb, offset, NSMEQUITIES_ORDERS_CLORDID_SIZE, NSMEQUITIES_ORDERS_CLORDID_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_CLORDID_SIZE, NSMEQUITIES_ORDERS_CLORDID_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_clordid, tvb, offset, NSMEQUITIES_ORDERS_CLORDID_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_CLORDID_SIZE;
 }
@@ -1640,9 +1650,14 @@ parse_nsmequities_orders_execution_price_v422018(tvbuff_t *tvb, packet_info *pin
 #define NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_existing_order_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_existing_order_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_existing_order_token, tvb, offset, NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_existing_order_token, tvb, offset, NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_EXISTING_ORDER_TOKEN_SIZE;
 }
@@ -1676,9 +1691,14 @@ parse_nsmequities_orders_expire_time(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define NSMEQUITIES_ORDERS_FIRM_SIZE        4
 
 static unsigned
-parse_nsmequities_orders_firm(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_firm(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_firm, tvb, offset, NSMEQUITIES_ORDERS_FIRM_SIZE, NSMEQUITIES_ORDERS_FIRM_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_FIRM_SIZE, NSMEQUITIES_ORDERS_FIRM_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_firm, tvb, offset, NSMEQUITIES_ORDERS_FIRM_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_FIRM_SIZE;
 }
@@ -1845,9 +1865,14 @@ parse_nsmequities_orders_liquidity_flag(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define NSMEQUITIES_ORDERS_LOCATE_BROKER_SIZE        4
 
 static unsigned
-parse_nsmequities_orders_locate_broker(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_locate_broker(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_locate_broker, tvb, offset, NSMEQUITIES_ORDERS_LOCATE_BROKER_SIZE, NSMEQUITIES_ORDERS_LOCATE_BROKER_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_LOCATE_BROKER_SIZE, NSMEQUITIES_ORDERS_LOCATE_BROKER_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_locate_broker, tvb, offset, NSMEQUITIES_ORDERS_LOCATE_BROKER_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_LOCATE_BROKER_SIZE;
 }
@@ -2324,9 +2349,14 @@ parse_nsmequities_orders_order_state(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define NSMEQUITIES_ORDERS_ORDER_TOKEN_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_order_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_order_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_order_token, tvb, offset, NSMEQUITIES_ORDERS_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_ORDER_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_ORDER_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_order_token, tvb, offset, NSMEQUITIES_ORDERS_ORDER_TOKEN_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_ORDER_TOKEN_SIZE;
 }
@@ -2378,9 +2408,14 @@ parse_nsmequities_orders_packet_length(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define NSMEQUITIES_ORDERS_PASSWORD_SIZE        10
 
 static unsigned
-parse_nsmequities_orders_password(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_password(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_password, tvb, offset, NSMEQUITIES_ORDERS_PASSWORD_SIZE, NSMEQUITIES_ORDERS_PASSWORD_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_PASSWORD_SIZE, NSMEQUITIES_ORDERS_PASSWORD_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_password, tvb, offset, NSMEQUITIES_ORDERS_PASSWORD_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_PASSWORD_SIZE;
 }
@@ -2438,9 +2473,14 @@ parse_nsmequities_orders_post_only(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_previous_order_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_previous_order_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_previous_order_token, tvb, offset, NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_previous_order_token, tvb, offset, NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_PREVIOUS_ORDER_TOKEN_SIZE;
 }
@@ -3004,9 +3044,14 @@ parse_nsmequities_orders_replaced_message_optional_field(tvbuff_t *tvb, packet_i
 #define NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE        14
 
 static unsigned
-parse_nsmequities_orders_replacement_order_token(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_replacement_order_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_replacement_order_token, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_replacement_order_token, tvb, offset, NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_REPLACEMENT_ORDER_TOKEN_SIZE;
 }
@@ -3044,9 +3089,14 @@ parse_nsmequities_orders_requested_sequence_number(tvbuff_t *tvb, packet_info *p
 #define NSMEQUITIES_ORDERS_REQUESTED_SESSION_SIZE        10
 
 static unsigned
-parse_nsmequities_orders_requested_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_requested_session(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_requested_session, tvb, offset, NSMEQUITIES_ORDERS_REQUESTED_SESSION_SIZE, NSMEQUITIES_ORDERS_REQUESTED_SESSION_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_REQUESTED_SESSION_SIZE, NSMEQUITIES_ORDERS_REQUESTED_SESSION_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchug(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_requested_session, tvb, offset, NSMEQUITIES_ORDERS_REQUESTED_SESSION_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_REQUESTED_SESSION_SIZE;
 }
@@ -3061,9 +3111,14 @@ parse_nsmequities_orders_requested_session(tvbuff_t *tvb, packet_info *pinfo _U_
 #define NSMEQUITIES_ORDERS_ROUTE_SIZE     4
 
 static unsigned
-parse_nsmequities_orders_route(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_route(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_route, tvb, offset, NSMEQUITIES_ORDERS_ROUTE_SIZE, NSMEQUITIES_ORDERS_ROUTE_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_ROUTE_SIZE, NSMEQUITIES_ORDERS_ROUTE_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_route, tvb, offset, NSMEQUITIES_ORDERS_ROUTE_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_ROUTE_SIZE;
 }
@@ -3262,9 +3317,14 @@ parse_nsmequities_orders_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define NSMEQUITIES_ORDERS_STOCK_SIZE        8
 
 static unsigned
-parse_nsmequities_orders_stock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_stock(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_stock, tvb, offset, NSMEQUITIES_ORDERS_STOCK_SIZE, NSMEQUITIES_ORDERS_STOCK_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_STOCK_SIZE, NSMEQUITIES_ORDERS_STOCK_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_stock, tvb, offset, NSMEQUITIES_ORDERS_STOCK_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_STOCK_SIZE;
 }
@@ -3280,9 +3340,14 @@ parse_nsmequities_orders_stock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 #define NSMEQUITIES_ORDERS_SYMBOL_SIZE        8
 
 static unsigned
-parse_nsmequities_orders_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_symbol(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_symbol, tvb, offset, NSMEQUITIES_ORDERS_SYMBOL_SIZE, NSMEQUITIES_ORDERS_SYMBOL_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_SYMBOL_SIZE, NSMEQUITIES_ORDERS_SYMBOL_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_symbol, tvb, offset, NSMEQUITIES_ORDERS_SYMBOL_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_SYMBOL_SIZE;
 }
@@ -3550,9 +3615,14 @@ parse_nsmequities_orders_user_ref_num(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define NSMEQUITIES_ORDERS_USERNAME_SIZE        6
 
 static unsigned
-parse_nsmequities_orders_username(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_nsmequities_orders_username(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_nsmequities_orders_username, tvb, offset, NSMEQUITIES_ORDERS_USERNAME_SIZE, NSMEQUITIES_ORDERS_USERNAME_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, NSMEQUITIES_ORDERS_USERNAME_SIZE, NSMEQUITIES_ORDERS_USERNAME_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_nsmequities_orders_username, tvb, offset, NSMEQUITIES_ORDERS_USERNAME_SIZE, text);
 
     return offset + NSMEQUITIES_ORDERS_USERNAME_SIZE;
 }

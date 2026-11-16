@@ -760,9 +760,14 @@ parse_iexequities_deepplus_price(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define IEXEQUITIES_DEEPPLUS_REASON_SIZE        4
 
 static unsigned
-parse_iexequities_deepplus_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_deepplus_reason(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_deepplus_reason, tvb, offset, IEXEQUITIES_DEEPPLUS_REASON_SIZE, IEXEQUITIES_DEEPPLUS_REASON_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_DEEPPLUS_REASON_SIZE, IEXEQUITIES_DEEPPLUS_REASON_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_deepplus_reason, tvb, offset, IEXEQUITIES_DEEPPLUS_REASON_SIZE, text);
 
     return offset + IEXEQUITIES_DEEPPLUS_REASON_SIZE;
 }
@@ -994,9 +999,14 @@ parse_iexequities_deepplus_stream_offset(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define IEXEQUITIES_DEEPPLUS_SYMBOL_SIZE        8
 
 static unsigned
-parse_iexequities_deepplus_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_iexequities_deepplus_symbol(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_item(tree, hf_iexequities_deepplus_symbol, tvb, offset, IEXEQUITIES_DEEPPLUS_SYMBOL_SIZE, IEXEQUITIES_DEEPPLUS_SYMBOL_ENCODING);
+    char *text = (char *)tvb_get_string_enc(pinfo->pool, tvb, offset, IEXEQUITIES_DEEPPLUS_SYMBOL_SIZE, IEXEQUITIES_DEEPPLUS_SYMBOL_ENCODING);
+
+    /* The spaces filling the field out are no part of the value */
+    text = g_strchomp(text);
+
+    proto_tree_add_string(tree, hf_iexequities_deepplus_symbol, tvb, offset, IEXEQUITIES_DEEPPLUS_SYMBOL_SIZE, text);
 
     return offset + IEXEQUITIES_DEEPPLUS_SYMBOL_SIZE;
 }
@@ -1665,7 +1675,7 @@ dissect_iexequities_deepplus(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree
     const iexequities_deepplus_parse *parse = iexequities_deepplus_parse_for(version);
     unsigned position = dissect_iexequities_deepplus_header(tvb, pinfo, packet, 0);
 
-    if (count == 0) {
+    if (count == IEXEQUITIES_DEEPPLUS_MESSAGE_COUNT_HEARTBEAT) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "Heartbeat");
         return tvb_captured_length(tvb);
     }

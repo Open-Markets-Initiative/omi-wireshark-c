@@ -416,6 +416,50 @@ coinbasederivatives_marketdataapi_decimal_places(char *buf)
     *lead = '1';
 }
 
+/* Format an implied 8 decimal place value */
+static void
+coinbasederivatives_marketdataapi_format_decimal_8_32(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+    int64_t units = value / 100000000;
+    int64_t fraction = value % 100000000;
+
+    if (fraction < 0) {
+        fraction = -fraction;
+    }
+
+    if (value < 0 && units == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "-0.%08" PRId64, fraction);
+    }
+    else {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%08" PRId64, units, fraction);
+    }
+
+    coinbasederivatives_marketdataapi_decimal_places(buf);
+}
+
+/* Format an implied 8 decimal place value */
+static void
+coinbasederivatives_marketdataapi_format_decimal_8_64(char *buf, uint64_t raw)
+{
+    int64_t value = (int64_t)raw;
+    int64_t units = value / 100000000;
+    int64_t fraction = value % 100000000;
+
+    if (fraction < 0) {
+        fraction = -fraction;
+    }
+
+    if (value < 0 && units == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "-0.%08" PRId64, fraction);
+    }
+    else {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64 ".%08" PRId64, units, fraction);
+    }
+
+    coinbasederivatives_marketdataapi_decimal_places(buf);
+}
+
 /* Format an implied 9 decimal place value */
 static void
 coinbasederivatives_marketdataapi_format_decimal_9_64(char *buf, uint64_t raw)
@@ -857,7 +901,7 @@ parse_coinbasederivatives_marketdataapi_close_price(tvbuff_t *tvb, packet_info *
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_DESCRIPTION "contractSize"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_FILTER      "coinbasederivatives.marketdataapi.contractsize"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_TYPE        FT_INT64
-#define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_DISPLAY     BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_SIZE        8
@@ -875,7 +919,7 @@ parse_coinbasederivatives_marketdataapi_contract_size(tvbuff_t *tvb, packet_info
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_DESCRIPTION "contractSize"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_FILTER      "coinbasederivatives.marketdataapi.contractsize"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_TYPE        FT_INT32
-#define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_DISPLAY     BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_SIZE        4
@@ -1120,7 +1164,7 @@ parse_coinbasederivatives_marketdataapi_final_funding_rate_timestamp(tvbuff_t *t
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_coinbasederivatives_marketdataapi_final_funding_rate_timestamp, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_FINAL_FUNDING_RATE_TIMESTAMP_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_coinbasederivatives_marketdataapi_final_funding_rate_timestamp, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_FINAL_FUNDING_RATE_TIMESTAMP_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_coinbasederivatives_marketdataapi_final_funding_rate_timestamp, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_FINAL_FUNDING_RATE_TIMESTAMP_SIZE, COINBASEDERIVATIVES_MARKETDATAAPI_FINAL_FUNDING_RATE_TIMESTAMP_ENCODING);
@@ -1368,10 +1412,31 @@ parse_coinbasederivatives_marketdataapi_instrument_id(tvbuff_t *tvb, packet_info
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DESCRIPTION "1 buy, -1 sell, 0 opening fill, and -128 where side does not apply to the message"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_FILTER      "coinbasederivatives.marketdataapi.instrumentside"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_TYPE        FT_INT8
-#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DISPLAY     BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_SIZE        1
+
+static const value_string coinbasederivatives_marketdataapi_instrument_side_vals[] = {
+    { 1, "Buy" },
+    { -1, "Sell" },
+    { 0, "Opening Fill" },
+    { 0, NULL }
+};
+
+/* Format the sentinel's label alone, an enumerated value labelled */
+static void
+coinbasederivatives_marketdataapi_format_instrument_side(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == INT8_MIN) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%s (%" PRId64 ")", val_to_str_const(raw, coinbasederivatives_marketdataapi_instrument_side_vals, "Unknown"), value);
+}
 
 static unsigned
 parse_coinbasederivatives_marketdataapi_instrument_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -1527,7 +1592,7 @@ parse_coinbasederivatives_marketdataapi_last_trade_time(tvbuff_t *tvb, packet_in
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_coinbasederivatives_marketdataapi_last_trade_time, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_TIME_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_coinbasederivatives_marketdataapi_last_trade_time, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_TIME_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_coinbasederivatives_marketdataapi_last_trade_time, tvb, offset, COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_TIME_SIZE, COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_TIME_ENCODING);
@@ -5005,7 +5070,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_decimal_8_64),
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_DESCRIPTION,
               HFILL } },
@@ -5014,7 +5079,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_decimal_8_32),
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_CONTRACT_SIZE_V13_DESCRIPTION,
               HFILL } },
@@ -5248,7 +5313,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_instrument_side),
               COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_INSTRUMENT_SIDE_DESCRIPTION,
               HFILL } },

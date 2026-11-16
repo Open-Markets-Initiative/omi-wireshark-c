@@ -688,7 +688,7 @@ parse_deribit_marketdataapi_creation_time(tvbuff_t *tvb, packet_info *pinfo _U_,
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_creation_time, tvb, offset, DERIBIT_MARKETDATAAPI_CREATION_TIME_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_creation_time, tvb, offset, DERIBIT_MARKETDATAAPI_CREATION_TIME_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_deribit_marketdataapi_creation_time, tvb, offset, DERIBIT_MARKETDATAAPI_CREATION_TIME_SIZE, DERIBIT_MARKETDATAAPI_CREATION_TIME_ENCODING);
@@ -701,7 +701,7 @@ parse_deribit_marketdataapi_creation_time(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_NAME        "Current Funding"
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DESCRIPTION "currentFunding"
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_FILTER      "deribit.marketdataapi.currentfunding"
-#define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_TYPE        FT_UINT64
+#define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_TYPE        FT_DOUBLE
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_ENCODING    ENC_LITTLE_ENDIAN
@@ -828,7 +828,7 @@ parse_deribit_marketdataapi_execution_timestamp(tvbuff_t *tvb, packet_info *pinf
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_execution_timestamp, tvb, offset, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_execution_timestamp, tvb, offset, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_deribit_marketdataapi_execution_timestamp, tvb, offset, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_ENCODING);
@@ -853,7 +853,7 @@ parse_deribit_marketdataapi_expiry_time(tvbuff_t *tvb, packet_info *pinfo _U_, p
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_deribit_marketdataapi_expiry_time, tvb, offset, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_SIZE, DERIBIT_MARKETDATAAPI_EXPIRY_TIME_ENCODING);
@@ -902,7 +902,7 @@ parse_deribit_marketdataapi_fill_qty_mantissa(tvbuff_t *tvb, packet_info *pinfo 
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_NAME        "Funding 8h"
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_DESCRIPTION "funding8h"
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_FILTER      "deribit.marketdataapi.funding8h"
-#define DERIBIT_MARKETDATAAPI_FUNDING_8H_TYPE        FT_UINT64
+#define DERIBIT_MARKETDATAAPI_FUNDING_8H_TYPE        FT_DOUBLE
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_FUNDING_8H_ENCODING    ENC_LITTLE_ENDIAN
@@ -920,7 +920,7 @@ parse_deribit_marketdataapi_funding_8h(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_NAME        "Implied Volatility"
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DESCRIPTION "impliedVolatility"
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_FILTER      "deribit.marketdataapi.impliedvolatility"
-#define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_TYPE        FT_UINT64
+#define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_TYPE        FT_DOUBLE
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_ENCODING    ENC_LITTLE_ENDIAN
@@ -1437,7 +1437,7 @@ parse_deribit_marketdataapi_number_of_legs(tvbuff_t *tvb, packet_info *pinfo _U_
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_NAME        "Open Interest"
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DESCRIPTION "openInterest"
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_FILTER      "deribit.marketdataapi.openinterest"
-#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_TYPE        FT_UINT64
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_TYPE        FT_DOUBLE
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_ENCODING    ENC_LITTLE_ENDIAN
@@ -2087,7 +2087,7 @@ parse_deribit_marketdataapi_transact_time(tvbuff_t *tvb, packet_info *pinfo _U_,
     if ((int64_t)tvb_get_letoh64(tvb, offset) == 0) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_transact_time, tvb, offset, DERIBIT_MARKETDATAAPI_TRANSACT_TIME_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_transact_time, tvb, offset, DERIBIT_MARKETDATAAPI_TRANSACT_TIME_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_deribit_marketdataapi_transact_time, tvb, offset, DERIBIT_MARKETDATAAPI_TRANSACT_TIME_SIZE, DERIBIT_MARKETDATAAPI_TRANSACT_TIME_ENCODING);
@@ -3306,7 +3306,7 @@ dissect_deribit_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
     const deribit_marketdataapi_parse *parse = deribit_marketdataapi_parse_for(version);
     unsigned position = dissect_deribit_marketdataapi_header(tvb, pinfo, packet, 0);
 
-    if (count == 0) {
+    if (count == DERIBIT_MARKETDATAAPI_MESSAGE_COUNT_EMPTY_PACKET) {
         col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", "Empty Packet");
         return tvb_captured_length(tvb);
     }

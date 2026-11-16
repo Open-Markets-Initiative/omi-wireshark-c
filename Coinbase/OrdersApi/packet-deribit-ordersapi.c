@@ -1024,8 +1024,8 @@ parse_deribit_ordersapi_currency_pair_id(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_NAME        "Delta Level"
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_DESCRIPTION "deltaLevel"
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_FILTER      "deribit.ordersapi.deltalevel"
-#define DERIBIT_ORDERSAPI_DELTA_LEVEL_TYPE        FT_UINT64
-#define DERIBIT_ORDERSAPI_DELTA_LEVEL_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_DELTA_LEVEL_TYPE        FT_DOUBLE
+#define DERIBIT_ORDERSAPI_DELTA_LEVEL_DISPLAY     BASE_NONE
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_MASK        0x0
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_DELTA_LEVEL_SIZE        8
@@ -1195,7 +1195,7 @@ parse_deribit_ordersapi_frozen_until_time(tvbuff_t *tvb, packet_info *pinfo _U_,
     if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
         nstime_t empty = NSTIME_INIT_ZERO;
 
-        proto_tree_add_time_format_value(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, &empty, "No Value");
+        proto_tree_add_time_format_value(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, &empty, "%s", "No Value");
     }
     else {
         proto_tree_add_item(tree, hf_deribit_ordersapi_frozen_until_time, tvb, offset, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_SIZE, DERIBIT_ORDERSAPI_FROZEN_UNTIL_TIME_ENCODING);
@@ -1666,8 +1666,8 @@ parse_deribit_ordersapi_protocol_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_NAME        "Quantity Level"
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_DESCRIPTION "quantityLevel"
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_FILTER      "deribit.ordersapi.quantitylevel"
-#define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_TYPE        FT_UINT64
-#define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_TYPE        FT_DOUBLE
+#define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_DISPLAY     BASE_NONE
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_MASK        0x0
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_QUANTITY_LEVEL_SIZE        8
@@ -2501,8 +2501,8 @@ parse_deribit_ordersapi_trigger(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_NAME        "Vega Level"
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_DESCRIPTION "vegaLevel"
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_FILTER      "deribit.ordersapi.vegalevel"
-#define DERIBIT_ORDERSAPI_VEGA_LEVEL_TYPE        FT_UINT64
-#define DERIBIT_ORDERSAPI_VEGA_LEVEL_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_VEGA_LEVEL_TYPE        FT_DOUBLE
+#define DERIBIT_ORDERSAPI_VEGA_LEVEL_DISPLAY     BASE_NONE
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_MASK        0x0
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_SIZE        8

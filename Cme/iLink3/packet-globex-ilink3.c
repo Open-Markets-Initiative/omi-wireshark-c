@@ -1179,7 +1179,17 @@ parse_globex_ilink3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 static unsigned
 parse_globex_ilink3_broken_date_end(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_broken_date_end, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_END_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_BROKEN_DATE_END_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_broken_date_end, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_END_SIZE, &date);
 
@@ -1238,7 +1248,17 @@ parse_globex_ilink3_broken_date_security_id(tvbuff_t *tvb, packet_info *pinfo _U
 static unsigned
 parse_globex_ilink3_broken_date_start(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_broken_date_start, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_START_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_BROKEN_DATE_START_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_broken_date_start, tvb, offset, GLOBEX_ILINK3_BROKEN_DATE_START_SIZE, &date);
 
@@ -1956,7 +1976,17 @@ parse_globex_ilink3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 static unsigned
 parse_globex_ilink3_end_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_end_date, tvb, offset, GLOBEX_ILINK3_END_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_END_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_end_date, tvb, offset, GLOBEX_ILINK3_END_DATE_SIZE, &date);
 
@@ -2294,7 +2324,17 @@ parse_globex_ilink3_expiration_cycle(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 static unsigned
 parse_globex_ilink3_expire_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_expire_date, tvb, offset, GLOBEX_ILINK3_EXPIRE_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_EXPIRE_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_expire_date, tvb, offset, GLOBEX_ILINK3_EXPIRE_DATE_SIZE, &date);
 
@@ -3539,7 +3579,17 @@ parse_globex_ilink3_mass_status_tif(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 static unsigned
 parse_globex_ilink3_maturity_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_maturity_date, tvb, offset, GLOBEX_ILINK3_MATURITY_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_MATURITY_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_maturity_date, tvb, offset, GLOBEX_ILINK3_MATURITY_DATE_SIZE, &date);
 
@@ -5903,7 +5953,17 @@ parse_globex_ilink3_session(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 static unsigned
 parse_globex_ilink3_settl_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_settl_date, tvb, offset, GLOBEX_ILINK3_SETTL_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_SETTL_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_settl_date, tvb, offset, GLOBEX_ILINK3_SETTL_DATE_SIZE, &date);
 
@@ -6158,7 +6218,17 @@ parse_globex_ilink3_split_msg(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 static unsigned
 parse_globex_ilink3_start_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_start_date, tvb, offset, GLOBEX_ILINK3_START_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_START_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_start_date, tvb, offset, GLOBEX_ILINK3_START_DATE_SIZE, &date);
 
@@ -6607,7 +6677,17 @@ parse_globex_ilink3_trade_addendum(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 static unsigned
 parse_globex_ilink3_trade_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    nstime_t date = { .secs = (time_t)tvb_get_letohs(tvb, offset) * 86400, .nsecs = 0 };
+    uint64_t value = tvb_get_letohs(tvb, offset);
+
+    if (value == UINT16_MAX) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_globex_ilink3_trade_date, tvb, offset, GLOBEX_ILINK3_TRADE_DATE_SIZE, &empty, "%s", "No Value");
+
+        return offset + GLOBEX_ILINK3_TRADE_DATE_SIZE;
+    }
+
+    nstime_t date = { .secs = (time_t)value * 86400, .nsecs = 0 };
 
     proto_tree_add_time(tree, hf_globex_ilink3_trade_date, tvb, offset, GLOBEX_ILINK3_TRADE_DATE_SIZE, &date);
 
