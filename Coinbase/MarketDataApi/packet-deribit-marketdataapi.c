@@ -82,6 +82,7 @@ static int hf_deribit_marketdataapi_delivery_price;
 static int hf_deribit_marketdataapi_details;
 static int hf_deribit_marketdataapi_end_of_transaction;
 static int hf_deribit_marketdataapi_estimated_delivery_price;
+static int hf_deribit_marketdataapi_execution_timestamp;
 static int hf_deribit_marketdataapi_expiry_time;
 static int hf_deribit_marketdataapi_fill_price;
 static int hf_deribit_marketdataapi_fill_qty_mantissa;
@@ -108,6 +109,7 @@ static int hf_deribit_marketdataapi_large_tick_threshold_0;
 static int hf_deribit_marketdataapi_large_tick_threshold_1;
 static int hf_deribit_marketdataapi_leg_instrument_id;
 static int hf_deribit_marketdataapi_maker_flags;
+static int hf_deribit_marketdataapi_maker_flags_v01;
 static int hf_deribit_marketdataapi_maker_order_id;
 static int hf_deribit_marketdataapi_mark_price;
 static int hf_deribit_marketdataapi_match_id;
@@ -122,9 +124,12 @@ static int hf_deribit_marketdataapi_month;
 static int hf_deribit_marketdataapi_name;
 static int hf_deribit_marketdataapi_num_in_group;
 static int hf_deribit_marketdataapi_number_of_legs;
+static int hf_deribit_marketdataapi_open_interest;
 static int hf_deribit_marketdataapi_order_id;
+static int hf_deribit_marketdataapi_packet_reserved_bits;
 static int hf_deribit_marketdataapi_packet_type;
 static int hf_deribit_marketdataapi_padding;
+static int hf_deribit_marketdataapi_padding_2;
 static int hf_deribit_marketdataapi_price;
 static int hf_deribit_marketdataapi_price_asset;
 static int hf_deribit_marketdataapi_quantity_asset;
@@ -133,6 +138,10 @@ static int hf_deribit_marketdataapi_quantity_mantissa;
 static int hf_deribit_marketdataapi_quote_currency;
 static int hf_deribit_marketdataapi_ratio;
 static int hf_deribit_marketdataapi_reason;
+static int hf_deribit_marketdataapi_reserved_29;
+static int hf_deribit_marketdataapi_reserved_30;
+static int hf_deribit_marketdataapi_reserved_5;
+static int hf_deribit_marketdataapi_reserved_bits;
 static int hf_deribit_marketdataapi_retransmit;
 static int hf_deribit_marketdataapi_retry_delay_nanos;
 static int hf_deribit_marketdataapi_schema_version;
@@ -146,6 +155,7 @@ static int hf_deribit_marketdataapi_status;
 static int hf_deribit_marketdataapi_strike_price;
 static int hf_deribit_marketdataapi_symbol;
 static int hf_deribit_marketdataapi_taker_flags;
+static int hf_deribit_marketdataapi_taker_flags_v01;
 static int hf_deribit_marketdataapi_taker_order_id;
 static int hf_deribit_marketdataapi_template_id;
 static int hf_deribit_marketdataapi_threshold_price;
@@ -157,6 +167,7 @@ static int hf_deribit_marketdataapi_trading_status;
 static int hf_deribit_marketdataapi_transact_time;
 static int hf_deribit_marketdataapi_type;
 static int hf_deribit_marketdataapi_underlying;
+static int hf_deribit_marketdataapi_was_delayed;
 static int hf_deribit_marketdataapi_week_of_month;
 static int hf_deribit_marketdataapi_year;
 
@@ -173,6 +184,8 @@ static int ett_deribit_marketdataapi_flags;
 static int ett_deribit_marketdataapi_taker_flags;
 static int ett_deribit_marketdataapi_maker_flags;
 static int ett_deribit_marketdataapi_flags_v01;
+static int ett_deribit_marketdataapi_taker_flags_v01;
+static int ett_deribit_marketdataapi_maker_flags_v01;
 static int ett_deribit_marketdataapi_md_message_header;
 static int ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups;
 static int ett_deribit_marketdataapi_group_size_encoding;
@@ -205,7 +218,7 @@ static expert_field ei_deribit_marketdataapi_length;
 #define DERIBIT_MARKETDATAAPI_VERSION_1_0     1
 #define DERIBIT_MARKETDATAAPI_VERSION_0_1     2
 
-static const enum_val_t deribit_marketdataapi_version_vals[] = {
+static const enum_val_t deribit_marketdataapi_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", DERIBIT_MARKETDATAAPI_VERSION_AUTOMATIC },
     { "v1.0", "1.0", DERIBIT_MARKETDATAAPI_VERSION_1_0 },
     { "v0.1", "0.1", DERIBIT_MARKETDATAAPI_VERSION_0_1 },
@@ -248,6 +261,13 @@ static bool deribit_marketdataapi_show_headers = true;
 static bool deribit_marketdataapi_show_application_messages = true;
 static bool deribit_marketdataapi_show_structs = true;
 
+/* Show padding preference */
+#define DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool deribit_marketdataapi_show_padding = false;
+
 /* Decimal places shown, the wire precision by default */
 #define DERIBIT_MARKETDATAAPI_DECIMAL_PREFERENCE_NAME "decimal.places"
 #define DERIBIT_MARKETDATAAPI_DECIMAL_PREFERENCE_TITLE "Decimal places"
@@ -283,7 +303,7 @@ deribit_marketdataapi_version(uint64_t seconds)
     return DERIBIT_MARKETDATAAPI_VERSION_0_1;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 deribit_marketdataapi_decimal_places(char *buf)
 {
@@ -299,12 +319,41 @@ deribit_marketdataapi_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 9 decimal place value */
@@ -356,23 +405,9 @@ deribit_marketdataapi_format_decimal_9_64_nullable(char *buf, uint64_t raw)
     deribit_marketdataapi_decimal_places(buf);
 }
 
-/* Format a nullable integer, the label alone for the sentinel */
-static void
-deribit_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
-{
-    int64_t value = (int64_t)raw;
-
-    if (value == INT64_MIN) {
-        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
-        return;
-    }
-
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
-}
-
 /* Format a nullable floating point number, the label alone for the sentinel */
 static void
-deribit_marketdataapi_format_nullable_double(char *buf, double raw)
+deribit_marketdataapi_format_nullable_double_nan(char *buf, double raw)
 {
     double value = raw;
 
@@ -382,6 +417,34 @@ deribit_marketdataapi_format_nullable_double(char *buf, double raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%g", value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+deribit_marketdataapi_format_nullable_int32_0(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+deribit_marketdataapi_format_nullable_int64_minus9223372036854775808(char *buf, uint64_t raw)
+{
+    int64_t value = (int64_t)raw;
+
+    if (value == INT64_MIN) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
 }
 
 /* Broadcast endpoints from the connectivity model */
@@ -657,7 +720,7 @@ parse_deribit_marketdataapi_current_funding(tvbuff_t *tvb, packet_info *pinfo _U
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_DESCRIPTION "dayOfMonth"
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_FILTER      "deribit.marketdataapi.dayofmonth"
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_TYPE        FT_INT16
-#define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_SIZE        2
@@ -747,6 +810,31 @@ parse_deribit_marketdataapi_estimated_delivery_price(tvbuff_t *tvb, packet_info 
     proto_tree_add_item(tree, hf_deribit_marketdataapi_estimated_delivery_price, tvb, offset, DERIBIT_MARKETDATAAPI_ESTIMATED_DELIVERY_PRICE_SIZE, DERIBIT_MARKETDATAAPI_ESTIMATED_DELIVERY_PRICE_ENCODING);
 
     return offset + DERIBIT_MARKETDATAAPI_ESTIMATED_DELIVERY_PRICE_SIZE;
+}
+
+/* Execution Timestamp */
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_NAME        "Execution Timestamp"
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_DESCRIPTION "executionTimestamp"
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_FILTER      "deribit.marketdataapi.executiontimestamp"
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_TYPE        FT_ABSOLUTE_TIME
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_DISPLAY     ABSOLUTE_TIME_UTC
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_MASK        0x0
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_ENCODING    ENC_TIME_NSECS | ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE        8
+
+static unsigned
+parse_deribit_marketdataapi_execution_timestamp(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    if ((int64_t)tvb_get_letoh64(tvb, offset) == INT64_MIN) {
+        nstime_t empty = NSTIME_INIT_ZERO;
+
+        proto_tree_add_time_format_value(tree, hf_deribit_marketdataapi_execution_timestamp, tvb, offset, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE, &empty, "No Value");
+    }
+    else {
+        proto_tree_add_item(tree, hf_deribit_marketdataapi_execution_timestamp, tvb, offset, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE, DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_ENCODING);
+    }
+
+    return offset + DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_SIZE;
 }
 
 /* Expiry Time */
@@ -1279,7 +1367,7 @@ parse_deribit_marketdataapi_min_sell_price(tvbuff_t *tvb, packet_info *pinfo _U_
 #define DERIBIT_MARKETDATAAPI_MONTH_NAME     "Month"
 #define DERIBIT_MARKETDATAAPI_MONTH_FILTER   "deribit.marketdataapi.month"
 #define DERIBIT_MARKETDATAAPI_MONTH_TYPE     FT_INT16
-#define DERIBIT_MARKETDATAAPI_MONTH_DISPLAY  BASE_DEC
+#define DERIBIT_MARKETDATAAPI_MONTH_DISPLAY  BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_MONTH_MASK     0x0
 #define DERIBIT_MARKETDATAAPI_MONTH_ENCODING ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_MONTH_SIZE     2
@@ -1345,6 +1433,24 @@ parse_deribit_marketdataapi_number_of_legs(tvbuff_t *tvb, packet_info *pinfo _U_
     return offset + DERIBIT_MARKETDATAAPI_NUMBER_OF_LEGS_SIZE;
 }
 
+/* Open Interest */
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_NAME        "Open Interest"
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DESCRIPTION "openInterest"
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_FILTER      "deribit.marketdataapi.openinterest"
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_TYPE        FT_UINT64
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DISPLAY     BASE_CUSTOM
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_MASK        0x0
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_OPEN_INTEREST_SIZE        8
+
+static unsigned
+parse_deribit_marketdataapi_open_interest(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_marketdataapi_open_interest, tvb, offset, DERIBIT_MARKETDATAAPI_OPEN_INTEREST_SIZE, DERIBIT_MARKETDATAAPI_OPEN_INTEREST_ENCODING);
+
+    return offset + DERIBIT_MARKETDATAAPI_OPEN_INTEREST_SIZE;
+}
+
 /* Order Id */
 #define DERIBIT_MARKETDATAAPI_ORDER_ID_NAME        "Order Id"
 #define DERIBIT_MARKETDATAAPI_ORDER_ID_DESCRIPTION "orderId"
@@ -1363,6 +1469,14 @@ parse_deribit_marketdataapi_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, prot
     return offset + DERIBIT_MARKETDATAAPI_ORDER_ID_SIZE;
 }
 
+/* Packet Reserved Bits */
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_NAME        "Packet Reserved Bits"
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_DESCRIPTION "Bits reserved for future use"
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_FILTER      "deribit.marketdataapi.packetreservedbits"
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_TYPE        FT_UINT16
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_MASK        0xFFF8
+
 /* Padding */
 #define DERIBIT_MARKETDATAAPI_PADDING_NAME        "Padding"
 #define DERIBIT_MARKETDATAAPI_PADDING_DESCRIPTION "Alignment padding out to the message length"
@@ -1371,6 +1485,16 @@ parse_deribit_marketdataapi_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define DERIBIT_MARKETDATAAPI_PADDING_DISPLAY     BASE_NONE
 #define DERIBIT_MARKETDATAAPI_PADDING_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_PADDING_ENCODING    ENC_NA
+
+/* Padding 2 */
+#define DERIBIT_MARKETDATAAPI_PADDING_2_NAME        "Padding 2"
+#define DERIBIT_MARKETDATAAPI_PADDING_2_DESCRIPTION "padding2"
+#define DERIBIT_MARKETDATAAPI_PADDING_2_FILTER      "deribit.marketdataapi.padding2"
+#define DERIBIT_MARKETDATAAPI_PADDING_2_TYPE        FT_BYTES
+#define DERIBIT_MARKETDATAAPI_PADDING_2_DISPLAY     BASE_NONE
+#define DERIBIT_MARKETDATAAPI_PADDING_2_MASK        0x0
+#define DERIBIT_MARKETDATAAPI_PADDING_2_ENCODING    ENC_NA
+#define DERIBIT_MARKETDATAAPI_PADDING_2_SIZE        2
 
 /* Price */
 #define DERIBIT_MARKETDATAAPI_PRICE_NAME     "Price"
@@ -1520,6 +1644,38 @@ parse_deribit_marketdataapi_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 
     return offset + DERIBIT_MARKETDATAAPI_REASON_SIZE;
 }
+
+/* Reserved 29 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_NAME        "Reserved 29"
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_DESCRIPTION "29 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_FILTER      "deribit.marketdataapi.reserved29"
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_29_MASK        0xFFFFFFF8
+
+/* Reserved 30 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_NAME        "Reserved 30"
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_DESCRIPTION "30 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_FILTER      "deribit.marketdataapi.reserved30"
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_30_MASK        0xFFFFFFFC
+
+/* Reserved 5 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_NAME        "Reserved 5"
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_DESCRIPTION "5 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_FILTER      "deribit.marketdataapi.reserved5"
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_TYPE        FT_UINT8
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_5_MASK        0xF8
+
+/* Reserved Bits */
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_NAME        "Reserved Bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_DESCRIPTION "Bits reserved for future use"
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_FILTER      "deribit.marketdataapi.reservedbits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_TYPE        FT_UINT16
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_BITS_MASK        0xFFFC
 
 /* Retransmit */
 #define DERIBIT_MARKETDATAAPI_RETRANSMIT_NAME        "Retransmit"
@@ -1735,6 +1891,7 @@ parse_deribit_marketdataapi_taker_order_id(tvbuff_t *tvb, packet_info *pinfo _U_
 /* Template Id values the dispatch switches on */
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION    10
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_DEFINITION         11
+#define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO               12
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14       14
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_REF           15
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_STATUS_UPDATE 16
@@ -1752,7 +1909,6 @@ parse_deribit_marketdataapi_taker_order_id(tvbuff_t *tvb, packet_info *pinfo _U_
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_END_OF_CYCLE             119
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REQUEST       200
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REJECT        202
-#define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADING_STATUS_UPDATE    12
 #define DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_13       13
 
 /* Template Id */
@@ -1768,6 +1924,7 @@ parse_deribit_marketdataapi_taker_order_id(tvbuff_t *tvb, packet_info *pinfo _U_
 static const value_string deribit_marketdataapi_template_id_vals[] = {
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION, "Instrument Definition Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_DEFINITION, "Index Definition Message" },
+    { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO, "Index Info Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14, "Instrument Info Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_REF, "Instrument Ref Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_STATUS_UPDATE, "Instrument Status Update Message" },
@@ -1785,7 +1942,6 @@ static const value_string deribit_marketdataapi_template_id_vals[] = {
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_END_OF_CYCLE, "End Of Cycle Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REQUEST, "Retransmit Request Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REJECT, "Retransmit Reject Message" },
-    { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADING_STATUS_UPDATE, "Trading Status Update Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_13, "Instrument Info Message" },
     { 0, NULL }
 };
@@ -1984,12 +2140,20 @@ parse_deribit_marketdataapi_underlying(tvbuff_t *tvb, packet_info *pinfo _U_, pr
     return offset + DERIBIT_MARKETDATAAPI_UNDERLYING_SIZE;
 }
 
+/* Was Delayed */
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_NAME        "Was Delayed"
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_DESCRIPTION "wasDelayed"
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_FILTER      "deribit.marketdataapi.wasdelayed"
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_TYPE        FT_BOOLEAN
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_MASK        0x04
+
 /* Week Of Month */
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_NAME        "Week Of Month"
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_DESCRIPTION "weekOfMonth"
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_FILTER      "deribit.marketdataapi.weekofmonth"
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_TYPE        FT_INT16
-#define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY     BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_MASK        0x0
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_SIZE        2
@@ -2006,7 +2170,7 @@ parse_deribit_marketdataapi_week_of_month(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_YEAR_NAME     "Year"
 #define DERIBIT_MARKETDATAAPI_YEAR_FILTER   "deribit.marketdataapi.year"
 #define DERIBIT_MARKETDATAAPI_YEAR_TYPE     FT_INT16
-#define DERIBIT_MARKETDATAAPI_YEAR_DISPLAY  BASE_DEC
+#define DERIBIT_MARKETDATAAPI_YEAR_DISPLAY  BASE_CUSTOM
 #define DERIBIT_MARKETDATAAPI_YEAR_MASK     0x0
 #define DERIBIT_MARKETDATAAPI_YEAR_ENCODING ENC_LITTLE_ENDIAN
 #define DERIBIT_MARKETDATAAPI_YEAR_SIZE     2
@@ -2034,6 +2198,7 @@ parse_deribit_marketdataapi_year(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define DERIBIT_MARKETDATAAPI_PACKET_TYPE_SIZE        2
 
 static int * const deribit_marketdataapi_packet_type_fields[] = {
+    &hf_deribit_marketdataapi_packet_reserved_bits,
     &hf_deribit_marketdataapi_retransmit,
     &hf_deribit_marketdataapi_snapshot,
     &hf_deribit_marketdataapi_incremental_update,
@@ -2060,6 +2225,7 @@ parse_deribit_marketdataapi_packet_type(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define DERIBIT_MARKETDATAAPI_MESSAGE_FLAGS_SIZE        2
 
 static int * const deribit_marketdataapi_message_flags_fields[] = {
+    &hf_deribit_marketdataapi_reserved_bits,
     &hf_deribit_marketdataapi_end_of_transaction,
     &hf_deribit_marketdataapi_start_of_transaction,
     NULL
@@ -2085,6 +2251,7 @@ parse_deribit_marketdataapi_message_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_FLAGS_SIZE        1
 
 static int * const deribit_marketdataapi_flags_fields[] = {
+    &hf_deribit_marketdataapi_reserved_5,
     &hf_deribit_marketdataapi_is_perpetual,
     &hf_deribit_marketdataapi_is_put_option,
     &hf_deribit_marketdataapi_is_reversed,
@@ -2111,6 +2278,8 @@ parse_deribit_marketdataapi_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_SIZE        4
 
 static int * const deribit_marketdataapi_taker_flags_fields[] = {
+    &hf_deribit_marketdataapi_reserved_29,
+    &hf_deribit_marketdataapi_was_delayed,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
     NULL
@@ -2136,6 +2305,8 @@ parse_deribit_marketdataapi_taker_flags(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_SIZE        4
 
 static int * const deribit_marketdataapi_maker_flags_fields[] = {
+    &hf_deribit_marketdataapi_reserved_29,
+    &hf_deribit_marketdataapi_was_delayed,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
     NULL
@@ -2161,6 +2332,7 @@ parse_deribit_marketdataapi_maker_flags(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define DERIBIT_MARKETDATAAPI_FLAGS_V01_SIZE        4
 
 static int * const deribit_marketdataapi_flags_v01_fields[] = {
+    &hf_deribit_marketdataapi_reserved_29,
     &hf_deribit_marketdataapi_is_perpetual,
     &hf_deribit_marketdataapi_is_put_option,
     &hf_deribit_marketdataapi_is_reversed,
@@ -2176,6 +2348,58 @@ parse_deribit_marketdataapi_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, pro
     return offset + DERIBIT_MARKETDATAAPI_FLAGS_V01_SIZE;
 }
 
+/* Taker Flags */
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_NAME        "Taker Flags"
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_DESCRIPTION "TradeFlags bit set"
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_FILTER      "deribit.marketdataapi.takerflags"
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_DISPLAY     BASE_HEX
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_MASK        0x0
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_SIZE        4
+
+static int * const deribit_marketdataapi_taker_flags_v01_fields[] = {
+    &hf_deribit_marketdataapi_reserved_30,
+    &hf_deribit_marketdataapi_is_liquidation,
+    &hf_deribit_marketdataapi_is_sell,
+    NULL
+};
+
+static unsigned
+parse_deribit_marketdataapi_taker_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_bitmask(tree, tvb, offset, hf_deribit_marketdataapi_taker_flags_v01,
+        ett_deribit_marketdataapi_taker_flags_v01, deribit_marketdataapi_taker_flags_v01_fields, DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_ENCODING);
+
+    return offset + DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_SIZE;
+}
+
+/* Maker Flags */
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_NAME        "Maker Flags"
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_DESCRIPTION "TradeFlags bit set"
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_FILTER      "deribit.marketdataapi.makerflags"
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_DISPLAY     BASE_HEX
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_MASK        0x0
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_SIZE        4
+
+static int * const deribit_marketdataapi_maker_flags_v01_fields[] = {
+    &hf_deribit_marketdataapi_reserved_30,
+    &hf_deribit_marketdataapi_is_liquidation,
+    &hf_deribit_marketdataapi_is_sell,
+    NULL
+};
+
+static unsigned
+parse_deribit_marketdataapi_maker_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_bitmask(tree, tvb, offset, hf_deribit_marketdataapi_maker_flags_v01,
+        ett_deribit_marketdataapi_maker_flags_v01, deribit_marketdataapi_maker_flags_v01_fields, DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_ENCODING);
+
+    return offset + DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_SIZE;
+}
+
 /* Message and group dissect methods */
 static unsigned dissect_deribit_marketdataapi_md_message_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2185,6 +2409,7 @@ static unsigned dissect_deribit_marketdataapi_instrument_definition_message_larg
 static unsigned dissect_deribit_marketdataapi_instrument_definition_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_definition_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_deribit_marketdataapi_index_definition(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_marketdataapi_index_info(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_info(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_ref(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_instrument_status_update(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2205,9 +2430,13 @@ static unsigned dissect_deribit_marketdataapi_retransmit_reject(tvbuff_t *tvb, p
 static unsigned dissect_deribit_marketdataapi_instrument(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_logical_expiry(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_trading_status_update(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_marketdataapi_instrument_info_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_marketdataapi_instrument_ref_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_bid_put_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_ask_put_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_trade_summary_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_marketdataapi_trade_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_marketdataapi_block_trade_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_marketdataapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 
@@ -2259,7 +2488,7 @@ dissect_deribit_marketdataapi_instrument_definition(tvbuff_t *tvb, packet_info *
     return offset;
 }
 
-/* Instrument Definition Message large Tick Sizes Groups */
+/* Instrument Definition Message Large Tick Sizes Groups */
 static unsigned
 dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -2267,14 +2496,14 @@ dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_gro
     proto_tree *group = tree;
 
     if (deribit_marketdataapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups, &item, "Instrument Definition Message large Tick Sizes Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups, &item, "Instrument Definition Message Large Tick Sizes Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_marketdataapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Instrument Definition Message large Tick Sizes Group: Num In Group entries */
+    /* Instrument Definition Message Large Tick Sizes Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -2307,7 +2536,7 @@ dissect_deribit_marketdataapi_group_size_encoding(tvbuff_t *tvb, packet_info *pi
     return offset;
 }
 
-/* Instrument Definition Message large Tick Sizes Group */
+/* Instrument Definition Message Large Tick Sizes Group */
 static unsigned
 dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -2316,8 +2545,8 @@ dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_gro
 
     if (deribit_marketdataapi_show_structs) {
         group = deribit_marketdataapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_group, &item, "Instrument Definition Message large Tick Sizes Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_group, &item, "Instrument Definition Message large Tick Sizes Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_group, &item, "Instrument Definition Message Large Tick Sizes Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_group, &item, "Instrument Definition Message Large Tick Sizes Group");
     }
 
     unsigned start = offset;
@@ -2330,7 +2559,7 @@ dissect_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_gro
     return offset;
 }
 
-/* Instrument Definition Message legs Groups */
+/* Instrument Definition Message Legs Groups */
 static unsigned
 dissect_deribit_marketdataapi_instrument_definition_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -2338,14 +2567,14 @@ dissect_deribit_marketdataapi_instrument_definition_message_legs_groups(tvbuff_t
     proto_tree *group = tree;
 
     if (deribit_marketdataapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_groups, &item, "Instrument Definition Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_groups, &item, "Instrument Definition Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_marketdataapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Instrument Definition Message legs Group: Num In Group entries */
+    /* Instrument Definition Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -2357,7 +2586,7 @@ dissect_deribit_marketdataapi_instrument_definition_message_legs_groups(tvbuff_t
     return offset;
 }
 
-/* Instrument Definition Message legs Group */
+/* Instrument Definition Message Legs Group */
 static unsigned
 dissect_deribit_marketdataapi_instrument_definition_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -2366,8 +2595,8 @@ dissect_deribit_marketdataapi_instrument_definition_message_legs_group(tvbuff_t 
 
     if (deribit_marketdataapi_show_structs) {
         group = deribit_marketdataapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_group, &item, "Instrument Definition Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_group, &item, "Instrument Definition Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_group, &item, "Instrument Definition Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_marketdataapi_instrument_definition_message_legs_group, &item, "Instrument Definition Message Legs Group");
     }
 
     unsigned start = offset;
@@ -2390,6 +2619,16 @@ dissect_deribit_marketdataapi_index_definition(tvbuff_t *tvb, packet_info *pinfo
     return offset;
 }
 
+/* Index Info Message */
+static unsigned
+dissect_deribit_marketdataapi_index_info(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_marketdataapi_index_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_index_price(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Instrument Info Message */
 static unsigned
 dissect_deribit_marketdataapi_instrument_info(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -2397,7 +2636,6 @@ dissect_deribit_marketdataapi_instrument_info(tvbuff_t *tvb, packet_info *pinfo,
     offset = parse_deribit_marketdataapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_min_sell_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_max_buy_price(tvb, pinfo, tree, offset);
-    offset = parse_deribit_marketdataapi_index_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_mark_price(tvb, pinfo, tree, offset);
 
     return offset;
@@ -2413,6 +2651,7 @@ dissect_deribit_marketdataapi_instrument_ref(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_deribit_marketdataapi_estimated_delivery_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_delivery_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_settlement_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_open_interest(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -2540,6 +2779,8 @@ dissect_deribit_marketdataapi_block_trade(tvbuff_t *tvb, packet_info *pinfo, pro
     offset = parse_deribit_marketdataapi_implied_volatility(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_taker_flags(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_number_of_legs(tvb, pinfo, tree, offset);
+    if (deribit_marketdataapi_show_padding) { proto_tree_add_item(tree, hf_deribit_marketdataapi_padding_2, tvb, offset, DERIBIT_MARKETDATAAPI_PADDING_2_SIZE, DERIBIT_MARKETDATAAPI_PADDING_2_ENCODING); } offset += DERIBIT_MARKETDATAAPI_PADDING_2_SIZE;
+    offset = parse_deribit_marketdataapi_execution_timestamp(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -2656,6 +2897,33 @@ dissect_deribit_marketdataapi_trading_status_update(tvbuff_t *tvb, packet_info *
     return offset;
 }
 
+/* Instrument Info Message V01 */
+static unsigned
+dissect_deribit_marketdataapi_instrument_info_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_marketdataapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_min_sell_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_max_buy_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_index_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_mark_price(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Instrument Ref Message V01 */
+static unsigned
+dissect_deribit_marketdataapi_instrument_ref_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_marketdataapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_current_funding(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_funding_8h(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_estimated_delivery_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_delivery_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_settlement_price(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Bid Put Message V01 */
 static unsigned
 dissect_deribit_marketdataapi_bid_put_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -2691,7 +2959,40 @@ dissect_deribit_marketdataapi_trade_summary_v01(tvbuff_t *tvb, packet_info *pinf
     offset = parse_deribit_marketdataapi_mark_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_index_price(tvb, pinfo, tree, offset);
     offset = parse_deribit_marketdataapi_implied_volatility(tvb, pinfo, tree, offset);
-    offset = parse_deribit_marketdataapi_taker_flags(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_taker_flags_v01(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Trade Message V01 */
+static unsigned
+dissect_deribit_marketdataapi_trade_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_marketdataapi_match_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_maker_order_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_fill_qty_mantissa(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_fill_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_maker_flags_v01(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Block Trade Message V01 */
+static unsigned
+dissect_deribit_marketdataapi_block_trade_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_marketdataapi_match_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_block_trade_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_block_rfq_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_fill_qty_mantissa(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_fill_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_mark_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_index_price(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_implied_volatility(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_taker_flags_v01(tvb, pinfo, tree, offset);
+    offset = parse_deribit_marketdataapi_number_of_legs(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -2703,6 +3004,7 @@ dissect_deribit_marketdataapi_trade_summary_v01(tvbuff_t *tvb, packet_info *pinf
 static const value_string deribit_marketdataapi_messages[] = {
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION, "Instrument Definition Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_DEFINITION, "Index Definition Message" },
+    { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO, "Index Info Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14, "Instrument Info Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_REF, "Instrument Ref Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_STATUS_UPDATE, "Instrument Status Update Message" },
@@ -2732,6 +3034,8 @@ dissect_deribit_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_t
         return dissect_deribit_marketdataapi_instrument_definition(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_DEFINITION:
         return dissect_deribit_marketdataapi_index_definition(tvb, pinfo, tree, offset);
+    case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO:
+        return dissect_deribit_marketdataapi_index_info(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14:
         return dissect_deribit_marketdataapi_instrument_info(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_REF:
@@ -2773,7 +3077,7 @@ dissect_deribit_marketdataapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_t
 
 static const value_string deribit_marketdataapi_messages_v01[] = {
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION, "Instrument Message" },
-    { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADING_STATUS_UPDATE, "Trading Status Update Message" },
+    { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO, "Trading Status Update Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_13, "Instrument Info Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14, "Instrument Ref Message" },
     { DERIBIT_MARKETDATAAPI_TEMPLATE_ID_BID_PUT, "Bid Put Message" },
@@ -2800,12 +3104,12 @@ dissect_deribit_marketdataapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, pro
     switch (template_id) {
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION:
         return dissect_deribit_marketdataapi_instrument(tvb, pinfo, tree, offset);
-    case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADING_STATUS_UPDATE:
+    case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO:
         return dissect_deribit_marketdataapi_trading_status_update(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_13:
-        return dissect_deribit_marketdataapi_instrument_info(tvb, pinfo, tree, offset);
+        return dissect_deribit_marketdataapi_instrument_info_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14:
-        return dissect_deribit_marketdataapi_instrument_ref(tvb, pinfo, tree, offset);
+        return dissect_deribit_marketdataapi_instrument_ref_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_BID_PUT:
         return dissect_deribit_marketdataapi_bid_put_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_ASK_PUT:
@@ -2821,9 +3125,9 @@ dissect_deribit_marketdataapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, pro
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADE_SUMMARY:
         return dissect_deribit_marketdataapi_trade_summary_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADE:
-        return dissect_deribit_marketdataapi_trade(tvb, pinfo, tree, offset);
+        return dissect_deribit_marketdataapi_trade_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_BLOCK_TRADE:
-        return dissect_deribit_marketdataapi_block_trade(tvb, pinfo, tree, offset);
+        return dissect_deribit_marketdataapi_block_trade_v01(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_SNAPSHOT_HEADER:
         return dissect_deribit_marketdataapi_snapshot_header(tvb, pinfo, tree, offset);
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_SNAPSHOT_TRAILER:
@@ -2847,6 +3151,8 @@ deribit_marketdataapi_show(uint32_t template_id)
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_DEFINITION:
         return deribit_marketdataapi_show_application_messages;
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_DEFINITION:
+        return deribit_marketdataapi_show_application_messages;
+    case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INDEX_INFO:
         return deribit_marketdataapi_show_application_messages;
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_14:
         return deribit_marketdataapi_show_application_messages;
@@ -2881,8 +3187,6 @@ deribit_marketdataapi_show(uint32_t template_id)
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REQUEST:
         return deribit_marketdataapi_show_application_messages;
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_RETRANSMIT_REJECT:
-        return deribit_marketdataapi_show_application_messages;
-    case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_TRADING_STATUS_UPDATE:
         return deribit_marketdataapi_show_application_messages;
     case DERIBIT_MARKETDATAAPI_TEMPLATE_ID_INSTRUMENT_INFO_13:
         return deribit_marketdataapi_show_application_messages;
@@ -2952,7 +3256,9 @@ dissect_deribit_marketdataapi_message(tvbuff_t *tvb, packet_info *pinfo, proto_t
     uint32_t padding = message_length - (uint32_t)(position - offset);
 
     if (padding > 0) {
-        proto_tree_add_item(message, hf_deribit_marketdataapi_padding, tvb, position, padding, DERIBIT_MARKETDATAAPI_PADDING_ENCODING);
+        if (deribit_marketdataapi_show_padding) {
+            proto_tree_add_item(message, hf_deribit_marketdataapi_padding, tvb, position, padding, DERIBIT_MARKETDATAAPI_PADDING_ENCODING);
+        }
         position += padding;
     }
 
@@ -3005,7 +3311,7 @@ dissect_deribit_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tre
         return tvb_captured_length(tvb);
     }
 
-    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", count, count == 1 ? "Message" : "Messages");
 
     position = dissect_deribit_marketdataapi_messages(tvb, pinfo, packet, position, count, parse);
 
@@ -3111,7 +3417,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_BLOCK_RFQ_ID_FILTER,
               DERIBIT_MARKETDATAAPI_BLOCK_RFQ_ID_TYPE,
               DERIBIT_MARKETDATAAPI_BLOCK_RFQ_ID_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              CF_FUNC(deribit_marketdataapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_MARKETDATAAPI_BLOCK_RFQ_ID_MASK,
               DERIBIT_MARKETDATAAPI_BLOCK_RFQ_ID_DESCRIPTION,
               HFILL } },
@@ -3147,7 +3453,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_FILTER,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_TYPE,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_double),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double_nan),
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_MASK,
               DERIBIT_MARKETDATAAPI_CURRENT_FUNDING_DESCRIPTION,
               HFILL } },
@@ -3156,7 +3462,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_FILTER,
               DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_TYPE,
               DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(deribit_marketdataapi_format_nullable_int32_0),
               DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_MASK,
               DERIBIT_MARKETDATAAPI_DAY_OF_MONTH_DESCRIPTION,
               HFILL } },
@@ -3196,6 +3502,15 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_ESTIMATED_DELIVERY_PRICE_MASK,
               DERIBIT_MARKETDATAAPI_ESTIMATED_DELIVERY_PRICE_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_marketdataapi_execution_timestamp,
+            { DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_NAME,
+              DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_FILTER,
+              DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_TYPE,
+              DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_MASK,
+              DERIBIT_MARKETDATAAPI_EXECUTION_TIMESTAMP_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_marketdataapi_expiry_time,
             { DERIBIT_MARKETDATAAPI_EXPIRY_TIME_NAME,
               DERIBIT_MARKETDATAAPI_EXPIRY_TIME_FILTER,
@@ -3228,7 +3543,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_FUNDING_8H_FILTER,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_TYPE,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_double),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double_nan),
               DERIBIT_MARKETDATAAPI_FUNDING_8H_MASK,
               DERIBIT_MARKETDATAAPI_FUNDING_8H_DESCRIPTION,
               HFILL } },
@@ -3237,7 +3552,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_FILTER,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_TYPE,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_double),
+              CF_FUNC(deribit_marketdataapi_format_nullable_double_nan),
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_MASK,
               DERIBIT_MARKETDATAAPI_IMPLIED_VOLATILITY_DESCRIPTION,
               HFILL } },
@@ -3354,7 +3669,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_MAKER_ORDER_ID_FILTER,
               DERIBIT_MARKETDATAAPI_MAKER_ORDER_ID_TYPE,
               DERIBIT_MARKETDATAAPI_MAKER_ORDER_ID_DISPLAY,
-              CF_FUNC(deribit_marketdataapi_format_nullable_64),
+              CF_FUNC(deribit_marketdataapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_MARKETDATAAPI_MAKER_ORDER_ID_MASK,
               DERIBIT_MARKETDATAAPI_MAKER_ORDER_ID_DESCRIPTION,
               HFILL } },
@@ -3435,7 +3750,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_MONTH_FILTER,
               DERIBIT_MARKETDATAAPI_MONTH_TYPE,
               DERIBIT_MARKETDATAAPI_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(deribit_marketdataapi_format_nullable_int32_0),
               DERIBIT_MARKETDATAAPI_MONTH_MASK,
               NULL,
               HFILL } },
@@ -3466,6 +3781,15 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_NUMBER_OF_LEGS_MASK,
               DERIBIT_MARKETDATAAPI_NUMBER_OF_LEGS_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_marketdataapi_open_interest,
+            { DERIBIT_MARKETDATAAPI_OPEN_INTEREST_NAME,
+              DERIBIT_MARKETDATAAPI_OPEN_INTEREST_FILTER,
+              DERIBIT_MARKETDATAAPI_OPEN_INTEREST_TYPE,
+              DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DISPLAY,
+              CF_FUNC(deribit_marketdataapi_format_nullable_double_nan),
+              DERIBIT_MARKETDATAAPI_OPEN_INTEREST_MASK,
+              DERIBIT_MARKETDATAAPI_OPEN_INTEREST_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_marketdataapi_order_id,
             { DERIBIT_MARKETDATAAPI_ORDER_ID_NAME,
               DERIBIT_MARKETDATAAPI_ORDER_ID_FILTER,
@@ -3483,6 +3807,15 @@ proto_register_deribit_marketdataapi(void)
               NULL,
               DERIBIT_MARKETDATAAPI_PADDING_MASK,
               DERIBIT_MARKETDATAAPI_PADDING_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_padding_2,
+            { DERIBIT_MARKETDATAAPI_PADDING_2_NAME,
+              DERIBIT_MARKETDATAAPI_PADDING_2_FILTER,
+              DERIBIT_MARKETDATAAPI_PADDING_2_TYPE,
+              DERIBIT_MARKETDATAAPI_PADDING_2_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_PADDING_2_MASK,
+              DERIBIT_MARKETDATAAPI_PADDING_2_DESCRIPTION,
               HFILL } },
         { &hf_deribit_marketdataapi_price,
             { DERIBIT_MARKETDATAAPI_PRICE_NAME,
@@ -3741,7 +4074,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_FILTER,
               DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_TYPE,
               DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(deribit_marketdataapi_format_nullable_int32_0),
               DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_MASK,
               DERIBIT_MARKETDATAAPI_WEEK_OF_MONTH_DESCRIPTION,
               HFILL } },
@@ -3750,7 +4083,7 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_YEAR_FILTER,
               DERIBIT_MARKETDATAAPI_YEAR_TYPE,
               DERIBIT_MARKETDATAAPI_YEAR_DISPLAY,
-              NULL,
+              CF_FUNC(deribit_marketdataapi_format_nullable_int32_0),
               DERIBIT_MARKETDATAAPI_YEAR_MASK,
               NULL,
               HFILL } },
@@ -3819,6 +4152,51 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_IS_SELL_MASK,
               DERIBIT_MARKETDATAAPI_IS_SELL_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_marketdataapi_packet_reserved_bits,
+            { DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_NAME,
+              DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_FILTER,
+              DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_TYPE,
+              DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_MASK,
+              DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_reserved_29,
+            { DERIBIT_MARKETDATAAPI_RESERVED_29_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_29_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_29_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_29_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_RESERVED_29_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_29_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_reserved_30,
+            { DERIBIT_MARKETDATAAPI_RESERVED_30_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_30_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_30_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_30_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_RESERVED_30_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_30_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_reserved_5,
+            { DERIBIT_MARKETDATAAPI_RESERVED_5_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_5_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_5_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_5_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_RESERVED_5_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_5_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_reserved_bits,
+            { DERIBIT_MARKETDATAAPI_RESERVED_BITS_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_BITS_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_BITS_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_BITS_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_RESERVED_BITS_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_BITS_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_marketdataapi_retransmit,
             { DERIBIT_MARKETDATAAPI_RETRANSMIT_NAME,
               DERIBIT_MARKETDATAAPI_RETRANSMIT_FILTER,
@@ -3845,6 +4223,15 @@ proto_register_deribit_marketdataapi(void)
               NULL,
               DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_MASK,
               DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_was_delayed,
+            { DERIBIT_MARKETDATAAPI_WAS_DELAYED_NAME,
+              DERIBIT_MARKETDATAAPI_WAS_DELAYED_FILTER,
+              DERIBIT_MARKETDATAAPI_WAS_DELAYED_TYPE,
+              DERIBIT_MARKETDATAAPI_WAS_DELAYED_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_WAS_DELAYED_MASK,
+              DERIBIT_MARKETDATAAPI_WAS_DELAYED_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */
@@ -3902,6 +4289,24 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_FLAGS_V01_MASK,
               DERIBIT_MARKETDATAAPI_FLAGS_V01_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_marketdataapi_taker_flags_v01,
+            { DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_NAME,
+              DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_FILTER,
+              DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_TYPE,
+              DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_MASK,
+              DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_marketdataapi_maker_flags_v01,
+            { DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_NAME,
+              DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_FILTER,
+              DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_TYPE,
+              DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_DISPLAY,
+              NULL,
+              DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_MASK,
+              DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_DESCRIPTION,
+              HFILL } },
     };
 
     static int *ett[] = {
@@ -3914,6 +4319,8 @@ proto_register_deribit_marketdataapi(void)
         &ett_deribit_marketdataapi_taker_flags,
         &ett_deribit_marketdataapi_maker_flags,
         &ett_deribit_marketdataapi_flags_v01,
+        &ett_deribit_marketdataapi_taker_flags_v01,
+        &ett_deribit_marketdataapi_maker_flags_v01,
         &ett_deribit_marketdataapi_md_message_header,
         &ett_deribit_marketdataapi_instrument_definition_message_large_tick_sizes_groups,
         &ett_deribit_marketdataapi_group_size_encoding,
@@ -3948,7 +4355,7 @@ proto_register_deribit_marketdataapi(void)
         DERIBIT_MARKETDATAAPI_VERSION_PREFERENCE_TITLE,
         DERIBIT_MARKETDATAAPI_VERSION_PREFERENCE_DESCRIPTION,
         &deribit_marketdataapi_pref_version,
-        deribit_marketdataapi_version_vals,
+        deribit_marketdataapi_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -3971,6 +4378,13 @@ proto_register_deribit_marketdataapi(void)
         DERIBIT_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_TITLE,
         DERIBIT_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &deribit_marketdataapi_show_structs);
+
+    prefs_register_bool_preference(
+        preferences,
+        DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_NAME,
+        DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_TITLE,
+        DERIBIT_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &deribit_marketdataapi_show_padding);
 
     prefs_register_uint_preference(
         preferences,

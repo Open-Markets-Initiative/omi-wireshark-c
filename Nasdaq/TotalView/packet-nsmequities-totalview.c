@@ -328,7 +328,7 @@ static expert_field ei_nsmequities_totalview_length;
 #define NSMEQUITIES_TOTALVIEW_VERSION_2_0     14
 #define NSMEQUITIES_TOTALVIEW_VERSION_1_0     15
 
-static const enum_val_t nsmequities_totalview_version_vals[] = {
+static const enum_val_t nsmequities_totalview_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", NSMEQUITIES_TOTALVIEW_VERSION_AUTOMATIC },
     { "v5.0.2026", "5.0.2026", NSMEQUITIES_TOTALVIEW_VERSION_5_0_2026 },
     { "v5.0.2023", "5.0.2023", NSMEQUITIES_TOTALVIEW_VERSION_5_0_2023 },
@@ -427,6 +427,13 @@ static bool nsmequities_totalview_show_headers = true;
 static bool nsmequities_totalview_show_session_messages = true;
 static bool nsmequities_totalview_show_application_messages = true;
 static bool nsmequities_totalview_show_messages = true;
+
+/* Show padding preference */
+#define NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool nsmequities_totalview_show_padding = false;
 
 /* Decimal places shown, the wire precision by default */
 #define NSMEQUITIES_TOTALVIEW_DECIMAL_PREFERENCE_NAME "decimal.places"
@@ -724,7 +731,7 @@ nsmequities_totalview_utc(packet_info *pinfo, uint64_t seconds, uint32_t nanosec
     instant->nsecs = (int)nanoseconds;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 nsmequities_totalview_decimal_places(char *buf)
 {
@@ -740,12 +747,41 @@ nsmequities_totalview_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 4 decimal place value */
@@ -3975,10 +4011,15 @@ parse_nsmequities_totalview_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_DESCRIPTION "Terminating line feed character"
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_FILTER      "nsmequities.totalview.souplf"
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_TYPE        FT_UINT8
-#define NSMEQUITIES_TOTALVIEW_SOUP_LF_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_ENCODING    ENC_LITTLE_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_SIZE        1
+
+static const value_string nsmequities_totalview_soup_lf_vals[] = {
+    { 10, "Line Feed" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_nsmequities_totalview_soup_lf(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -3993,10 +4034,15 @@ parse_nsmequities_totalview_soup_lf(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DESCRIPTION "Terminating line feed character"
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_FILTER      "nsmequities.totalview.souplf"
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_TYPE        FT_UINT8
-#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DISPLAY     BASE_HEX
+#define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DISPLAY     BASE_DEC
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_MASK        0x0
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_ENCODING    ENC_LITTLE_ENDIAN
 #define NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_SIZE        1
+
+static const value_string nsmequities_totalview_soup_lf_v10_vals[] = {
+    { 10, "Line Feed" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_nsmequities_totalview_soup_lf_v10(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -4864,7 +4910,7 @@ dissect_nsmequities_totalview_stock_trading_action(tvbuff_t *tvb, packet_info *p
     offset = parse_nsmequities_totalview_timestamp(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
+    if (nsmequities_totalview_show_padding) { proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING); } offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason_code(tvb, pinfo, tree, offset);
 
     return offset;
@@ -5320,7 +5366,7 @@ dissect_nsmequities_totalview_stock_trading_action_v41(tvbuff_t *tvb, packet_inf
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
+    if (nsmequities_totalview_show_padding) { proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING); } offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6057,7 +6103,7 @@ dissect_nsmequities_totalview_stock_trading_action_v40(tvbuff_t *tvb, packet_inf
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock_v40(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
+    if (nsmequities_totalview_show_padding) { proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING); } offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -6734,7 +6780,7 @@ dissect_nsmequities_totalview_stock_trading_action_v40f(tvbuff_t *tvb, packet_in
     offset = parse_nsmequities_totalview_nanoseconds(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_stock_v40(tvb, pinfo, tree, offset);
     offset = parse_nsmequities_totalview_trading_state(tvb, pinfo, tree, offset);
-    offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
+    if (nsmequities_totalview_show_padding) { proto_tree_add_item(tree, hf_nsmequities_totalview_reserved, tvb, offset, NSMEQUITIES_TOTALVIEW_RESERVED_SIZE, NSMEQUITIES_TOTALVIEW_RESERVED_ENCODING); } offset += NSMEQUITIES_TOTALVIEW_RESERVED_SIZE;
     offset = parse_nsmequities_totalview_reason(tvb, pinfo, tree, offset);
 
     return offset;
@@ -7316,8 +7362,6 @@ static const value_string nsmequities_totalview_client_packet_messages[] = {
 static unsigned
 dissect_nsmequities_totalview_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_totalview_client_packet_messages, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7347,8 +7391,6 @@ static const value_string nsmequities_totalview_client_packet_messages_v502023[]
 static unsigned
 dissect_nsmequities_totalview_client_packet_client_payload_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_totalview_client_packet_messages_v502023, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7376,8 +7418,6 @@ static const value_string nsmequities_totalview_client_payload_messages_v32[] = 
 static unsigned
 dissect_nsmequities_totalview_client_payload_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_totalview_client_payload_messages_v32, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7401,8 +7441,6 @@ static const value_string nsmequities_totalview_client_payload_messages_v30[] = 
 static unsigned
 dissect_nsmequities_totalview_client_payload_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_totalview_client_payload_messages_v30, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_TOTALVIEW_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7429,8 +7467,6 @@ static const value_string nsmequities_totalview_server_packet_messages[] = {
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7463,8 +7499,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v502023[]
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v502023(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v502023, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7497,8 +7531,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v502022[]
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v502022(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v502022, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7531,8 +7563,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v502017[]
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v502017(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v502017, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7565,8 +7595,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v41[] = {
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v41(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v41, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7597,8 +7625,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v32[] = 
 static unsigned
 dissect_nsmequities_totalview_server_payload_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v32, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7627,8 +7653,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v40[] = {
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v40(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v40, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7659,8 +7683,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v31[] = 
 static unsigned
 dissect_nsmequities_totalview_server_payload_v31(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v31, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7687,8 +7709,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v31f[] =
 static unsigned
 dissect_nsmequities_totalview_server_payload_v31f(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v31f, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7717,8 +7737,6 @@ static const value_string nsmequities_totalview_server_packet_messages_v40f[] = 
 static unsigned
 dissect_nsmequities_totalview_server_packet_server_payload_v40f(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_packet_messages_v40f, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet(tvb, pinfo, tree, offset);
@@ -7749,8 +7767,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v30[] = 
 static unsigned
 dissect_nsmequities_totalview_server_payload_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v30, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7777,8 +7793,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v20a[] =
 static unsigned
 dissect_nsmequities_totalview_server_payload_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v20a, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7805,8 +7819,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v20[] = 
 static unsigned
 dissect_nsmequities_totalview_server_payload_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v20, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7833,8 +7845,6 @@ static const value_string nsmequities_totalview_server_payload_messages_v10[] = 
 static unsigned
 dissect_nsmequities_totalview_server_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_totalview_server_payload_messages_v10, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_TOTALVIEW_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_totalview_debug_packet_v32(tvb, pinfo, tree, offset);
@@ -7880,8 +7890,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages[] = {
 static unsigned
 dissect_nsmequities_totalview_sequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event(tvb, pinfo, tree, offset);
@@ -7964,8 +7972,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v5020
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v502022(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages_v502022, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event(tvb, pinfo, tree, offset);
@@ -8045,8 +8051,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v5020
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v502017(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages_v502017, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event(tvb, pinfo, tree, offset);
@@ -8121,8 +8125,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v41[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v41(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages_v41, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_timestamp(tvb, pinfo, tree, offset);
@@ -8192,8 +8194,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v32[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v32(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v32, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_seconds(tvb, pinfo, tree, offset);
@@ -8262,8 +8262,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v40[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v40(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages_v40, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_timestamp(tvb, pinfo, tree, offset);
@@ -8327,8 +8325,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v31[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v31(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v31, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_seconds(tvb, pinfo, tree, offset);
@@ -8395,8 +8391,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v31f[
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v31f(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v31f, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_seconds(tvb, pinfo, tree, offset);
@@ -8464,8 +8458,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v40f[
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v40f(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_totalview_sequenced_message_messages_v40f, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_TOTALVIEW_SEQUENCED_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_timestamp(tvb, pinfo, tree, offset);
@@ -8530,8 +8522,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v30[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v30(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v30, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_TIMESTAMP:
         return dissect_nsmequities_totalview_seconds(tvb, pinfo, tree, offset);
@@ -8585,8 +8575,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v20a[
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v20a(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v20a, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event_v32(tvb, pinfo, tree, offset);
@@ -8621,8 +8609,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v20[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v20(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v20, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event_v32(tvb, pinfo, tree, offset);
@@ -8655,8 +8641,6 @@ static const value_string nsmequities_totalview_sequenced_message_messages_v10[]
 static unsigned
 dissect_nsmequities_totalview_sequenced_message_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, nsmequities_totalview_sequenced_message_messages_v10, "Unknown (%u)"));
-
     switch (message_type) {
     case NSMEQUITIES_TOTALVIEW_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_totalview_system_event_v32(tvb, pinfo, tree, offset);
@@ -9813,12 +9797,15 @@ dissect_nsmequities_totalview_client_packet_message(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_totalview_client_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_client_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -9827,11 +9814,15 @@ dissect_nsmequities_totalview_client_packet_messages(tvbuff_t *tvb, packet_info 
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_nsmequities_totalview_client_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -9905,12 +9896,15 @@ dissect_nsmequities_totalview_server_packet_message(tvbuff_t *tvb, packet_info *
 static unsigned
 dissect_nsmequities_totalview_server_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_totalview_server_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -9919,11 +9913,15 @@ dissect_nsmequities_totalview_server_packet_messages(tvbuff_t *tvb, packet_info 
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_nsmequities_totalview_server_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -10201,7 +10199,7 @@ dissect_nsmequities_totalview_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tr
         return tvb_captured_length(tvb);
     }
 
-    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", count, count == 1 ? "Message" : "Messages");
 
     position = dissect_nsmequities_totalview_packet_messages(tvb, pinfo, packet, position, count, parse);
 
@@ -11671,7 +11669,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_SOUP_LF_FILTER,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_TYPE,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_DISPLAY,
-              NULL,
+              VALS(nsmequities_totalview_soup_lf_vals),
               NSMEQUITIES_TOTALVIEW_SOUP_LF_MASK,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_DESCRIPTION,
               HFILL } },
@@ -11680,7 +11678,7 @@ proto_register_nsmequities_totalview(void)
               NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_FILTER,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_TYPE,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DISPLAY,
-              NULL,
+              VALS(nsmequities_totalview_soup_lf_v10_vals),
               NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_MASK,
               NSMEQUITIES_TOTALVIEW_SOUP_LF_V10_DESCRIPTION,
               HFILL } },
@@ -11989,7 +11987,7 @@ proto_register_nsmequities_totalview(void)
         NSMEQUITIES_TOTALVIEW_VERSION_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_VERSION_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_pref_version,
-        nsmequities_totalview_version_vals,
+        nsmequities_totalview_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -12019,6 +12017,13 @@ proto_register_nsmequities_totalview(void)
         NSMEQUITIES_TOTALVIEW_SHOW_MESSAGES_PREFERENCE_TITLE,
         NSMEQUITIES_TOTALVIEW_SHOW_MESSAGES_PREFERENCE_DESCRIPTION,
         &nsmequities_totalview_show_messages);
+
+    prefs_register_bool_preference(
+        preferences,
+        NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_NAME,
+        NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_TITLE,
+        NSMEQUITIES_TOTALVIEW_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &nsmequities_totalview_show_padding);
 
     prefs_register_uint_preference(
         preferences,

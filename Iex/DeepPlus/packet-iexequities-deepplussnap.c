@@ -114,6 +114,9 @@ static int hf_iexequities_deepplussnap_timestamp;
 static int hf_iexequities_deepplussnap_trade_id;
 static int hf_iexequities_deepplussnap_trade_through_exempt;
 static int hf_iexequities_deepplussnap_trading_status;
+static int hf_iexequities_deepplussnap_unused_3;
+static int hf_iexequities_deepplussnap_unused_5;
+static int hf_iexequities_deepplussnap_unused_7;
 static int hf_iexequities_deepplussnap_version;
 static int hf_iexequities_deepplussnap_when_issued;
 
@@ -153,7 +156,7 @@ static expert_field ei_iexequities_deepplussnap_length;
 #define IEXEQUITIES_DEEPPLUSSNAP_VERSION_AUTOMATIC 0
 #define IEXEQUITIES_DEEPPLUSSNAP_VERSION_1_06     1
 
-static const enum_val_t iexequities_deepplussnap_version_vals[] = {
+static const enum_val_t iexequities_deepplussnap_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", IEXEQUITIES_DEEPPLUSSNAP_VERSION_AUTOMATIC },
     { "v1.06", "1.06", IEXEQUITIES_DEEPPLUSSNAP_VERSION_1_06 },
     { NULL, NULL, 0 }
@@ -187,6 +190,13 @@ static int iexequities_deepplussnap_pref_version = IEXEQUITIES_DEEPPLUSSNAP_VERS
 static bool iexequities_deepplussnap_show_headers = true;
 static bool iexequities_deepplussnap_show_application_messages = true;
 
+/* Show padding preference */
+#define IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool iexequities_deepplussnap_show_padding = false;
+
 /* Decimal places shown, the wire precision by default */
 #define IEXEQUITIES_DEEPPLUSSNAP_DECIMAL_PREFERENCE_NAME "decimal.places"
 #define IEXEQUITIES_DEEPPLUSSNAP_DECIMAL_PREFERENCE_TITLE "Decimal places"
@@ -214,7 +224,7 @@ iexequities_deepplussnap_version(uint64_t seconds _U_)
     return IEXEQUITIES_DEEPPLUSSNAP_VERSION_1_06;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 iexequities_deepplussnap_decimal_places(char *buf)
 {
@@ -230,12 +240,41 @@ iexequities_deepplussnap_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 4 decimal place value */
@@ -1140,6 +1179,30 @@ parse_iexequities_deepplussnap_trading_status(tvbuff_t *tvb, packet_info *pinfo 
     return offset + IEXEQUITIES_DEEPPLUSSNAP_TRADING_STATUS_SIZE;
 }
 
+/* Unused 3 */
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_NAME        "Unused 3"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_DESCRIPTION "Unused"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_FILTER      "iexequities.deepplussnap.unused3"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_TYPE        FT_UINT8
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_DISPLAY     BASE_DEC
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_MASK        0x07
+
+/* Unused 5 */
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_NAME        "Unused 5"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_DESCRIPTION "Unused"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_FILTER      "iexequities.deepplussnap.unused5"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_TYPE        FT_UINT8
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_DISPLAY     BASE_DEC
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_MASK        0x1F
+
+/* Unused 7 */
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_NAME        "Unused 7"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_DESCRIPTION "Unused"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_FILTER      "iexequities.deepplussnap.unused7"
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_TYPE        FT_UINT8
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_DISPLAY     BASE_DEC
+#define IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_MASK        0x7F
+
 /* Version */
 #define IEXEQUITIES_DEEPPLUSSNAP_VERSION_NAME        "Version"
 #define IEXEQUITIES_DEEPPLUSSNAP_VERSION_DESCRIPTION "Version of transport specification"
@@ -1183,6 +1246,7 @@ static int * const iexequities_deepplussnap_security_directory_flags_fields[] = 
     &hf_iexequities_deepplussnap_test_security,
     &hf_iexequities_deepplussnap_when_issued,
     &hf_iexequities_deepplussnap_etp,
+    &hf_iexequities_deepplussnap_unused_5,
     NULL
 };
 
@@ -1206,6 +1270,7 @@ parse_iexequities_deepplussnap_security_directory_flags(tvbuff_t *tvb, packet_in
 
 static int * const iexequities_deepplussnap_modify_flags_fields[] = {
     &hf_iexequities_deepplussnap_priority,
+    &hf_iexequities_deepplussnap_unused_7,
     NULL
 };
 
@@ -1233,6 +1298,7 @@ static int * const iexequities_deepplussnap_sale_condition_flags_fields[] = {
     &hf_iexequities_deepplussnap_odd_lot,
     &hf_iexequities_deepplussnap_trade_through_exempt,
     &hf_iexequities_deepplussnap_single_price_cross_trade,
+    &hf_iexequities_deepplussnap_unused_3,
     NULL
 };
 
@@ -1353,7 +1419,7 @@ dissect_iexequities_deepplussnap_iextp_header(tvbuff_t *tvb, packet_info *pinfo,
     unsigned start = offset;
 
     offset = parse_iexequities_deepplussnap_version(tvb, pinfo, group, offset);
-    offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE;
+    if (iexequities_deepplussnap_show_padding) { proto_tree_add_item(group, hf_iexequities_deepplussnap_reserved, tvb, offset, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_ENCODING); } offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_SIZE;
     offset = parse_iexequities_deepplussnap_message_protocol_id(tvb, pinfo, group, offset);
     offset = parse_iexequities_deepplussnap_channel_id(tvb, pinfo, group, offset);
     offset = parse_iexequities_deepplussnap_session_id(tvb, pinfo, group, offset);
@@ -1490,7 +1556,7 @@ dissect_iexequities_deepplussnap_order_modify(tvbuff_t *tvb, packet_info *pinfo,
 static unsigned
 dissect_iexequities_deepplussnap_order_delete(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
+    if (iexequities_deepplussnap_show_padding) { proto_tree_add_item(tree, hf_iexequities_deepplussnap_reserved_1, tvb, offset, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_ENCODING); } offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplussnap_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_symbol(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_order_id_reference(tvb, pinfo, tree, offset);
@@ -1545,7 +1611,7 @@ dissect_iexequities_deepplussnap_trade_break(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_iexequities_deepplussnap_clear_book(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
+    if (iexequities_deepplussnap_show_padding) { proto_tree_add_item(tree, hf_iexequities_deepplussnap_reserved_1, tvb, offset, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE, IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_ENCODING); } offset += IEXEQUITIES_DEEPPLUSSNAP_RESERVED_1_SIZE;
     offset = parse_iexequities_deepplussnap_timestamp(tvb, pinfo, tree, offset);
     offset = parse_iexequities_deepplussnap_symbol(tvb, pinfo, tree, offset);
 
@@ -1569,8 +1635,6 @@ static const value_string iexequities_deepplussnap_messages[] = {
 static unsigned
 dissect_iexequities_deepplussnap_message_data(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, message_type, iexequities_deepplussnap_messages, "Unknown (%u)"));
-
     switch (message_type) {
     case IEXEQUITIES_DEEPPLUSSNAP_MESSAGE_TYPE_SNAPSHOT_REQUEST:
         return dissect_iexequities_deepplussnap_snapshot_request(tvb, pinfo, tree, offset);
@@ -1609,8 +1673,6 @@ static const value_string iexequities_deepplussnap_iex_tp_message_data_messages[
 static unsigned
 dissect_iexequities_deepplussnap_iex_tp_message_data(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t iex_tp_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, iex_tp_message_type, iexequities_deepplussnap_iex_tp_message_data_messages, "Unknown (%u)"));
-
     switch (iex_tp_message_type) {
     case IEXEQUITIES_DEEPPLUSSNAP_IEX_TP_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_iexequities_deepplussnap_system_event(tvb, pinfo, tree, offset);
@@ -1719,12 +1781,15 @@ dissect_iexequities_deepplussnap_message(tvbuff_t *tvb, packet_info *pinfo, prot
 static unsigned
 dissect_iexequities_deepplussnap_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const iexequities_deepplussnap_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SNAP %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -1733,11 +1798,15 @@ dissect_iexequities_deepplussnap_messages(tvbuff_t *tvb, packet_info *pinfo, pro
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SNAP %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_iexequities_deepplussnap_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SNAP %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -2262,6 +2331,33 @@ proto_register_iexequities_deepplussnap(void)
               IEXEQUITIES_DEEPPLUSSNAP_TRADE_THROUGH_EXEMPT_MASK,
               IEXEQUITIES_DEEPPLUSSNAP_TRADE_THROUGH_EXEMPT_DESCRIPTION,
               HFILL } },
+        { &hf_iexequities_deepplussnap_unused_3,
+            { IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_NAME,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_FILTER,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_TYPE,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_DISPLAY,
+              NULL,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_MASK,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_3_DESCRIPTION,
+              HFILL } },
+        { &hf_iexequities_deepplussnap_unused_5,
+            { IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_NAME,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_FILTER,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_TYPE,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_DISPLAY,
+              NULL,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_MASK,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_5_DESCRIPTION,
+              HFILL } },
+        { &hf_iexequities_deepplussnap_unused_7,
+            { IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_NAME,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_FILTER,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_TYPE,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_DISPLAY,
+              NULL,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_MASK,
+              IEXEQUITIES_DEEPPLUSSNAP_UNUSED_7_DESCRIPTION,
+              HFILL } },
         { &hf_iexequities_deepplussnap_when_issued,
             { IEXEQUITIES_DEEPPLUSSNAP_WHEN_ISSUED_NAME,
               IEXEQUITIES_DEEPPLUSSNAP_WHEN_ISSUED_FILTER,
@@ -2338,7 +2434,7 @@ proto_register_iexequities_deepplussnap(void)
         IEXEQUITIES_DEEPPLUSSNAP_VERSION_PREFERENCE_TITLE,
         IEXEQUITIES_DEEPPLUSSNAP_VERSION_PREFERENCE_DESCRIPTION,
         &iexequities_deepplussnap_pref_version,
-        iexequities_deepplussnap_version_vals,
+        iexequities_deepplussnap_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -2354,6 +2450,13 @@ proto_register_iexequities_deepplussnap(void)
         IEXEQUITIES_DEEPPLUSSNAP_SHOW_APPLICATION_MESSAGES_PREFERENCE_TITLE,
         IEXEQUITIES_DEEPPLUSSNAP_SHOW_APPLICATION_MESSAGES_PREFERENCE_DESCRIPTION,
         &iexequities_deepplussnap_show_application_messages);
+
+    prefs_register_bool_preference(
+        preferences,
+        IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_NAME,
+        IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_TITLE,
+        IEXEQUITIES_DEEPPLUSSNAP_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &iexequities_deepplussnap_show_padding);
 
     prefs_register_uint_preference(
         preferences,

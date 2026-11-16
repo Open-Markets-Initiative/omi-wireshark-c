@@ -176,6 +176,12 @@ static int hf_coinbasederivatives_marketdataapi_product_id;
 static int hf_coinbasederivatives_marketdataapi_quantity;
 static int hf_coinbasederivatives_marketdataapi_reason;
 static int hf_coinbasederivatives_marketdataapi_reserved;
+static int hf_coinbasederivatives_marketdataapi_reserved_11;
+static int hf_coinbasederivatives_marketdataapi_reserved_12;
+static int hf_coinbasederivatives_marketdataapi_reserved_13;
+static int hf_coinbasederivatives_marketdataapi_reserved_15;
+static int hf_coinbasederivatives_marketdataapi_reserved_7;
+static int hf_coinbasederivatives_marketdataapi_reserved_bits;
 static int hf_coinbasederivatives_marketdataapi_retransmit;
 static int hf_coinbasederivatives_marketdataapi_retry_delay_nanos;
 static int hf_coinbasederivatives_marketdataapi_schema_id;
@@ -249,7 +255,7 @@ static expert_field ei_coinbasederivatives_marketdataapi_length;
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_1_3     3
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_1_2     4
 
-static const enum_val_t coinbasederivatives_marketdataapi_version_vals[] = {
+static const enum_val_t coinbasederivatives_marketdataapi_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_AUTOMATIC },
     { "v1.9", "1.9", COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_1_9 },
     { "v1.7", "1.7", COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_1_7 },
@@ -299,6 +305,13 @@ static int coinbasederivatives_marketdataapi_pref_version = COINBASEDERIVATIVES_
 static bool coinbasederivatives_marketdataapi_show_headers = true;
 static bool coinbasederivatives_marketdataapi_show_application_messages = true;
 static bool coinbasederivatives_marketdataapi_show_structs = true;
+
+/* Show padding preference */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool coinbasederivatives_marketdataapi_show_padding = false;
 
 /* Decimal places shown, the wire precision by default */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DECIMAL_PREFERENCE_NAME "decimal.places"
@@ -350,7 +363,7 @@ coinbasederivatives_marketdataapi_version(uint64_t seconds, int declared)
     return COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_1_2;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 coinbasederivatives_marketdataapi_decimal_places(char *buf)
 {
@@ -366,12 +379,41 @@ coinbasederivatives_marketdataapi_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 9 decimal place value */
@@ -425,7 +467,21 @@ coinbasederivatives_marketdataapi_format_decimal_9_64_nullable(char *buf, uint64
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-coinbasederivatives_marketdataapi_format_nullable_32(char *buf, uint32_t raw)
+coinbasederivatives_marketdataapi_format_nullable_int32_0(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648(char *buf, uint32_t raw)
 {
     int64_t value = (int32_t)raw;
 
@@ -439,7 +495,7 @@ coinbasederivatives_marketdataapi_format_nullable_32(char *buf, uint32_t raw)
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-coinbasederivatives_marketdataapi_format_nullable_64(char *buf, uint64_t raw)
+coinbasederivatives_marketdataapi_format_nullable_int64_minus9223372036854775808(char *buf, uint64_t raw)
 {
     int64_t value = (int64_t)raw;
 
@@ -873,7 +929,7 @@ parse_coinbasederivatives_marketdataapi_currency(tvbuff_t *tvb, packet_info *pin
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_DESCRIPTION "dayOfMonth"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_FILTER      "coinbasederivatives.marketdataapi.dayofmonth"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_TYPE        FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY     BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_SIZE        2
@@ -1630,7 +1686,7 @@ parse_coinbasederivatives_marketdataapi_message_count(tvbuff_t *tvb, packet_info
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_NAME     "Month"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_FILTER   "coinbasederivatives.marketdataapi.month"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_TYPE     FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY  BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY  BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_MASK     0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_ENCODING ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_SIZE     2
@@ -2325,6 +2381,54 @@ parse_coinbasederivatives_marketdataapi_reserved(tvbuff_t *tvb, packet_info *pin
     return offset + COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_SIZE;
 }
 
+/* Reserved 11 */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_NAME        "Reserved 11"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DESCRIPTION "11 reserved bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_FILTER      "coinbasederivatives.marketdataapi.reserved11"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_TYPE        FT_UINT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_MASK        0xFFE0
+
+/* Reserved 12 */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_NAME        "Reserved 12"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DESCRIPTION "12 reserved bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_FILTER      "coinbasederivatives.marketdataapi.reserved12"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_TYPE        FT_UINT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_MASK        0xFFF0
+
+/* Reserved 13 */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_NAME        "Reserved 13"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DESCRIPTION "13 reserved bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_FILTER      "coinbasederivatives.marketdataapi.reserved13"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_TYPE        FT_UINT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_MASK        0xFFF8
+
+/* Reserved 15 */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_NAME        "Reserved 15"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DESCRIPTION "15 reserved bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_FILTER      "coinbasederivatives.marketdataapi.reserved15"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_TYPE        FT_UINT16
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_MASK        0xFFFE
+
+/* Reserved 7 */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_NAME        "Reserved 7"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_FILTER      "coinbasederivatives.marketdataapi.reserved7"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_MASK        0xFE
+
+/* Reserved Bits */
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_NAME        "Reserved Bits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_DESCRIPTION "Bits reserved for future use"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_FILTER      "coinbasederivatives.marketdataapi.reservedbits"
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_MASK        0xF8
+
 /* Retransmit */
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_NAME        "Retransmit"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_DESCRIPTION "Retransmit packet indicator (Bit 2)"
@@ -2356,7 +2460,7 @@ parse_coinbasederivatives_marketdataapi_retry_delay_nanos(tvbuff_t *tvb, packet_
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_DESCRIPTION "Identifier of the schema publishing the message"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_FILTER      "coinbasederivatives.marketdataapi.schemaid"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_TYPE        FT_UINT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_DISPLAY     BASE_HEX
+#define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_DISPLAY     BASE_DEC
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_SIZE        2
@@ -2826,7 +2930,7 @@ parse_coinbasederivatives_marketdataapi_underlying_instrument_id(tvbuff_t *tvb, 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_DESCRIPTION "Schema version"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_FILTER      "coinbasederivatives.marketdataapi.version"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_TYPE        FT_UINT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_DISPLAY     BASE_HEX
+#define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_DISPLAY     BASE_DEC
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_SIZE        2
@@ -2880,7 +2984,7 @@ parse_coinbasederivatives_marketdataapi_vwap_price_optional(tvbuff_t *tvb, packe
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_DESCRIPTION "weekOfMonth"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_FILTER      "coinbasederivatives.marketdataapi.weekofmonth"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_TYPE        FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY     BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_SIZE        2
@@ -2897,7 +3001,7 @@ parse_coinbasederivatives_marketdataapi_week_of_month(tvbuff_t *tvb, packet_info
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_NAME     "Year"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_FILTER   "coinbasederivatives.marketdataapi.year"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_TYPE     FT_INT16
-#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY  BASE_DEC
+#define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY  BASE_CUSTOM
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_MASK     0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_ENCODING ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_SIZE     2
@@ -2925,6 +3029,7 @@ parse_coinbasederivatives_marketdataapi_year(tvbuff_t *tvb, packet_info *pinfo _
 #define COINBASEDERIVATIVES_MARKETDATAAPI_PACKET_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_marketdataapi_packet_flags_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_bits,
     &hf_coinbasederivatives_marketdataapi_retransmit,
     &hf_coinbasederivatives_marketdataapi_snapshot,
     &hf_coinbasederivatives_marketdataapi_incremental_update,
@@ -2951,6 +3056,7 @@ parse_coinbasederivatives_marketdataapi_packet_flags(tvbuff_t *tvb, packet_info 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_11,
     &hf_coinbasederivatives_marketdataapi_funding_rate_applicable,
     &hf_coinbasederivatives_marketdataapi_is_strike_delisted,
     &hf_coinbasederivatives_marketdataapi_is_call,
@@ -2979,6 +3085,7 @@ parse_coinbasederivatives_marketdataapi_definition_flags(tvbuff_t *tvb, packet_i
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_marketdataapi_flags_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_7,
     &hf_coinbasederivatives_marketdataapi_is_final,
     NULL
 };
@@ -3003,6 +3110,7 @@ parse_coinbasederivatives_marketdataapi_flags(tvbuff_t *tvb, packet_info *pinfo 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V17_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v17_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_12,
     &hf_coinbasederivatives_marketdataapi_is_strike_delisted,
     &hf_coinbasederivatives_marketdataapi_is_call,
     &hf_coinbasederivatives_marketdataapi_is_announced,
@@ -3030,6 +3138,7 @@ parse_coinbasederivatives_marketdataapi_definition_flags_v17(tvbuff_t *tvb, pack
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V13_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v13_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_13,
     &hf_coinbasederivatives_marketdataapi_is_call,
     &hf_coinbasederivatives_marketdataapi_is_announced,
     &hf_coinbasederivatives_marketdataapi_is_prior_settlement_theoretical,
@@ -3056,6 +3165,7 @@ parse_coinbasederivatives_marketdataapi_definition_flags_v13(tvbuff_t *tvb, pack
 #define COINBASEDERIVATIVES_MARKETDATAAPI_DEFINITION_FLAGS_V12_SIZE        2
 
 static int * const coinbasederivatives_marketdataapi_definition_flags_v12_fields[] = {
+    &hf_coinbasederivatives_marketdataapi_reserved_15,
     &hf_coinbasederivatives_marketdataapi_is_prior_settlement_theoretical,
     NULL
 };
@@ -4637,7 +4747,9 @@ dissect_coinbasederivatives_marketdataapi_message(tvbuff_t *tvb, packet_info *pi
     uint32_t padding = frame_length - (uint32_t)(position - offset);
 
     if (padding > 0) {
-        proto_tree_add_item(message, hf_coinbasederivatives_marketdataapi_padding, tvb, position, padding, COINBASEDERIVATIVES_MARKETDATAAPI_PADDING_ENCODING);
+        if (coinbasederivatives_marketdataapi_show_padding) {
+            proto_tree_add_item(message, hf_coinbasederivatives_marketdataapi_padding, tvb, position, padding, COINBASEDERIVATIVES_MARKETDATAAPI_PADDING_ENCODING);
+        }
         position += padding;
     }
 
@@ -4688,7 +4800,7 @@ dissect_coinbasederivatives_marketdataapi(tvbuff_t *tvb, packet_info *pinfo, pro
     const coinbasederivatives_marketdataapi_parse *parse = coinbasederivatives_marketdataapi_parse_for(version);
     unsigned position = dissect_coinbasederivatives_marketdataapi_header(tvb, pinfo, packet, 0);
 
-    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", count, count == 1 ? "Message" : "Messages");
 
     position = dissect_coinbasederivatives_marketdataapi_messages(tvb, pinfo, packet, position, count, parse);
 
@@ -4794,7 +4906,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_ASK_IMPLIED_QTY_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_ASK_IMPLIED_QTY_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_ASK_IMPLIED_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_ASK_IMPLIED_QTY_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_ASK_IMPLIED_QTY_DESCRIPTION,
               HFILL } },
@@ -4812,7 +4924,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_BID_IMPLIED_QTY_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_BID_IMPLIED_QTY_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_BID_IMPLIED_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_BID_IMPLIED_QTY_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_BID_IMPLIED_QTY_DESCRIPTION,
               HFILL } },
@@ -4830,7 +4942,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_PRICE_V12_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_PRICE_V12_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_PRICE_V12_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_PRICE_V12_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_BEST_PRICE_V12_DESCRIPTION,
               HFILL } },
@@ -4857,7 +4969,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_BUY_ORDER_ID_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_BUY_ORDER_ID_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_BUY_ORDER_ID_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_MARKETDATAAPI_BUY_ORDER_ID_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_BUY_ORDER_ID_DESCRIPTION,
               HFILL } },
@@ -4929,7 +5041,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_0),
               COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_DAY_OF_MONTH_DESCRIPTION,
               HFILL } },
@@ -5181,7 +5293,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_QTY_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_QTY_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_QTY_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_LAST_TRADE_QTY_DESCRIPTION,
               HFILL } },
@@ -5271,7 +5383,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_0),
               COINBASEDERIVATIVES_MARKETDATAAPI_MONTH_MASK,
               NULL,
               HFILL } },
@@ -5343,7 +5455,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_ASK_IMPLIED_QTY_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_ASK_IMPLIED_QTY_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_ASK_IMPLIED_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_ASK_IMPLIED_QTY_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_ASK_IMPLIED_QTY_DESCRIPTION,
               HFILL } },
@@ -5361,7 +5473,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_BID_IMPLIED_QTY_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_BID_IMPLIED_QTY_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_BID_IMPLIED_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_BID_IMPLIED_QTY_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_BID_IMPLIED_QTY_DESCRIPTION,
               HFILL } },
@@ -5379,7 +5491,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_PRICE_V12_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_PRICE_V12_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_PRICE_V12_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_PRICE_V12_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_NEXT_PRICE_V12_DESCRIPTION,
               HFILL } },
@@ -5460,7 +5572,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_OPEN_INTEREST_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_OPEN_INTEREST_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_OPEN_INTEREST_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_MARKETDATAAPI_OPEN_INTEREST_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_OPEN_INTEREST_DESCRIPTION,
               HFILL } },
@@ -5631,7 +5743,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_SELL_ORDER_ID_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_SELL_ORDER_ID_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_SELL_ORDER_ID_DISPLAY,
-              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_MARKETDATAAPI_SELL_ORDER_ID_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_SELL_ORDER_ID_DESCRIPTION,
               HFILL } },
@@ -5838,7 +5950,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_0),
               COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_WEEK_OF_MONTH_DESCRIPTION,
               HFILL } },
@@ -5847,7 +5959,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_DISPLAY,
-              NULL,
+              CF_FUNC(coinbasederivatives_marketdataapi_format_nullable_int32_0),
               COINBASEDERIVATIVES_MARKETDATAAPI_YEAR_MASK,
               NULL,
               HFILL } },
@@ -5915,6 +6027,60 @@ proto_register_coinbasederivatives_marketdataapi(void)
               NULL,
               COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_11,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_11_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_12,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_12_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_13,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_13_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_15,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_15_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_7,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_7_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_marketdataapi_reserved_bits,
+            { COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_NAME,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_FILTER,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_TYPE,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_MASK,
+              COINBASEDERIVATIVES_MARKETDATAAPI_RESERVED_BITS_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_marketdataapi_retransmit,
             { COINBASEDERIVATIVES_MARKETDATAAPI_RETRANSMIT_NAME,
@@ -6032,7 +6198,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
         COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_VERSION_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_marketdataapi_pref_version,
-        coinbasederivatives_marketdataapi_version_vals,
+        coinbasederivatives_marketdataapi_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -6055,6 +6221,13 @@ proto_register_coinbasederivatives_marketdataapi(void)
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_marketdataapi_show_structs);
+
+    prefs_register_bool_preference(
+        preferences,
+        COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_NAME,
+        COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_TITLE,
+        COINBASEDERIVATIVES_MARKETDATAAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &coinbasederivatives_marketdataapi_show_padding);
 
     prefs_register_uint_preference(
         preferences,

@@ -42,6 +42,7 @@
 #include <epan/packet.h>
 #include <epan/expert.h>
 #include <epan/prefs.h>
+#include <epan/proto_data.h>
 #include <wsutil/array.h>
 
 void proto_register_coinbasederivatives_ordersapi(void);
@@ -93,7 +94,6 @@ static int hf_coinbasederivatives_ordersapi_fill_price_v13;
 static int hf_coinbasederivatives_ordersapi_fill_qty;
 static int hf_coinbasederivatives_ordersapi_filled_vwap;
 static int hf_coinbasederivatives_ordersapi_filled_vwap_v13;
-static int hf_coinbasederivatives_ordersapi_flags;
 static int hf_coinbasederivatives_ordersapi_from_sequence_number;
 static int hf_coinbasederivatives_ordersapi_gap_fill_padding;
 static int hf_coinbasederivatives_ordersapi_good_til_date;
@@ -118,6 +118,7 @@ static int hf_coinbasederivatives_ordersapi_min_qty;
 static int hf_coinbasederivatives_ordersapi_new_limit_price;
 static int hf_coinbasederivatives_ordersapi_new_limit_price_v13;
 static int hf_coinbasederivatives_ordersapi_new_order_flags;
+static int hf_coinbasederivatives_ordersapi_new_order_padding;
 static int hf_coinbasederivatives_ordersapi_new_quantity;
 static int hf_coinbasederivatives_ordersapi_new_sequence_number;
 static int hf_coinbasederivatives_ordersapi_num_users_affected;
@@ -142,6 +143,8 @@ static int hf_coinbasederivatives_ordersapi_request_trading_lock;
 static int hf_coinbasederivatives_ordersapi_resend_reject_reason;
 static int hf_coinbasederivatives_ordersapi_resent_event_count;
 static int hf_coinbasederivatives_ordersapi_reserved;
+static int hf_coinbasederivatives_ordersapi_reserved_7;
+static int hf_coinbasederivatives_ordersapi_reserved_bits;
 static int hf_coinbasederivatives_ordersapi_reserved_byte;
 static int hf_coinbasederivatives_ordersapi_reset_seq_num;
 static int hf_coinbasederivatives_ordersapi_schema_id;
@@ -149,6 +152,7 @@ static int hf_coinbasederivatives_ordersapi_security_type;
 static int hf_coinbasederivatives_ordersapi_send_time_epoch_nanos;
 static int hf_coinbasederivatives_ordersapi_sequence_number;
 static int hf_coinbasederivatives_ordersapi_server_time;
+static int hf_coinbasederivatives_ordersapi_session_flags;
 static int hf_coinbasederivatives_ordersapi_side;
 static int hf_coinbasederivatives_ordersapi_symbol;
 static int hf_coinbasederivatives_ordersapi_template_id;
@@ -169,7 +173,7 @@ static int hf_coinbasederivatives_ordersapi_version;
 static int ett_coinbasederivatives_ordersapi;
 static int ett_coinbasederivatives_ordersapi_header;
 static int ett_coinbasederivatives_ordersapi_message;
-static int ett_coinbasederivatives_ordersapi_flags;
+static int ett_coinbasederivatives_ordersapi_session_flags;
 static int ett_coinbasederivatives_ordersapi_new_order_flags;
 static int ett_coinbasederivatives_ordersapi_message_header;
 static int ett_coinbasederivatives_ordersapi_data;
@@ -202,7 +206,7 @@ static expert_field ei_coinbasederivatives_ordersapi_length;
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_1_4     5
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_1_3     6
 
-static const enum_val_t coinbasederivatives_ordersapi_version_vals[] = {
+static const enum_val_t coinbasederivatives_ordersapi_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", COINBASEDERIVATIVES_ORDERSAPI_VERSION_AUTOMATIC },
     { "v1.8", "1.8", COINBASEDERIVATIVES_ORDERSAPI_VERSION_1_8 },
     { "v1.7", "1.7", COINBASEDERIVATIVES_ORDERSAPI_VERSION_1_7 },
@@ -266,6 +270,13 @@ static bool coinbasederivatives_ordersapi_show_schema_messages = true;
 static bool coinbasederivatives_ordersapi_show_application_messages = true;
 static bool coinbasederivatives_ordersapi_show_structs = true;
 
+/* Show padding preference */
+#define COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool coinbasederivatives_ordersapi_show_padding = false;
+
 /* Decimal places shown, the wire precision by default */
 #define COINBASEDERIVATIVES_ORDERSAPI_DECIMAL_PREFERENCE_NAME "decimal.places"
 #define COINBASEDERIVATIVES_ORDERSAPI_DECIMAL_PREFERENCE_TITLE "Decimal places"
@@ -310,7 +321,7 @@ coinbasederivatives_ordersapi_version(uint64_t seconds)
     return COINBASEDERIVATIVES_ORDERSAPI_VERSION_1_3;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 coinbasederivatives_ordersapi_decimal_places(char *buf)
 {
@@ -326,12 +337,41 @@ coinbasederivatives_ordersapi_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 9 decimal place value */
@@ -385,21 +425,21 @@ coinbasederivatives_ordersapi_format_decimal_9_64_nullable(char *buf, uint64_t r
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-coinbasederivatives_ordersapi_format_nullable_32(char *buf, uint32_t raw)
+coinbasederivatives_ordersapi_format_nullable_int32_minus2147483648(char *buf, uint32_t raw)
 {
-    uint64_t value = (uint32_t)raw;
+    int64_t value = (int32_t)raw;
 
-    if (value == 0) {
+    if (value == INT32_MIN) {
         snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
         return;
     }
 
-    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
 }
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-coinbasederivatives_ordersapi_format_nullable_64(char *buf, uint64_t raw)
+coinbasederivatives_ordersapi_format_nullable_int64_minus9223372036854775808(char *buf, uint64_t raw)
 {
     int64_t value = (int64_t)raw;
 
@@ -409,6 +449,20 @@ coinbasederivatives_ordersapi_format_nullable_64(char *buf, uint64_t raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+coinbasederivatives_ordersapi_format_nullable_uint32_0(char *buf, uint32_t raw)
+{
+    uint64_t value = (uint32_t)raw;
+
+    if (value == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
 }
 
 /*
@@ -1288,6 +1342,24 @@ parse_coinbasederivatives_ordersapi_new_limit_price_v13(tvbuff_t *tvb, packet_in
     return offset + COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_SIZE;
 }
 
+/* New Order Padding */
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_NAME        "New Order Padding"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_DESCRIPTION "padding"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_FILTER      "coinbasederivatives.ordersapi.neworderpadding"
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_TYPE        FT_INT8
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_MASK        0x0
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_ENCODING    ENC_LITTLE_ENDIAN
+#define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_SIZE        1
+
+static unsigned
+parse_coinbasederivatives_ordersapi_new_order_padding(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_new_order_padding, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_SIZE, COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_ENCODING);
+
+    return offset + COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_SIZE;
+}
+
 /* New Quantity */
 #define COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_NAME        "New Quantity"
 #define COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_DESCRIPTION "newQuantity"
@@ -1509,6 +1581,11 @@ parse_coinbasederivatives_ordersapi_product_id(tvbuff_t *tvb, packet_info *pinfo
 #define COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_MASK        0x0
 #define COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_SIZE        1
+
+static const value_string coinbasederivatives_ordersapi_protocol_id_vals[] = {
+    { 241, "Orders Api" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_coinbasederivatives_ordersapi_protocol_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -1738,6 +1815,22 @@ parse_coinbasederivatives_ordersapi_reserved(tvbuff_t *tvb, packet_info *pinfo _
     return offset + COINBASEDERIVATIVES_ORDERSAPI_RESERVED_SIZE;
 }
 
+/* Reserved 7 */
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME        "Reserved 7"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER      "coinbasederivatives.ordersapi.reserved7"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK        0xFE
+
+/* Reserved Bits */
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_NAME        "Reserved Bits"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_DESCRIPTION "Bits reserved for future use"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_FILTER      "coinbasederivatives.ordersapi.reservedbits"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_MASK        0xFE
+
 /* Reserved Byte */
 #define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BYTE_NAME        "Reserved Byte"
 #define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BYTE_DESCRIPTION "reserved"
@@ -1781,8 +1874,8 @@ parse_coinbasederivatives_ordersapi_reset_seq_num(tvbuff_t *tvb, packet_info *pi
 }
 
 /* Schema Id values the dispatch switches on */
-#define COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION 1100
-#define COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER   1101
+#define COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION    1100
+#define COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API 1101
 
 /* Schema Id */
 #define COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_NAME        "Schema Id"
@@ -1796,7 +1889,7 @@ parse_coinbasederivatives_ordersapi_reset_seq_num(tvbuff_t *tvb, packet_info *pi
 
 static const value_string coinbasederivatives_ordersapi_schema_id_vals[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Orders Api" },
     { 0, NULL }
 };
 
@@ -2212,7 +2305,7 @@ parse_coinbasederivatives_ordersapi_username(tvbuff_t *tvb, packet_info *pinfo _
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_DESCRIPTION "Schema version"
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_FILTER      "coinbasederivatives.ordersapi.version"
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_TYPE        FT_UINT16
-#define COINBASEDERIVATIVES_ORDERSAPI_VERSION_DISPLAY     BASE_HEX
+#define COINBASEDERIVATIVES_ORDERSAPI_VERSION_DISPLAY     BASE_DEC
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_MASK        0x0
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_ORDERSAPI_VERSION_SIZE        2
@@ -2229,28 +2322,29 @@ parse_coinbasederivatives_ordersapi_version(tvbuff_t *tvb, packet_info *pinfo _U
  * CoinbaseDerivatives OrdersApi Structs
  */
 
-/* Flags */
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_NAME        "Flags"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DESCRIPTION "Uint8 bit set carrying the isResend indicator"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_FILTER      "coinbasederivatives.ordersapi.flags"
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_TYPE        FT_UINT8
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DISPLAY     BASE_HEX
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_MASK        0x0
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
-#define COINBASEDERIVATIVES_ORDERSAPI_FLAGS_SIZE        1
+/* Session Flags */
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_NAME        "Session Flags"
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_DESCRIPTION "Uint8 bit set carrying the isResend indicator"
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_FILTER      "coinbasederivatives.ordersapi.sessionflags"
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_DISPLAY     BASE_HEX
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_MASK        0x0
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_ENCODING    ENC_LITTLE_ENDIAN
+#define COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_SIZE        1
 
-static int * const coinbasederivatives_ordersapi_flags_fields[] = {
+static int * const coinbasederivatives_ordersapi_session_flags_fields[] = {
+    &hf_coinbasederivatives_ordersapi_reserved_bits,
     &hf_coinbasederivatives_ordersapi_is_resend,
     NULL
 };
 
 static unsigned
-parse_coinbasederivatives_ordersapi_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+parse_coinbasederivatives_ordersapi_session_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
-    proto_tree_add_bitmask(tree, tvb, offset, hf_coinbasederivatives_ordersapi_flags,
-        ett_coinbasederivatives_ordersapi_flags, coinbasederivatives_ordersapi_flags_fields, COINBASEDERIVATIVES_ORDERSAPI_FLAGS_ENCODING);
+    proto_tree_add_bitmask(tree, tvb, offset, hf_coinbasederivatives_ordersapi_session_flags,
+        ett_coinbasederivatives_ordersapi_session_flags, coinbasederivatives_ordersapi_session_flags_fields, COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_ENCODING);
 
-    return offset + COINBASEDERIVATIVES_ORDERSAPI_FLAGS_SIZE;
+    return offset + COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_SIZE;
 }
 
 /* New Order Flags */
@@ -2264,6 +2358,7 @@ parse_coinbasederivatives_ordersapi_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_ordersapi_new_order_flags_fields[] = {
+    &hf_coinbasederivatives_ordersapi_reserved_7,
     &hf_coinbasederivatives_ordersapi_post_only,
     NULL
 };
@@ -2329,8 +2424,10 @@ static unsigned dissect_coinbasederivatives_ordersapi_order_v17(tvbuff_t *tvb, p
 static unsigned dissect_coinbasederivatives_ordersapi_logout_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_session_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_coinbasederivatives_ordersapi_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logout_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_coinbasederivatives_ordersapi_new_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_logout_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2371,6 +2468,7 @@ static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v14(tvbuff
 static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
+static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
@@ -2389,7 +2487,7 @@ dissect_coinbasederivatives_ordersapi_message_header(tvbuff_t *tvb, packet_info 
     unsigned start = offset;
 
     offset = parse_coinbasederivatives_ordersapi_protocol_id(tvb, pinfo, group, offset);
-    offset = parse_coinbasederivatives_ordersapi_flags(tvb, pinfo, group, offset);
+    offset = parse_coinbasederivatives_ordersapi_session_flags(tvb, pinfo, group, offset);
     offset = parse_coinbasederivatives_ordersapi_message_length(tvb, pinfo, group, offset);
     offset = parse_coinbasederivatives_ordersapi_sequence_number(tvb, pinfo, group, offset);
     offset = parse_coinbasederivatives_ordersapi_last_processed_seq_no(tvb, pinfo, group, offset);
@@ -2412,7 +2510,7 @@ dissect_coinbasederivatives_ordersapi_session(tvbuff_t *tvb, packet_info *pinfo,
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload(tvb, pinfo, tree, offset, template_id);
 
@@ -2426,7 +2524,7 @@ dissect_coinbasederivatives_ordersapi_order(tvbuff_t *tvb, packet_info *pinfo, p
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload(tvb, pinfo, tree, offset, template_id);
 
@@ -2972,7 +3070,7 @@ dissect_coinbasederivatives_ordersapi_session_v17(tvbuff_t *tvb, packet_info *pi
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload_v17(tvb, pinfo, tree, offset, template_id);
 
@@ -2986,7 +3084,7 @@ dissect_coinbasederivatives_ordersapi_order_v17(tvbuff_t *tvb, packet_info *pinf
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v17(tvb, pinfo, tree, offset, template_id);
 
@@ -3018,9 +3116,23 @@ dissect_coinbasederivatives_ordersapi_session_v16(tvbuff_t *tvb, packet_info *pi
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload_v16(tvb, pinfo, tree, offset, template_id);
+
+    return offset;
+}
+
+/* Order Message */
+static unsigned
+dissect_coinbasederivatives_ordersapi_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    unsigned start = offset;
+
+
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
+
+    offset = dissect_coinbasederivatives_ordersapi_order_payload_v16(tvb, pinfo, tree, offset, template_id);
 
     return offset;
 }
@@ -3043,6 +3155,22 @@ dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info 
     return offset;
 }
 
+/* New Order Message V16 */
+static unsigned
+dissect_coinbasederivatives_ordersapi_new_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_coinbasederivatives_ordersapi_client_order_id(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_correlation_id(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_limit_price(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_new_order_padding(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_good_til_date(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Session Message */
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -3050,7 +3178,7 @@ dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pi
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload_v15(tvb, pinfo, tree, offset, template_id);
 
@@ -3064,7 +3192,7 @@ dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinf
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v15(tvb, pinfo, tree, offset, template_id);
 
@@ -3149,7 +3277,7 @@ dissect_coinbasederivatives_ordersapi_session_v14(tvbuff_t *tvb, packet_info *pi
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload_v14(tvb, pinfo, tree, offset, template_id);
 
@@ -3163,7 +3291,7 @@ dissect_coinbasederivatives_ordersapi_order_v14(tvbuff_t *tvb, packet_info *pinf
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v14(tvb, pinfo, tree, offset, template_id);
 
@@ -3233,7 +3361,7 @@ dissect_coinbasederivatives_ordersapi_session_v13(tvbuff_t *tvb, packet_info *pi
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_session_payload_v13(tvb, pinfo, tree, offset, template_id);
 
@@ -3247,7 +3375,7 @@ dissect_coinbasederivatives_ordersapi_order_v13(tvbuff_t *tvb, packet_info *pinf
     unsigned start = offset;
 
 
-    uint32_t template_id = tvb_get_letohs(tvb, start);
+    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v13(tvb, pinfo, tree, offset, template_id);
 
@@ -3389,7 +3517,7 @@ dissect_coinbasederivatives_ordersapi_event_resend_reject_v13(tvbuff_t *tvb, pac
 
 static const value_string coinbasederivatives_ordersapi_messages[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3397,12 +3525,10 @@ static const value_string coinbasederivatives_ordersapi_messages[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order(tvb, pinfo, tree, offset);
     }
 
@@ -3411,7 +3537,7 @@ dissect_coinbasederivatives_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo,
 
 static const value_string coinbasederivatives_ordersapi_messages_v17[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3419,12 +3545,10 @@ static const value_string coinbasederivatives_ordersapi_messages_v17[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages_v17, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session_v17(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v17(tvb, pinfo, tree, offset);
     }
 
@@ -3433,7 +3557,7 @@ dissect_coinbasederivatives_ordersapi_payload_v17(tvbuff_t *tvb, packet_info *pi
 
 static const value_string coinbasederivatives_ordersapi_messages_v16[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3441,13 +3565,11 @@ static const value_string coinbasederivatives_ordersapi_messages_v16[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages_v16, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session_v16(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
-        return dissect_coinbasederivatives_ordersapi_order_v17(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
+        return dissect_coinbasederivatives_ordersapi_order_v16(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -3455,7 +3577,7 @@ dissect_coinbasederivatives_ordersapi_payload_v16(tvbuff_t *tvb, packet_info *pi
 
 static const value_string coinbasederivatives_ordersapi_messages_v15[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3463,12 +3585,10 @@ static const value_string coinbasederivatives_ordersapi_messages_v15[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages_v15, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session_v15(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v15(tvb, pinfo, tree, offset);
     }
 
@@ -3477,7 +3597,7 @@ dissect_coinbasederivatives_ordersapi_payload_v15(tvbuff_t *tvb, packet_info *pi
 
 static const value_string coinbasederivatives_ordersapi_messages_v14[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3485,12 +3605,10 @@ static const value_string coinbasederivatives_ordersapi_messages_v14[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages_v14, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session_v14(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v14(tvb, pinfo, tree, offset);
     }
 
@@ -3499,7 +3617,7 @@ dissect_coinbasederivatives_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pi
 
 static const value_string coinbasederivatives_ordersapi_messages_v13[] = {
     { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION, "Session Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER, "Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API, "Order Message" },
     { 0, NULL }
 };
 
@@ -3507,12 +3625,10 @@ static const value_string coinbasederivatives_ordersapi_messages_v13[] = {
 static unsigned
 dissect_coinbasederivatives_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, schema_id, coinbasederivatives_ordersapi_messages_v13, "Unknown (%u)"));
-
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return dissect_coinbasederivatives_ordersapi_session_v13(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v13(tvb, pinfo, tree, offset);
     }
 
@@ -3536,7 +3652,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3578,7 +3698,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v17, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v17, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3618,7 +3742,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v16, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v16, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3658,7 +3786,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v15, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v15, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3698,7 +3830,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v14, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v14, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3738,7 +3874,11 @@ static const value_string coinbasederivatives_ordersapi_session_payload_messages
 static unsigned
 dissect_coinbasederivatives_ordersapi_session_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v13, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v13, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
@@ -3803,7 +3943,11 @@ static const value_string coinbasederivatives_ordersapi_order_payload_messages[]
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
@@ -3915,7 +4059,11 @@ static const value_string coinbasederivatives_ordersapi_order_payload_messages_v
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v17, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v17, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
@@ -3934,6 +4082,116 @@ dissect_coinbasederivatives_ordersapi_order_payload_v17(tvbuff_t *tvb, packet_in
         return dissect_coinbasederivatives_ordersapi_set_ack(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_ORDER:
         return dissect_coinbasederivatives_ordersapi_new_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_IOC_ORDER:
+        return dissect_coinbasederivatives_ordersapi_new_ioc_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_REJECT:
+        return dissect_coinbasederivatives_ordersapi_order_entered(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_REPLACE_ORDER:
+        return dissect_coinbasederivatives_ordersapi_replace_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_OBSOLETE_STREAM_ORDER:
+        return dissect_coinbasederivatives_ordersapi_obsolete_stream_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_REJECT:
+        return dissect_coinbasederivatives_ordersapi_order_reject(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_REPLACED:
+        return dissect_coinbasederivatives_ordersapi_order_replaced(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER:
+        return dissect_coinbasederivatives_ordersapi_cancel_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_CANCELED:
+        return dissect_coinbasederivatives_ordersapi_order_canceled(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT:
+        return dissect_coinbasederivatives_ordersapi_cancel_order_reject(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER:
+        return dissect_coinbasederivatives_ordersapi_mass_cancel_order(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER_ACK:
+        return dissect_coinbasederivatives_ordersapi_mass_cancel_order_ack(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER_REJECT:
+        return dissect_coinbasederivatives_ordersapi_mass_cancel_order_reject(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING:
+        return dissect_coinbasederivatives_ordersapi_unlock_trading(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING_ACK:
+        return dissect_coinbasederivatives_ordersapi_unlock_trading_ack(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING_REJECT:
+        return dissect_coinbasederivatives_ordersapi_unlock_trading_reject(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
+        return dissect_coinbasederivatives_ordersapi_order_filled(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SPREAD_ORDER_FILLED:
+        return dissect_coinbasederivatives_ordersapi_spread_order_filled(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_LAST_EXEC_ID_REQUEST:
+        return dissect_coinbasederivatives_ordersapi_last_exec_id_request(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_LAST_EXEC_ID:
+        return dissect_coinbasederivatives_ordersapi_last_exec_id(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_REQUEST:
+        return dissect_coinbasederivatives_ordersapi_event_resend_request(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_COMPLETE:
+        return dissect_coinbasederivatives_ordersapi_event_resend_complete(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_REJECT:
+        return dissect_coinbasederivatives_ordersapi_event_resend_reject(tvb, pinfo, tree, offset);
+    }
+
+    return offset;
+}
+
+static const value_string coinbasederivatives_ordersapi_order_payload_messages_v16[] = {
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST, "Ping Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL, "Pong Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_INSTRUMENT_INFO_REQUEST, "Instrument Info Request Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_INSTRUMENT_INFO, "Instrument Info Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_ACCOUNT, "Set Account Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_TRADER, "Set Trader Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_ACK, "Set Ack Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_ORDER, "New Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_IOC_ORDER, "New Ioc Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_REJECT, "Order Entered Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_REPLACE_ORDER, "Replace Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_OBSOLETE_STREAM_ORDER, "Obsolete Stream Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_REJECT, "Order Reject Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_REPLACED, "Order Replaced Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER, "Cancel Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_CANCELED, "Order Canceled Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_CANCEL_ORDER_REJECT, "Cancel Order Reject Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER, "Mass Cancel Order Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER_ACK, "Mass Cancel Order Ack Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_ORDER_REJECT, "Mass Cancel Order Reject Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING, "Unlock Trading Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING_ACK, "Unlock Trading Ack Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_UNLOCK_TRADING_REJECT, "Unlock Trading Reject Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED, "Order Filled Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SPREAD_ORDER_FILLED, "Spread Order Filled Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_LAST_EXEC_ID_REQUEST, "Last Exec Id Request Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_LAST_EXEC_ID, "Last Exec Id Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_REQUEST, "Event Resend Request Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_COMPLETE, "Event Resend Complete Message" },
+    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_EVENT_RESEND_REJECT, "Event Resend Reject Message" },
+    { 0, NULL }
+};
+
+/* Order Payload: dispatch on template_id */
+static unsigned
+dissect_coinbasederivatives_ordersapi_order_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
+{
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v16, "Unknown (%u)"));
+    }
+
+    switch (template_id) {
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
+        return dissect_coinbasederivatives_ordersapi_ping(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL:
+        return dissect_coinbasederivatives_ordersapi_pong(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_INSTRUMENT_INFO_REQUEST:
+        return dissect_coinbasederivatives_ordersapi_instrument_info_request(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_INSTRUMENT_INFO:
+        return dissect_coinbasederivatives_ordersapi_instrument_info(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_ACCOUNT:
+        return dissect_coinbasederivatives_ordersapi_set_account(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_TRADER:
+        return dissect_coinbasederivatives_ordersapi_set_trader(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SET_ACK:
+        return dissect_coinbasederivatives_ordersapi_set_ack(tvb, pinfo, tree, offset);
+    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_ORDER:
+        return dissect_coinbasederivatives_ordersapi_new_order_v16(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_NEW_IOC_ORDER:
         return dissect_coinbasederivatives_ordersapi_new_ioc_order(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_REJECT:
@@ -4020,7 +4278,11 @@ static const value_string coinbasederivatives_ordersapi_order_payload_messages_v
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v15, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v15, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
@@ -4123,7 +4385,11 @@ static const value_string coinbasederivatives_ordersapi_order_payload_messages_v
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v14, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v14, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
@@ -4226,7 +4492,11 @@ static const value_string coinbasederivatives_ordersapi_order_payload_messages_v
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v13, "Unknown (%u)"));
+    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
+
+    if (labelled != NULL) {
+        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_order_payload_messages_v13, "Unknown (%u)"));
+    }
 
     switch (template_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
@@ -4299,7 +4569,7 @@ coinbasederivatives_ordersapi_show(uint32_t schema_id)
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
         return coinbasederivatives_ordersapi_show_schema_messages;
-    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDER:
+    case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return coinbasederivatives_ordersapi_show_schema_messages;
     }
 
@@ -4349,9 +4619,13 @@ dissect_coinbasederivatives_ordersapi_message(tvbuff_t *tvb, packet_info *pinfo,
 
     const char *name = val_to_str(pinfo->pool, schema_id, parse->messages, "Unknown (%u)");
 
+    proto_item *labelled = NULL;
+
     proto_tree *message = coinbasederivatives_ordersapi_show(schema_id)
-        ? proto_tree_add_subtree(tree, tvb, offset, message_length, ett_coinbasederivatives_ordersapi_message, NULL, name)
+        ? proto_tree_add_subtree(tree, tvb, offset, message_length, ett_coinbasederivatives_ordersapi_message, &labelled, name)
         : tree;
+
+    p_set_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0, labelled);
 
     unsigned position = offset;
 
@@ -4363,7 +4637,9 @@ dissect_coinbasederivatives_ordersapi_message(tvbuff_t *tvb, packet_info *pinfo,
     uint32_t padding = message_length - (uint32_t)(position - offset);
 
     if (padding > 0) {
-        proto_tree_add_item(message, hf_coinbasederivatives_ordersapi_padding, tvb, position, padding, COINBASEDERIVATIVES_ORDERSAPI_PADDING_ENCODING);
+        if (coinbasederivatives_ordersapi_show_padding) {
+            proto_tree_add_item(message, hf_coinbasederivatives_ordersapi_padding, tvb, position, padding, COINBASEDERIVATIVES_ORDERSAPI_PADDING_ENCODING);
+        }
         position += padding;
     }
 
@@ -4380,12 +4656,15 @@ dissect_coinbasederivatives_ordersapi_message(tvbuff_t *tvb, packet_info *pinfo,
 static unsigned
 dissect_coinbasederivatives_ordersapi_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const coinbasederivatives_ordersapi_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 4) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -4394,11 +4673,15 @@ dissect_coinbasederivatives_ordersapi_messages(tvbuff_t *tvb, packet_info *pinfo
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_coinbasederivatives_ordersapi_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -4429,17 +4712,11 @@ dissect_coinbasederivatives_ordersapi(tvbuff_t *tvb, packet_info *pinfo, proto_t
 /* The fewest bytes any frame of the protocol holds, a header without messages */
 #define COINBASEDERIVATIVES_ORDERSAPI_MINIMUM_SIZE 32
 
-/* Version, each value a version pins it to */
+/* Protocol Id: Orders Api */
 static bool
 coinbasederivatives_ordersapi_heur_identifier(tvbuff_t *tvb)
 {
-    switch (tvb_get_letohs(tvb, 30)) {
-    case 0x0002: /* Version 1.2, 1.8 */
-    case 0x0000: /* Version 0.1, 1.7, 1.6, 1.5, 1.4, 1.3 */
-        return true;
-    default:
-        return false;
-    }
+    return tvb_get_uint8(tvb, 0) == 0xF1;
 }
 
 /* The first frame's declared length fits the stream */
@@ -4732,7 +5009,7 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_GOOD_TIL_DATE_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_GOOD_TIL_DATE_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_GOOD_TIL_DATE_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_uint32_0),
               COINBASEDERIVATIVES_ORDERSAPI_GOOD_TIL_DATE_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_GOOD_TIL_DATE_DESCRIPTION,
               HFILL } },
@@ -4795,7 +5072,7 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_LAST_PROCESSED_FILL_ID_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_LAST_PROCESSED_FILL_ID_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_LAST_PROCESSED_FILL_ID_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_ORDERSAPI_LAST_PROCESSED_FILL_ID_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_LAST_PROCESSED_FILL_ID_DESCRIPTION,
               HFILL } },
@@ -4885,7 +5162,7 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_MIN_QTY_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_MIN_QTY_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_MIN_QTY_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_ORDERSAPI_MIN_QTY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_MIN_QTY_DESCRIPTION,
               HFILL } },
@@ -4903,16 +5180,25 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_LIMIT_PRICE_V13_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_ordersapi_new_order_padding,
+            { COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_PADDING_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_ordersapi_new_quantity,
             { COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_NAME,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_32),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_int32_minus2147483648),
               COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_NEW_QUANTITY_DESCRIPTION,
               HFILL } },
@@ -4957,7 +5243,7 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_ORDER_ID_OPTIONAL_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_ORDER_ID_OPTIONAL_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_ORDER_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_64),
+              CF_FUNC(coinbasederivatives_ordersapi_format_nullable_int64_minus9223372036854775808),
               COINBASEDERIVATIVES_ORDERSAPI_ORDER_ID_OPTIONAL_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_ORDER_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -5011,7 +5297,7 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_FILTER,
               COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_TYPE,
               COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_DISPLAY,
-              NULL,
+              VALS(coinbasederivatives_ordersapi_protocol_id_vals),
               COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_PROTOCOL_ID_DESCRIPTION,
               HFILL } },
@@ -5305,16 +5591,34 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_DESCRIPTION,
               HFILL } },
+        { &hf_coinbasederivatives_ordersapi_reserved_7,
+            { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_ordersapi_reserved_bits,
+            { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_DESCRIPTION,
+              HFILL } },
 
         /* Bitfields */
-        { &hf_coinbasederivatives_ordersapi_flags,
-            { COINBASEDERIVATIVES_ORDERSAPI_FLAGS_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DISPLAY,
+        { &hf_coinbasederivatives_ordersapi_session_flags,
+            { COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_DISPLAY,
               NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_FLAGS_DESCRIPTION,
+              COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_SESSION_FLAGS_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_ordersapi_new_order_flags,
             { COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_NAME,
@@ -5331,7 +5635,7 @@ proto_register_coinbasederivatives_ordersapi(void)
         &ett_coinbasederivatives_ordersapi,
         &ett_coinbasederivatives_ordersapi_header,
         &ett_coinbasederivatives_ordersapi_message,
-        &ett_coinbasederivatives_ordersapi_flags,
+        &ett_coinbasederivatives_ordersapi_session_flags,
         &ett_coinbasederivatives_ordersapi_new_order_flags,
         &ett_coinbasederivatives_ordersapi_message_header,
         &ett_coinbasederivatives_ordersapi_data,
@@ -5362,7 +5666,7 @@ proto_register_coinbasederivatives_ordersapi(void)
         COINBASEDERIVATIVES_ORDERSAPI_VERSION_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_ORDERSAPI_VERSION_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_ordersapi_pref_version,
-        coinbasederivatives_ordersapi_version_vals,
+        coinbasederivatives_ordersapi_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -5392,6 +5696,13 @@ proto_register_coinbasederivatives_ordersapi(void)
         COINBASEDERIVATIVES_ORDERSAPI_SHOW_STRUCTS_PREFERENCE_TITLE,
         COINBASEDERIVATIVES_ORDERSAPI_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &coinbasederivatives_ordersapi_show_structs);
+
+    prefs_register_bool_preference(
+        preferences,
+        COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_NAME,
+        COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_TITLE,
+        COINBASEDERIVATIVES_ORDERSAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &coinbasederivatives_ordersapi_show_padding);
 
     prefs_register_uint_preference(
         preferences,

@@ -115,6 +115,8 @@ static int hf_iexequities_deep_timestamp;
 static int hf_iexequities_deep_trade_id;
 static int hf_iexequities_deep_trade_through_exempt;
 static int hf_iexequities_deep_trading_status;
+static int hf_iexequities_deep_unused_3;
+static int hf_iexequities_deep_unused_5;
 static int hf_iexequities_deep_upper_auction_collar;
 static int hf_iexequities_deep_version;
 static int hf_iexequities_deep_when_issued;
@@ -154,7 +156,7 @@ static expert_field ei_iexequities_deep_length;
 #define IEXEQUITIES_DEEP_VERSION_1_08     1
 #define IEXEQUITIES_DEEP_VERSION_1_06     2
 
-static const enum_val_t iexequities_deep_version_vals[] = {
+static const enum_val_t iexequities_deep_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", IEXEQUITIES_DEEP_VERSION_AUTOMATIC },
     { "v1.08", "1.08", IEXEQUITIES_DEEP_VERSION_1_08 },
     { "v1.06", "1.06", IEXEQUITIES_DEEP_VERSION_1_06 },
@@ -215,6 +217,13 @@ static int iexequities_deep_pref_environment = IEXEQUITIES_DEEP_ENVIRONMENT_AUTO
 static bool iexequities_deep_show_headers = true;
 static bool iexequities_deep_show_application_messages = true;
 
+/* Show padding preference */
+#define IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool iexequities_deep_show_padding = false;
+
 /* Decimal places shown, the wire precision by default */
 #define IEXEQUITIES_DEEP_DECIMAL_PREFERENCE_NAME "decimal.places"
 #define IEXEQUITIES_DEEP_DECIMAL_PREFERENCE_TITLE "Decimal places"
@@ -258,7 +267,7 @@ iexequities_deep_version(uint64_t seconds, int environment)
     return IEXEQUITIES_DEEP_VERSION_1_06;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 iexequities_deep_decimal_places(char *buf)
 {
@@ -274,12 +283,41 @@ iexequities_deep_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 4 decimal place value */
@@ -426,10 +464,15 @@ parse_iexequities_deep_auction_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define IEXEQUITIES_DEEP_CHANNEL_ID_DESCRIPTION "Identifies the stream of bytes sequenced messages"
 #define IEXEQUITIES_DEEP_CHANNEL_ID_FILTER      "iexequities.deep.channelid"
 #define IEXEQUITIES_DEEP_CHANNEL_ID_TYPE        FT_UINT32
-#define IEXEQUITIES_DEEP_CHANNEL_ID_DISPLAY     BASE_HEX
+#define IEXEQUITIES_DEEP_CHANNEL_ID_DISPLAY     BASE_DEC
 #define IEXEQUITIES_DEEP_CHANNEL_ID_MASK        0x0
 #define IEXEQUITIES_DEEP_CHANNEL_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_DEEP_CHANNEL_ID_SIZE        4
+
+static const value_string iexequities_deep_channel_id_vals[] = {
+    { 1, "Iex Channel" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_iexequities_deep_channel_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -716,10 +759,15 @@ parse_iexequities_deep_message_length(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_DESCRIPTION "Unique identifier of the higher layer protocol"
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_FILTER      "iexequities.deep.messageprotocolid"
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_TYPE        FT_UINT16
-#define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_DISPLAY     BASE_HEX
+#define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_DISPLAY     BASE_DEC
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_MASK        0x0
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_SIZE        2
+
+static const value_string iexequities_deep_message_protocol_id_vals[] = {
+    { 32772, "Iex Deep" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_iexequities_deep_message_protocol_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -1266,6 +1314,22 @@ parse_iexequities_deep_trading_status(tvbuff_t *tvb, packet_info *pinfo _U_, pro
     return offset + IEXEQUITIES_DEEP_TRADING_STATUS_SIZE;
 }
 
+/* Unused 3 */
+#define IEXEQUITIES_DEEP_UNUSED_3_NAME        "Unused 3"
+#define IEXEQUITIES_DEEP_UNUSED_3_DESCRIPTION "Unused"
+#define IEXEQUITIES_DEEP_UNUSED_3_FILTER      "iexequities.deep.unused3"
+#define IEXEQUITIES_DEEP_UNUSED_3_TYPE        FT_UINT8
+#define IEXEQUITIES_DEEP_UNUSED_3_DISPLAY     BASE_DEC
+#define IEXEQUITIES_DEEP_UNUSED_3_MASK        0x07
+
+/* Unused 5 */
+#define IEXEQUITIES_DEEP_UNUSED_5_NAME        "Unused 5"
+#define IEXEQUITIES_DEEP_UNUSED_5_DESCRIPTION "Unused"
+#define IEXEQUITIES_DEEP_UNUSED_5_FILTER      "iexequities.deep.unused5"
+#define IEXEQUITIES_DEEP_UNUSED_5_TYPE        FT_UINT8
+#define IEXEQUITIES_DEEP_UNUSED_5_DISPLAY     BASE_DEC
+#define IEXEQUITIES_DEEP_UNUSED_5_MASK        0x1F
+
 /* Upper Auction Collar */
 #define IEXEQUITIES_DEEP_UPPER_AUCTION_COLLAR_NAME        "Upper Auction Collar"
 #define IEXEQUITIES_DEEP_UPPER_AUCTION_COLLAR_DESCRIPTION "Upper threshold price of the auction collar, if any"
@@ -1289,10 +1353,15 @@ parse_iexequities_deep_upper_auction_collar(tvbuff_t *tvb, packet_info *pinfo _U
 #define IEXEQUITIES_DEEP_VERSION_DESCRIPTION "Version of transport specification"
 #define IEXEQUITIES_DEEP_VERSION_FILTER      "iexequities.deep.version"
 #define IEXEQUITIES_DEEP_VERSION_TYPE        FT_UINT8
-#define IEXEQUITIES_DEEP_VERSION_DISPLAY     BASE_HEX
+#define IEXEQUITIES_DEEP_VERSION_DISPLAY     BASE_DEC
 #define IEXEQUITIES_DEEP_VERSION_MASK        0x0
 #define IEXEQUITIES_DEEP_VERSION_ENCODING    ENC_LITTLE_ENDIAN
 #define IEXEQUITIES_DEEP_VERSION_SIZE        1
+
+static const value_string iexequities_deep_version_vals[] = {
+    { 1, "Iex Tp" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_iexequities_deep_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -1327,6 +1396,7 @@ static int * const iexequities_deep_security_directory_flags_fields[] = {
     &hf_iexequities_deep_test_security,
     &hf_iexequities_deep_when_issued,
     &hf_iexequities_deep_etp,
+    &hf_iexequities_deep_unused_5,
     NULL
 };
 
@@ -1354,6 +1424,7 @@ static int * const iexequities_deep_sale_condition_flags_fields[] = {
     &hf_iexequities_deep_odd_lot,
     &hf_iexequities_deep_trade_through_exempt,
     &hf_iexequities_deep_single_price_cross_trade,
+    &hf_iexequities_deep_unused_3,
     NULL
 };
 
@@ -1747,7 +1818,7 @@ dissect_iexequities_deep_header(tvbuff_t *tvb, packet_info *pinfo, proto_tree *t
         ett_iexequities_deep_header, NULL, "Iextp Header");
 
     offset = parse_iexequities_deep_version(tvb, pinfo, header, offset);
-    offset += IEXEQUITIES_DEEP_RESERVED_SIZE;
+    if (iexequities_deep_show_padding) { proto_tree_add_item(header, hf_iexequities_deep_reserved, tvb, offset, IEXEQUITIES_DEEP_RESERVED_SIZE, IEXEQUITIES_DEEP_RESERVED_ENCODING); } offset += IEXEQUITIES_DEEP_RESERVED_SIZE;
     offset = parse_iexequities_deep_message_protocol_id(tvb, pinfo, header, offset);
     offset = parse_iexequities_deep_channel_id(tvb, pinfo, header, offset);
     offset = parse_iexequities_deep_session_id(tvb, pinfo, header, offset);
@@ -1831,7 +1902,7 @@ dissect_iexequities_deep(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, vo
         return tvb_captured_length(tvb);
     }
 
-    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u IEXTP %s", count, count == 1 ? "Message" : "Messages");
 
     position = dissect_iexequities_deep_messages(tvb, pinfo, packet, position, count, parse);
 
@@ -1929,7 +2000,7 @@ proto_register_iexequities_deep(void)
               IEXEQUITIES_DEEP_CHANNEL_ID_FILTER,
               IEXEQUITIES_DEEP_CHANNEL_ID_TYPE,
               IEXEQUITIES_DEEP_CHANNEL_ID_DISPLAY,
-              NULL,
+              VALS(iexequities_deep_channel_id_vals),
               IEXEQUITIES_DEEP_CHANNEL_ID_MASK,
               IEXEQUITIES_DEEP_CHANNEL_ID_DESCRIPTION,
               HFILL } },
@@ -2046,7 +2117,7 @@ proto_register_iexequities_deep(void)
               IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_FILTER,
               IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_TYPE,
               IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_DISPLAY,
-              NULL,
+              VALS(iexequities_deep_message_protocol_id_vals),
               IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_MASK,
               IEXEQUITIES_DEEP_MESSAGE_PROTOCOL_ID_DESCRIPTION,
               HFILL } },
@@ -2280,7 +2351,7 @@ proto_register_iexequities_deep(void)
               IEXEQUITIES_DEEP_VERSION_FILTER,
               IEXEQUITIES_DEEP_VERSION_TYPE,
               IEXEQUITIES_DEEP_VERSION_DISPLAY,
-              NULL,
+              VALS(iexequities_deep_version_vals),
               IEXEQUITIES_DEEP_VERSION_MASK,
               IEXEQUITIES_DEEP_VERSION_DESCRIPTION,
               HFILL } },
@@ -2349,6 +2420,24 @@ proto_register_iexequities_deep(void)
               IEXEQUITIES_DEEP_TRADE_THROUGH_EXEMPT_MASK,
               IEXEQUITIES_DEEP_TRADE_THROUGH_EXEMPT_DESCRIPTION,
               HFILL } },
+        { &hf_iexequities_deep_unused_3,
+            { IEXEQUITIES_DEEP_UNUSED_3_NAME,
+              IEXEQUITIES_DEEP_UNUSED_3_FILTER,
+              IEXEQUITIES_DEEP_UNUSED_3_TYPE,
+              IEXEQUITIES_DEEP_UNUSED_3_DISPLAY,
+              NULL,
+              IEXEQUITIES_DEEP_UNUSED_3_MASK,
+              IEXEQUITIES_DEEP_UNUSED_3_DESCRIPTION,
+              HFILL } },
+        { &hf_iexequities_deep_unused_5,
+            { IEXEQUITIES_DEEP_UNUSED_5_NAME,
+              IEXEQUITIES_DEEP_UNUSED_5_FILTER,
+              IEXEQUITIES_DEEP_UNUSED_5_TYPE,
+              IEXEQUITIES_DEEP_UNUSED_5_DISPLAY,
+              NULL,
+              IEXEQUITIES_DEEP_UNUSED_5_MASK,
+              IEXEQUITIES_DEEP_UNUSED_5_DESCRIPTION,
+              HFILL } },
         { &hf_iexequities_deep_when_issued,
             { IEXEQUITIES_DEEP_WHEN_ISSUED_NAME,
               IEXEQUITIES_DEEP_WHEN_ISSUED_FILTER,
@@ -2414,7 +2503,7 @@ proto_register_iexequities_deep(void)
         IEXEQUITIES_DEEP_VERSION_PREFERENCE_TITLE,
         IEXEQUITIES_DEEP_VERSION_PREFERENCE_DESCRIPTION,
         &iexequities_deep_pref_version,
-        iexequities_deep_version_vals,
+        iexequities_deep_pref_version_vals,
         false);
 
     prefs_register_enum_preference(
@@ -2439,6 +2528,13 @@ proto_register_iexequities_deep(void)
         IEXEQUITIES_DEEP_SHOW_APPLICATION_MESSAGES_PREFERENCE_TITLE,
         IEXEQUITIES_DEEP_SHOW_APPLICATION_MESSAGES_PREFERENCE_DESCRIPTION,
         &iexequities_deep_show_application_messages);
+
+    prefs_register_bool_preference(
+        preferences,
+        IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_NAME,
+        IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_TITLE,
+        IEXEQUITIES_DEEP_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &iexequities_deep_show_padding);
 
     prefs_register_uint_preference(
         preferences,

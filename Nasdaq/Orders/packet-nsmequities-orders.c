@@ -269,7 +269,7 @@ static expert_field ei_nsmequities_orders_length;
 #define NSMEQUITIES_ORDERS_VERSION_5_0     1
 #define NSMEQUITIES_ORDERS_VERSION_4_2_2018     2
 
-static const enum_val_t nsmequities_orders_version_vals[] = {
+static const enum_val_t nsmequities_orders_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", NSMEQUITIES_ORDERS_VERSION_AUTOMATIC },
     { "v5.0", "5.0", NSMEQUITIES_ORDERS_VERSION_5_0 },
     { "v4.2.2018", "4.2.2018", NSMEQUITIES_ORDERS_VERSION_4_2_2018 },
@@ -497,7 +497,7 @@ nsmequities_orders_utc(packet_info *pinfo, uint64_t seconds, uint32_t nanosecond
     instant->nsecs = (int)nanoseconds;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 nsmequities_orders_decimal_places(char *buf)
 {
@@ -513,12 +513,41 @@ nsmequities_orders_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 4 decimal place value */
@@ -802,9 +831,9 @@ parse_nsmequities_orders_appendage_length_v50(tvbuff_t *tvb, packet_info *pinfo 
 #define NSMEQUITIES_ORDERS_BBO_WEIGHT_INDICATOR_SIZE     1
 
 static const value_string nsmequities_orders_bbo_weight_indicator_vals[] = {
-    { '0', "Weight 0 To 0.2 Percent" },
-    { '1', "Weight 0.2 To 1 Percent" },
-    { '2', "Weight 1 To 2 Percent" },
+    { '0', "0-0.2%" },
+    { '1', "0.2%-1%" },
+    { '2', "1%-2%" },
     { '3', "Greater Than 2%" },
     { ' ', "Unspecified" },
     { 'S', "Sets The Qbbo While Joining The Nbbo" },
@@ -5059,8 +5088,6 @@ static const value_string nsmequities_orders_client_packet_messages[] = {
 static unsigned
 dissect_nsmequities_orders_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_orders_client_packet_messages, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_orders_debug_packet(tvb, pinfo, tree, offset);
@@ -5090,8 +5117,6 @@ static const value_string nsmequities_orders_client_packet_messages_v422018[] = 
 static unsigned
 dissect_nsmequities_orders_client_packet_client_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, nsmequities_orders_client_packet_messages_v422018, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case NSMEQUITIES_ORDERS_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_orders_debug_packet(tvb, pinfo, tree, offset);
@@ -5124,8 +5149,6 @@ static const value_string nsmequities_orders_unsequenced_message_messages[] = {
 static unsigned
 dissect_nsmequities_orders_unsequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, unsequenced_message_type, nsmequities_orders_unsequenced_message_messages, "Unknown (%u)"));
-
     switch (unsequenced_message_type) {
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_ENTER_ORDER:
         return dissect_nsmequities_orders_enter_order(tvb, pinfo, tree, offset);
@@ -5161,8 +5184,6 @@ static const value_string nsmequities_orders_unsequenced_message_messages_v42201
 static unsigned
 dissect_nsmequities_orders_unsequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t unsequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, unsequenced_message_type, nsmequities_orders_unsequenced_message_messages_v422018, "Unknown (%u)"));
-
     switch (unsequenced_message_type) {
     case NSMEQUITIES_ORDERS_UNSEQUENCED_MESSAGE_TYPE_ENTER_ORDER:
         return dissect_nsmequities_orders_enter_order_v422018(tvb, pinfo, tree, offset);
@@ -5207,8 +5228,6 @@ static const value_string nsmequities_orders_enter_order_optional_value_messages
 static unsigned
 dissect_nsmequities_orders_enter_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t enter_order_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, enter_order_optional_field, nsmequities_orders_enter_order_optional_value_messages, "Unknown (%u)"));
-
     switch (enter_order_optional_field) {
     case NSMEQUITIES_ORDERS_ENTER_ORDER_OPTIONAL_FIELD_FIRM:
         return parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
@@ -5281,8 +5300,6 @@ static const value_string nsmequities_orders_replace_order_optional_value_messag
 static unsigned
 dissect_nsmequities_orders_replace_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t replace_order_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, replace_order_optional_field, nsmequities_orders_replace_order_optional_value_messages, "Unknown (%u)"));
-
     switch (replace_order_optional_field) {
     case NSMEQUITIES_ORDERS_REPLACE_ORDER_OPTIONAL_FIELD_MINQTY:
         return parse_nsmequities_orders_min_qty(tvb, pinfo, tree, offset);
@@ -5334,8 +5351,6 @@ static const value_string nsmequities_orders_cancel_order_optional_value_message
 static unsigned
 dissect_nsmequities_orders_cancel_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t cancel_order_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, cancel_order_optional_field, nsmequities_orders_cancel_order_optional_value_messages, "Unknown (%u)"));
-
     switch (cancel_order_optional_field) {
     case NSMEQUITIES_ORDERS_CANCEL_ORDER_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5355,8 +5370,6 @@ static const value_string nsmequities_orders_modify_order_optional_value_message
 static unsigned
 dissect_nsmequities_orders_modify_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t modify_order_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, modify_order_optional_field, nsmequities_orders_modify_order_optional_value_messages, "Unknown (%u)"));
-
     switch (modify_order_optional_field) {
     case NSMEQUITIES_ORDERS_MODIFY_ORDER_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5378,8 +5391,6 @@ static const value_string nsmequities_orders_account_query_optional_value_messag
 static unsigned
 dissect_nsmequities_orders_account_query_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t account_query_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, account_query_optional_field, nsmequities_orders_account_query_optional_value_messages, "Unknown (%u)"));
-
     switch (account_query_optional_field) {
     case NSMEQUITIES_ORDERS_ACCOUNT_QUERY_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5399,8 +5410,6 @@ static const value_string nsmequities_orders_mass_cancel_request_optional_value_
 static unsigned
 dissect_nsmequities_orders_mass_cancel_request_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t mass_cancel_request_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, mass_cancel_request_optional_field, nsmequities_orders_mass_cancel_request_optional_value_messages, "Unknown (%u)"));
-
     switch (mass_cancel_request_optional_field) {
     case NSMEQUITIES_ORDERS_MASS_CANCEL_REQUEST_OPTIONAL_FIELD_SIDE:
         return parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
@@ -5422,8 +5431,6 @@ static const value_string nsmequities_orders_disable_order_entry_request_optiona
 static unsigned
 dissect_nsmequities_orders_disable_order_entry_request_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t disable_order_entry_request_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, disable_order_entry_request_optional_field, nsmequities_orders_disable_order_entry_request_optional_value_messages, "Unknown (%u)"));
-
     switch (disable_order_entry_request_optional_field) {
     case NSMEQUITIES_ORDERS_DISABLE_ORDER_ENTRY_REQUEST_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5441,8 +5448,6 @@ static const value_string nsmequities_orders_enable_order_entry_request_optional
 static unsigned
 dissect_nsmequities_orders_enable_order_entry_request_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t enable_order_entry_request_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, enable_order_entry_request_optional_field, nsmequities_orders_enable_order_entry_request_optional_value_messages, "Unknown (%u)"));
-
     switch (enable_order_entry_request_optional_field) {
     case NSMEQUITIES_ORDERS_ENABLE_ORDER_ENTRY_REQUEST_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5465,8 +5470,6 @@ static const value_string nsmequities_orders_server_packet_messages[] = {
 static unsigned
 dissect_nsmequities_orders_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_orders_server_packet_messages, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_orders_debug_packet(tvb, pinfo, tree, offset);
@@ -5499,8 +5502,6 @@ static const value_string nsmequities_orders_server_packet_messages_v422018[] = 
 static unsigned
 dissect_nsmequities_orders_server_packet_server_payload_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, nsmequities_orders_server_packet_messages_v422018, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case NSMEQUITIES_ORDERS_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_nsmequities_orders_debug_packet(tvb, pinfo, tree, offset);
@@ -5544,8 +5545,6 @@ static const value_string nsmequities_orders_sequenced_message_messages[] = {
 static unsigned
 dissect_nsmequities_orders_sequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_orders_sequenced_message_messages, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_orders_system_event(tvb, pinfo, tree, offset);
@@ -5609,8 +5608,6 @@ static const value_string nsmequities_orders_sequenced_message_messages_v422018[
 static unsigned
 dissect_nsmequities_orders_sequenced_message_v422018(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, nsmequities_orders_sequenced_message_messages_v422018, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case NSMEQUITIES_ORDERS_SEQUENCED_MESSAGE_TYPE_SYSTEM_EVENT:
         return dissect_nsmequities_orders_system_event_v422018(tvb, pinfo, tree, offset);
@@ -5676,8 +5673,6 @@ static const value_string nsmequities_orders_order_accepted_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_order_accepted_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_accepted_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, order_accepted_optional_field, nsmequities_orders_order_accepted_optional_value_messages, "Unknown (%u)"));
-
     switch (order_accepted_optional_field) {
     case NSMEQUITIES_ORDERS_ORDER_ACCEPTED_OPTIONAL_FIELD_FIRM:
         return parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
@@ -5746,8 +5741,6 @@ static const value_string nsmequities_orders_replaced_message_optional_value_mes
 static unsigned
 dissect_nsmequities_orders_replaced_message_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t replaced_message_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, replaced_message_optional_field, nsmequities_orders_replaced_message_optional_value_messages, "Unknown (%u)"));
-
     switch (replaced_message_optional_field) {
     case NSMEQUITIES_ORDERS_REPLACED_MESSAGE_OPTIONAL_FIELD_FIRM:
         return parse_nsmequities_orders_firm(tvb, pinfo, tree, offset);
@@ -5787,8 +5780,6 @@ static const value_string nsmequities_orders_canceled_message_optional_value_mes
 static unsigned
 dissect_nsmequities_orders_canceled_message_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t canceled_message_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, canceled_message_optional_field, nsmequities_orders_canceled_message_optional_value_messages, "Unknown (%u)"));
-
     switch (canceled_message_optional_field) {
     case NSMEQUITIES_ORDERS_CANCELED_MESSAGE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5806,8 +5797,6 @@ static const value_string nsmequities_orders_aiq_canceled_optional_value_message
 static unsigned
 dissect_nsmequities_orders_aiq_canceled_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t aiq_canceled_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, aiq_canceled_optional_field, nsmequities_orders_aiq_canceled_optional_value_messages, "Unknown (%u)"));
-
     switch (aiq_canceled_optional_field) {
     case NSMEQUITIES_ORDERS_AIQ_CANCELED_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5825,8 +5814,6 @@ static const value_string nsmequities_orders_order_executed_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_order_executed_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_executed_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, order_executed_optional_field, nsmequities_orders_order_executed_optional_value_messages, "Unknown (%u)"));
-
     switch (order_executed_optional_field) {
     case NSMEQUITIES_ORDERS_ORDER_EXECUTED_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5844,8 +5831,6 @@ static const value_string nsmequities_orders_broken_trade_optional_value_message
 static unsigned
 dissect_nsmequities_orders_broken_trade_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t broken_trade_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, broken_trade_optional_field, nsmequities_orders_broken_trade_optional_value_messages, "Unknown (%u)"));
-
     switch (broken_trade_optional_field) {
     case NSMEQUITIES_ORDERS_BROKEN_TRADE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5863,8 +5848,6 @@ static const value_string nsmequities_orders_rejected_order_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_rejected_order_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t rejected_order_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, rejected_order_optional_field, nsmequities_orders_rejected_order_optional_value_messages, "Unknown (%u)"));
-
     switch (rejected_order_optional_field) {
     case NSMEQUITIES_ORDERS_REJECTED_ORDER_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5882,8 +5865,6 @@ static const value_string nsmequities_orders_cancel_pending_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_cancel_pending_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t cancel_pending_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, cancel_pending_optional_field, nsmequities_orders_cancel_pending_optional_value_messages, "Unknown (%u)"));
-
     switch (cancel_pending_optional_field) {
     case NSMEQUITIES_ORDERS_CANCEL_PENDING_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5901,8 +5882,6 @@ static const value_string nsmequities_orders_cancel_reject_optional_value_messag
 static unsigned
 dissect_nsmequities_orders_cancel_reject_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t cancel_reject_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, cancel_reject_optional_field, nsmequities_orders_cancel_reject_optional_value_messages, "Unknown (%u)"));
-
     switch (cancel_reject_optional_field) {
     case NSMEQUITIES_ORDERS_CANCEL_REJECT_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5920,8 +5899,6 @@ static const value_string nsmequities_orders_order_priority_update_optional_valu
 static unsigned
 dissect_nsmequities_orders_order_priority_update_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_priority_update_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, order_priority_update_optional_field, nsmequities_orders_order_priority_update_optional_value_messages, "Unknown (%u)"));
-
     switch (order_priority_update_optional_field) {
     case NSMEQUITIES_ORDERS_ORDER_PRIORITY_UPDATE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5941,8 +5918,6 @@ static const value_string nsmequities_orders_order_modified_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_order_modified_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_modified_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, order_modified_optional_field, nsmequities_orders_order_modified_optional_value_messages, "Unknown (%u)"));
-
     switch (order_modified_optional_field) {
     case NSMEQUITIES_ORDERS_ORDER_MODIFIED_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -5967,8 +5942,6 @@ static const value_string nsmequities_orders_order_restated_optional_value_messa
 static unsigned
 dissect_nsmequities_orders_order_restated_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t order_restated_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, order_restated_optional_field, nsmequities_orders_order_restated_optional_value_messages, "Unknown (%u)"));
-
     switch (order_restated_optional_field) {
     case NSMEQUITIES_ORDERS_ORDER_RESTATED_OPTIONAL_FIELD_DISPLAY_QUANTITY:
         return parse_nsmequities_orders_display_quantity(tvb, pinfo, tree, offset);
@@ -5992,8 +5965,6 @@ static const value_string nsmequities_orders_account_query_response_optional_val
 static unsigned
 dissect_nsmequities_orders_account_query_response_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t account_query_response_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, account_query_response_optional_field, nsmequities_orders_account_query_response_optional_value_messages, "Unknown (%u)"));
-
     switch (account_query_response_optional_field) {
     case NSMEQUITIES_ORDERS_ACCOUNT_QUERY_RESPONSE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -6013,8 +5984,6 @@ static const value_string nsmequities_orders_mass_cancel_response_optional_value
 static unsigned
 dissect_nsmequities_orders_mass_cancel_response_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t mass_cancel_response_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, mass_cancel_response_optional_field, nsmequities_orders_mass_cancel_response_optional_value_messages, "Unknown (%u)"));
-
     switch (mass_cancel_response_optional_field) {
     case NSMEQUITIES_ORDERS_MASS_CANCEL_RESPONSE_OPTIONAL_FIELD_SIDE:
         return parse_nsmequities_orders_side(tvb, pinfo, tree, offset);
@@ -6036,8 +6005,6 @@ static const value_string nsmequities_orders_disable_order_entry_response_option
 static unsigned
 dissect_nsmequities_orders_disable_order_entry_response_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t disable_order_entry_response_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, disable_order_entry_response_optional_field, nsmequities_orders_disable_order_entry_response_optional_value_messages, "Unknown (%u)"));
-
     switch (disable_order_entry_response_optional_field) {
     case NSMEQUITIES_ORDERS_DISABLE_ORDER_ENTRY_RESPONSE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -6055,8 +6022,6 @@ static const value_string nsmequities_orders_enable_order_entry_response_optiona
 static unsigned
 dissect_nsmequities_orders_enable_order_entry_response_optional_value(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t enable_order_entry_response_optional_field)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, enable_order_entry_response_optional_field, nsmequities_orders_enable_order_entry_response_optional_value_messages, "Unknown (%u)"));
-
     switch (enable_order_entry_response_optional_field) {
     case NSMEQUITIES_ORDERS_ENABLE_ORDER_ENTRY_RESPONSE_OPTIONAL_FIELD_USERREFIDX:
         return parse_nsmequities_orders_user_ref_idx(tvb, pinfo, tree, offset);
@@ -6226,12 +6191,15 @@ dissect_nsmequities_orders_client_packet_message(tvbuff_t *tvb, packet_info *pin
 static unsigned
 dissect_nsmequities_orders_client_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_orders_client_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -6240,11 +6208,15 @@ dissect_nsmequities_orders_client_packet_messages(tvbuff_t *tvb, packet_info *pi
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_nsmequities_orders_client_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -6310,12 +6282,15 @@ dissect_nsmequities_orders_server_packet_message(tvbuff_t *tvb, packet_info *pin
 static unsigned
 dissect_nsmequities_orders_server_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const nsmequities_orders_server_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -6324,11 +6299,15 @@ dissect_nsmequities_orders_server_packet_messages(tvbuff_t *tvb, packet_info *pi
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_nsmequities_orders_server_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u OUCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -7652,7 +7631,7 @@ proto_register_nsmequities_orders(void)
         NSMEQUITIES_ORDERS_VERSION_PREFERENCE_TITLE,
         NSMEQUITIES_ORDERS_VERSION_PREFERENCE_DESCRIPTION,
         &nsmequities_orders_pref_version,
-        nsmequities_orders_version_vals,
+        nsmequities_orders_pref_version_vals,
         false);
 
     prefs_register_bool_preference(

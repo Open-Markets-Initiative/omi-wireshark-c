@@ -99,9 +99,11 @@ static int hf_deribit_ordersapi_fill_id;
 static int hf_deribit_ordersapi_fill_price;
 static int hf_deribit_ordersapi_flags_cancel_flags;
 static int hf_deribit_ordersapi_flags_fill_flags;
+static int hf_deribit_ordersapi_flags_fill_flags_v14;
 static int hf_deribit_ordersapi_flags_mass_quote_flags;
 static int hf_deribit_ordersapi_flags_multi_part_event_flags;
 static int hf_deribit_ordersapi_flags_order_flags;
+static int hf_deribit_ordersapi_flags_order_flags_v15;
 static int hf_deribit_ordersapi_flags_order_flags_v10;
 static int hf_deribit_ordersapi_flags_replace_order_flags;
 static int hf_deribit_ordersapi_from_sequence_number;
@@ -112,11 +114,14 @@ static int hf_deribit_ordersapi_instrument_id;
 static int hf_deribit_ordersapi_instrument_id_optional;
 static int hf_deribit_ordersapi_is_fully_filled;
 static int hf_deribit_ordersapi_is_last_message;
+static int hf_deribit_ordersapi_is_liquidation;
 static int hf_deribit_ordersapi_is_quote;
 static int hf_deribit_ordersapi_is_resend;
 static int hf_deribit_ordersapi_last_processed_seq_no;
 static int hf_deribit_ordersapi_leg_side;
+static int hf_deribit_ordersapi_liquidation_notifications;
 static int hf_deribit_ordersapi_mantissa;
+static int hf_deribit_ordersapi_mantissa_optional;
 static int hf_deribit_ordersapi_market_limit;
 static int hf_deribit_ordersapi_match_id;
 static int hf_deribit_ordersapi_message_length;
@@ -143,11 +148,19 @@ static int hf_deribit_ordersapi_reason_mass_cancel_reject_reason;
 static int hf_deribit_ordersapi_reason_mass_quote_reject_reason;
 static int hf_deribit_ordersapi_reason_mmp_status_reject_reason;
 static int hf_deribit_ordersapi_reason_order_reject_reason;
+static int hf_deribit_ordersapi_reason_position_move_reason;
 static int hf_deribit_ordersapi_reason_reject_reason;
 static int hf_deribit_ordersapi_receive_time;
 static int hf_deribit_ordersapi_ref_sequence_number;
+static int hf_deribit_ordersapi_reserved_10;
+static int hf_deribit_ordersapi_reserved_13;
+static int hf_deribit_ordersapi_reserved_5;
+static int hf_deribit_ordersapi_reserved_6;
+static int hf_deribit_ordersapi_reserved_7;
+static int hf_deribit_ordersapi_reserved_bits;
 static int hf_deribit_ordersapi_reset_mmp;
 static int hf_deribit_ordersapi_reset_seq_num;
+static int hf_deribit_ordersapi_role;
 static int hf_deribit_ordersapi_schema_version;
 static int hf_deribit_ordersapi_secret;
 static int hf_deribit_ordersapi_self_match_prevention_id;
@@ -164,6 +177,8 @@ static int hf_deribit_ordersapi_timestamp;
 static int hf_deribit_ordersapi_to_sequence_number;
 static int hf_deribit_ordersapi_total_order_count;
 static int hf_deribit_ordersapi_trigger;
+static int hf_deribit_ordersapi_unused_order_flags_0;
+static int hf_deribit_ordersapi_unused_replace_order_flags_0;
 static int hf_deribit_ordersapi_vega_level;
 
 /*
@@ -179,9 +194,11 @@ static int ett_deribit_ordersapi_flags_replace_order_flags;
 static int ett_deribit_ordersapi_flags_mass_quote_flags;
 static int ett_deribit_ordersapi_bid_flags;
 static int ett_deribit_ordersapi_ask_flags;
+static int ett_deribit_ordersapi_flags_order_flags_v15;
 static int ett_deribit_ordersapi_flags_fill_flags;
 static int ett_deribit_ordersapi_flags_multi_part_event_flags;
 static int ett_deribit_ordersapi_flags_cancel_flags;
+static int ett_deribit_ordersapi_flags_fill_flags_v14;
 static int ett_deribit_ordersapi_flags_order_flags_v10;
 static int ett_deribit_ordersapi_bid_flags_v10;
 static int ett_deribit_ordersapi_ask_flags_v10;
@@ -206,6 +223,8 @@ static int ett_deribit_ordersapi_amend_order_response_message_fills_groups;
 static int ett_deribit_ordersapi_amend_order_response_message_fills_group;
 static int ett_deribit_ordersapi_amend_order_response_message_legs_groups;
 static int ett_deribit_ordersapi_amend_order_response_message_legs_group;
+static int ett_deribit_ordersapi_quantity_v15;
+static int ett_deribit_ordersapi_total_filled_v15;
 static int ett_deribit_ordersapi_mass_quote_response_message_quotes_groups;
 static int ett_deribit_ordersapi_mass_quote_response_message_quotes_group;
 static int ett_deribit_ordersapi_bid_filled_qty;
@@ -232,6 +251,8 @@ static int ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups;
 static int ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group;
 static int ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups;
 static int ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group;
+static int ett_deribit_ordersapi_order_filled_message_fills_groups_v14;
+static int ett_deribit_ordersapi_order_filled_message_fills_group_v14;
 static int ett_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10;
 static int ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10;
 
@@ -262,7 +283,7 @@ static expert_field ei_deribit_ordersapi_length;
 #define DERIBIT_ORDERSAPI_VERSION_1_0     4
 #define DERIBIT_ORDERSAPI_VERSION_0_1     5
 
-static const enum_val_t deribit_ordersapi_version_vals[] = {
+static const enum_val_t deribit_ordersapi_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", DERIBIT_ORDERSAPI_VERSION_AUTOMATIC },
     { "v1.5", "1.5", DERIBIT_ORDERSAPI_VERSION_1_5 },
     { "v1.4", "1.4", DERIBIT_ORDERSAPI_VERSION_1_4 },
@@ -316,6 +337,13 @@ static int deribit_ordersapi_pref_version = DERIBIT_ORDERSAPI_VERSION_AUTOMATIC;
 static bool deribit_ordersapi_show_headers = true;
 static bool deribit_ordersapi_show_application_messages = true;
 static bool deribit_ordersapi_show_structs = true;
+
+/* Show padding preference */
+#define DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool deribit_ordersapi_show_padding = false;
 
 /* Decimal places shown, the wire precision by default */
 #define DERIBIT_ORDERSAPI_DECIMAL_PREFERENCE_NAME "decimal.places"
@@ -373,7 +401,7 @@ deribit_ordersapi_version(uint64_t seconds)
     return DERIBIT_ORDERSAPI_VERSION_0_1;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 deribit_ordersapi_decimal_places(char *buf)
 {
@@ -389,12 +417,41 @@ deribit_ordersapi_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 9 decimal place value */
@@ -448,7 +505,7 @@ deribit_ordersapi_format_decimal_9_64_nullable(char *buf, uint64_t raw)
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-deribit_ordersapi_format_nullable_64(char *buf, uint64_t raw)
+deribit_ordersapi_format_nullable_int64_minus9223372036854775808(char *buf, uint64_t raw)
 {
     int64_t value = (int64_t)raw;
 
@@ -458,6 +515,53 @@ deribit_ordersapi_format_nullable_64(char *buf, uint64_t raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a mantissa scaled by a power of ten, written from its own digits */
+static void
+deribit_ordersapi_format_exponent(char *buf, int64_t mantissa, int exponent)
+{
+    char digits[24];
+    uint64_t magnitude = (uint64_t)mantissa;
+    const char *sign = "";
+
+    if (mantissa < 0) {
+        magnitude = (uint64_t)0 - magnitude;
+        sign = "-";
+    }
+
+    snprintf(digits, sizeof digits, "%" PRIu64, magnitude);
+
+    size_t length = strlen(digits);
+    int written = snprintf(buf, ITEM_LABEL_LENGTH, "%s", sign);
+
+    if (exponent >= 0) {
+        written += snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%s", digits);
+
+        for (int zero = 0; zero < exponent && written < ITEM_LABEL_LENGTH - 1; zero++) {
+            buf[written++] = '0';
+        }
+
+        buf[written] = '\0';
+        return;
+    }
+
+    size_t places = (size_t)(-exponent);
+
+    if (length > places) {
+        snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%.*s.%s", (int)(length - places), digits, digits + length - places);
+    }
+    else {
+        written += snprintf(buf + written, ITEM_LABEL_LENGTH - written, "0.");
+
+        for (size_t zero = length; zero < places && written < ITEM_LABEL_LENGTH - 1; zero++) {
+            buf[written++] = '0';
+        }
+
+        snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%s", digits);
+    }
+
+    deribit_ordersapi_decimal_places(buf);
 }
 
 /*
@@ -561,6 +665,8 @@ static const value_string deribit_ordersapi_ask_reject_reason_vals[] = {
     { 29, "Member Speed Bump Limit Exceeded" },
     { 30, "Mmp Min Freeze Time Not Elapsed" },
     { 31, "Cancel Only" },
+    { 32, "Portfolio Instrument Not Allowed" },
+    { 33, "Mmp Required" },
     { 0, NULL }
 };
 
@@ -700,6 +806,8 @@ static const value_string deribit_ordersapi_bid_reject_reason_vals[] = {
     { 29, "Member Speed Bump Limit Exceeded" },
     { 30, "Mmp Min Freeze Time Not Elapsed" },
     { 31, "Cancel Only" },
+    { 32, "Portfolio Instrument Not Allowed" },
+    { 33, "Mmp Required" },
     { 0, NULL }
 };
 
@@ -773,7 +881,7 @@ parse_deribit_ordersapi_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_DESCRIPTION "cancelReason"
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_FILTER      "deribit.ordersapi.cancelreason"
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_CANCEL_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_CANCEL_REASON_DISPLAY     BASE_CUSTOM
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_MASK        0x0
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_SIZE        1
@@ -799,6 +907,20 @@ static const value_string deribit_ordersapi_cancel_reason_vals[] = {
     { 17, "Qty Tick Size Rescale" },
     { 0, NULL }
 };
+
+/* Format the sentinel's label alone, an enumerated value labelled */
+static void
+deribit_ordersapi_format_cancel_reason(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == INT8_MIN) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%s (%" PRId64 ")", val_to_str_const(raw, deribit_ordersapi_cancel_reason_vals, "Unknown"), value);
+}
 
 static unsigned
 parse_deribit_ordersapi_cancel_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -1152,6 +1274,14 @@ parse_deribit_ordersapi_instrument_id_optional(tvbuff_t *tvb, packet_info *pinfo
 #define DERIBIT_ORDERSAPI_IS_LAST_MESSAGE_DISPLAY     8
 #define DERIBIT_ORDERSAPI_IS_LAST_MESSAGE_MASK        0x01
 
+/* Is Liquidation */
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_NAME        "Is Liquidation"
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_DESCRIPTION "isLiquidation"
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_FILTER      "deribit.ordersapi.isliquidation"
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_DISPLAY     8
+#define DERIBIT_ORDERSAPI_IS_LIQUIDATION_MASK        0x04
+
 /* Is Quote */
 #define DERIBIT_ORDERSAPI_IS_QUOTE_NAME        "Is Quote"
 #define DERIBIT_ORDERSAPI_IS_QUOTE_DESCRIPTION "isQuote"
@@ -1211,6 +1341,30 @@ parse_deribit_ordersapi_leg_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     return offset + DERIBIT_ORDERSAPI_LEG_SIDE_SIZE;
 }
 
+/* Liquidation Notifications */
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_NAME        "Liquidation Notifications"
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_DESCRIPTION "liquidationNotifications"
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_FILTER      "deribit.ordersapi.liquidationnotifications"
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_MASK        0x0
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_SIZE        1
+
+static const value_string deribit_ordersapi_liquidation_notifications_vals[] = {
+    { 0, "False" },
+    { 1, "True" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_liquidation_notifications(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_liquidation_notifications, tvb, offset, DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_SIZE, DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_SIZE;
+}
+
 /* Mantissa */
 #define DERIBIT_ORDERSAPI_MANTISSA_NAME     "Mantissa"
 #define DERIBIT_ORDERSAPI_MANTISSA_FILTER   "deribit.ordersapi.mantissa"
@@ -1226,6 +1380,24 @@ parse_deribit_ordersapi_mantissa(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     proto_tree_add_item(tree, hf_deribit_ordersapi_mantissa, tvb, offset, DERIBIT_ORDERSAPI_MANTISSA_SIZE, DERIBIT_ORDERSAPI_MANTISSA_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_MANTISSA_SIZE;
+}
+
+/* Mantissa Optional */
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_NAME        "Mantissa Optional"
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_DESCRIPTION "mantissa"
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_FILTER      "deribit.ordersapi.mantissaoptional"
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_TYPE        FT_INT64
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_DISPLAY     BASE_CUSTOM
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_MASK        0x0
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_SIZE        8
+
+static unsigned
+parse_deribit_ordersapi_mantissa_optional(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_mantissa_optional, tvb, offset, DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_SIZE, DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_SIZE;
 }
 
 /* Market Limit */
@@ -1477,6 +1649,11 @@ parse_deribit_ordersapi_product_type(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define DERIBIT_ORDERSAPI_PROTOCOL_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define DERIBIT_ORDERSAPI_PROTOCOL_ID_SIZE        1
 
+static const value_string deribit_ordersapi_protocol_id_vals[] = {
+    { 219, "Deribit Starbase" },
+    { 0, NULL }
+};
+
 static unsigned
 parse_deribit_ordersapi_protocol_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
 {
@@ -1633,6 +1810,7 @@ static const value_string deribit_ordersapi_reason_mass_quote_reject_reason_vals
     { 7, "Portfolio Locked" },
     { 8, "Duplicate Instrument" },
     { 9, "Mmp Min Freeze Time Not Elapsed" },
+    { 10, "Portfolio Instrument Not Allowed" },
     { 0, NULL }
 };
 
@@ -1711,6 +1889,8 @@ static const value_string deribit_ordersapi_reason_order_reject_reason_vals[] = 
     { 29, "Member Speed Bump Limit Exceeded" },
     { 30, "Mmp Min Freeze Time Not Elapsed" },
     { 31, "Cancel Only" },
+    { 32, "Portfolio Instrument Not Allowed" },
+    { 33, "Mmp Required" },
     { 0, NULL }
 };
 
@@ -1720,6 +1900,30 @@ parse_deribit_ordersapi_reason_order_reject_reason(tvbuff_t *tvb, packet_info *p
     proto_tree_add_item(tree, hf_deribit_ordersapi_reason_order_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_SIZE;
+}
+
+/* Reason Position Move Reason */
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_NAME        "Reason Position Move Reason"
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_FILTER      "deribit.ordersapi.reasonpositionmovereason"
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_reason_position_move_reason_vals[] = {
+    { 1, "Lsp" },
+    { 2, "Adl" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_reason_position_move_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_position_move_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE;
 }
 
 /* Reason Reject Reason */
@@ -1739,6 +1943,7 @@ static const value_string deribit_ordersapi_reason_reject_reason_vals[] = {
     { 4, "Invalid Field Value" },
     { 5, "Message Disabled" },
     { 6, "Gateway Not Active" },
+    { 7, "Message Not Permitted" },
     { 0, NULL }
 };
 
@@ -1786,6 +1991,54 @@ parse_deribit_ordersapi_ref_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U
     return offset + DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_SIZE;
 }
 
+/* Reserved 10 */
+#define DERIBIT_ORDERSAPI_RESERVED_10_NAME        "Reserved 10"
+#define DERIBIT_ORDERSAPI_RESERVED_10_DESCRIPTION "10 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_10_FILTER      "deribit.ordersapi.reserved10"
+#define DERIBIT_ORDERSAPI_RESERVED_10_TYPE        FT_UINT16
+#define DERIBIT_ORDERSAPI_RESERVED_10_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_10_MASK        0xFFC0
+
+/* Reserved 13 */
+#define DERIBIT_ORDERSAPI_RESERVED_13_NAME        "Reserved 13"
+#define DERIBIT_ORDERSAPI_RESERVED_13_DESCRIPTION "13 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_13_FILTER      "deribit.ordersapi.reserved13"
+#define DERIBIT_ORDERSAPI_RESERVED_13_TYPE        FT_UINT16
+#define DERIBIT_ORDERSAPI_RESERVED_13_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_13_MASK        0xFFF8
+
+/* Reserved 5 */
+#define DERIBIT_ORDERSAPI_RESERVED_5_NAME        "Reserved 5"
+#define DERIBIT_ORDERSAPI_RESERVED_5_DESCRIPTION "5 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_5_FILTER      "deribit.ordersapi.reserved5"
+#define DERIBIT_ORDERSAPI_RESERVED_5_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_5_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_5_MASK        0xF8
+
+/* Reserved 6 */
+#define DERIBIT_ORDERSAPI_RESERVED_6_NAME        "Reserved 6"
+#define DERIBIT_ORDERSAPI_RESERVED_6_DESCRIPTION "6 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_6_FILTER      "deribit.ordersapi.reserved6"
+#define DERIBIT_ORDERSAPI_RESERVED_6_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_6_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_6_MASK        0xFC
+
+/* Reserved 7 */
+#define DERIBIT_ORDERSAPI_RESERVED_7_NAME        "Reserved 7"
+#define DERIBIT_ORDERSAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_7_FILTER      "deribit.ordersapi.reserved7"
+#define DERIBIT_ORDERSAPI_RESERVED_7_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_7_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_7_MASK        0xFE
+
+/* Reserved Bits */
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_NAME        "Reserved Bits"
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_DESCRIPTION "Bits reserved for future use"
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_FILTER      "deribit.ordersapi.reservedbits"
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_BITS_MASK        0xFE
+
 /* Reset Mmp */
 #define DERIBIT_ORDERSAPI_RESET_MMP_NAME        "Reset Mmp"
 #define DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION "resetMmp"
@@ -1816,6 +2069,29 @@ parse_deribit_ordersapi_reset_seq_num(tvbuff_t *tvb, packet_info *pinfo _U_, pro
     proto_tree_add_item(tree, hf_deribit_ordersapi_reset_seq_num, tvb, offset, DERIBIT_ORDERSAPI_RESET_SEQ_NUM_SIZE, DERIBIT_ORDERSAPI_RESET_SEQ_NUM_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_RESET_SEQ_NUM_SIZE;
+}
+
+/* Role */
+#define DERIBIT_ORDERSAPI_ROLE_NAME     "Role"
+#define DERIBIT_ORDERSAPI_ROLE_FILTER   "deribit.ordersapi.role"
+#define DERIBIT_ORDERSAPI_ROLE_TYPE     FT_INT8
+#define DERIBIT_ORDERSAPI_ROLE_DISPLAY  BASE_DEC
+#define DERIBIT_ORDERSAPI_ROLE_MASK     0x0
+#define DERIBIT_ORDERSAPI_ROLE_ENCODING ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_ROLE_SIZE     1
+
+static const value_string deribit_ordersapi_role_vals[] = {
+    { 1, "Taker" },
+    { 2, "Maker" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_role(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_role, tvb, offset, DERIBIT_ORDERSAPI_ROLE_SIZE, DERIBIT_ORDERSAPI_ROLE_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_ROLE_SIZE;
 }
 
 /* Schema Version */
@@ -2045,6 +2321,7 @@ parse_deribit_ordersapi_status(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 #define DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_TRIGGERED               322
 #define DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_UNFROZEN            324
 #define DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN                326
+#define DERIBIT_ORDERSAPI_TEMPLATE_ID_POSITION_MOVED                     330
 
 /* Template Id */
 #define DERIBIT_ORDERSAPI_TEMPLATE_ID_NAME        "Template Id"
@@ -2097,6 +2374,7 @@ static const value_string deribit_ordersapi_template_id_vals[] = {
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_TRIGGERED, "Orders Mmp Triggered Message" },
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_UNFROZEN, "Mass Quote Mmp Unfrozen Message" },
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN, "Orders Mmp Unfrozen Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_POSITION_MOVED, "Position Moved Message" },
     { 0, NULL }
 };
 
@@ -2203,6 +2481,22 @@ parse_deribit_ordersapi_trigger(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
     return offset + DERIBIT_ORDERSAPI_TRIGGER_SIZE;
 }
 
+/* Unused Order Flags 0 */
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_NAME        "Unused Order Flags 0"
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DESCRIPTION "Unused OrderFlags 0"
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_FILTER      "deribit.ordersapi.unusedorderflags0"
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DISPLAY     8
+#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_MASK        0x01
+
+/* Unused Replace Order Flags 0 */
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_NAME        "Unused Replace Order Flags 0"
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DESCRIPTION "Unused ReplaceOrderFlags 0"
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_FILTER      "deribit.ordersapi.unusedreplaceorderflags0"
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DISPLAY     8
+#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_MASK        0x01
+
 /* Vega Level */
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_NAME        "Vega Level"
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_DESCRIPTION "vegaLevel"
@@ -2236,6 +2530,7 @@ parse_deribit_ordersapi_vega_level(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define DERIBIT_ORDERSAPI_SESSION_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_session_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_bits,
     &hf_deribit_ordersapi_is_resend,
     NULL
 };
@@ -2260,6 +2555,7 @@ parse_deribit_ordersapi_session_flags(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_flags_order_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2289,8 +2585,10 @@ parse_deribit_ordersapi_flags_order_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_FLAGS_REPLACE_ORDER_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_flags_replace_order_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_13,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
+    &hf_deribit_ordersapi_unused_replace_order_flags_0,
     NULL
 };
 
@@ -2314,6 +2612,7 @@ parse_deribit_ordersapi_flags_replace_order_flags(tvbuff_t *tvb, packet_info *pi
 #define DERIBIT_ORDERSAPI_FLAGS_MASS_QUOTE_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_mass_quote_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_7,
     &hf_deribit_ordersapi_reset_mmp,
     NULL
 };
@@ -2338,6 +2637,7 @@ parse_deribit_ordersapi_flags_mass_quote_flags(tvbuff_t *tvb, packet_info *pinfo
 #define DERIBIT_ORDERSAPI_BID_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_bid_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2367,6 +2667,7 @@ parse_deribit_ordersapi_bid_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_ORDERSAPI_ASK_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_ask_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2385,6 +2686,36 @@ parse_deribit_ordersapi_ask_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
     return offset + DERIBIT_ORDERSAPI_ASK_FLAGS_SIZE;
 }
 
+/* Flags Order Flags */
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_NAME        "Flags Order Flags"
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_DESCRIPTION "OrderFlags bit set"
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_FILTER      "deribit.ordersapi.flagsorderflags"
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_TYPE        FT_UINT16
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_DISPLAY     BASE_HEX
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_MASK        0x0
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_SIZE        2
+
+static int * const deribit_ordersapi_flags_order_flags_v15_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reset_mmp,
+    &hf_deribit_ordersapi_mmp,
+    &hf_deribit_ordersapi_market_limit,
+    &hf_deribit_ordersapi_post_only_reject,
+    &hf_deribit_ordersapi_post_only,
+    &hf_deribit_ordersapi_cancel_on_disconnect,
+    NULL
+};
+
+static unsigned
+parse_deribit_ordersapi_flags_order_flags_v15(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_bitmask(tree, tvb, offset, hf_deribit_ordersapi_flags_order_flags_v15,
+        ett_deribit_ordersapi_flags_order_flags_v15, deribit_ordersapi_flags_order_flags_v15_fields, DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_SIZE;
+}
+
 /* Flags Fill Flags */
 #define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_NAME        "Flags Fill Flags"
 #define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_DESCRIPTION "FillFlags bit set"
@@ -2396,6 +2727,8 @@ parse_deribit_ordersapi_ask_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_fill_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_5,
+    &hf_deribit_ordersapi_is_liquidation,
     &hf_deribit_ordersapi_is_fully_filled,
     &hf_deribit_ordersapi_is_quote,
     NULL
@@ -2421,6 +2754,7 @@ parse_deribit_ordersapi_flags_fill_flags(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define DERIBIT_ORDERSAPI_FLAGS_MULTI_PART_EVENT_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_multi_part_event_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_7,
     &hf_deribit_ordersapi_is_last_message,
     NULL
 };
@@ -2445,6 +2779,7 @@ parse_deribit_ordersapi_flags_multi_part_event_flags(tvbuff_t *tvb, packet_info 
 #define DERIBIT_ORDERSAPI_FLAGS_CANCEL_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_cancel_flags_fields[] = {
+    &hf_deribit_ordersapi_reserved_7,
     &hf_deribit_ordersapi_is_quote,
     NULL
 };
@@ -2458,6 +2793,32 @@ parse_deribit_ordersapi_flags_cancel_flags(tvbuff_t *tvb, packet_info *pinfo _U_
     return offset + DERIBIT_ORDERSAPI_FLAGS_CANCEL_FLAGS_SIZE;
 }
 
+/* Flags Fill Flags */
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_NAME        "Flags Fill Flags"
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_DESCRIPTION "FillFlags bit set"
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_FILTER      "deribit.ordersapi.flagsfillflags"
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_DISPLAY     BASE_HEX
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_MASK        0x0
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_SIZE        1
+
+static int * const deribit_ordersapi_flags_fill_flags_v14_fields[] = {
+    &hf_deribit_ordersapi_reserved_6,
+    &hf_deribit_ordersapi_is_fully_filled,
+    &hf_deribit_ordersapi_is_quote,
+    NULL
+};
+
+static unsigned
+parse_deribit_ordersapi_flags_fill_flags_v14(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_bitmask(tree, tvb, offset, hf_deribit_ordersapi_flags_fill_flags_v14,
+        ett_deribit_ordersapi_flags_fill_flags_v14, deribit_ordersapi_flags_fill_flags_v14_fields, DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_SIZE;
+}
+
 /* Flags Order Flags */
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V10_NAME        "Flags Order Flags"
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V10_DESCRIPTION "OrderFlags bit set"
@@ -2469,11 +2830,13 @@ parse_deribit_ordersapi_flags_cancel_flags(tvbuff_t *tvb, packet_info *pinfo _U_
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_flags_order_flags_v10_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
+    &hf_deribit_ordersapi_unused_order_flags_0,
     NULL
 };
 
@@ -2497,11 +2860,13 @@ parse_deribit_ordersapi_flags_order_flags_v10(tvbuff_t *tvb, packet_info *pinfo 
 #define DERIBIT_ORDERSAPI_BID_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_bid_flags_v10_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
+    &hf_deribit_ordersapi_unused_order_flags_0,
     NULL
 };
 
@@ -2525,11 +2890,13 @@ parse_deribit_ordersapi_bid_flags_v10(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define DERIBIT_ORDERSAPI_ASK_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_ask_flags_v10_fields[] = {
+    &hf_deribit_ordersapi_reserved_10,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
+    &hf_deribit_ordersapi_unused_order_flags_0,
     NULL
 };
 
@@ -2587,6 +2954,8 @@ static unsigned dissect_deribit_ordersapi_amend_order_response_message_legs_grou
 static unsigned dissect_deribit_ordersapi_amend_order_response_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_deribit_ordersapi_amend_order_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_quantity_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_total_filled_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_response(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_response_message_quotes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2630,13 +2999,18 @@ static unsigned dissect_deribit_ordersapi_mass_quote_mmp_triggered(tvbuff_t *tvb
 static unsigned dissect_deribit_ordersapi_orders_mmp_triggered(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_mass_quote_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_orders_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_position_moved(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_response_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_message_fills_group_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_deribit_ordersapi_logon_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_response_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_request_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2645,6 +3019,7 @@ static unsigned dissect_deribit_ordersapi_mass_quote_request_message_quotes_grou
 static unsigned dissect_deribit_ordersapi_mass_quote_request_message_quotes_group_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_deribit_ordersapi_new_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_response_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_order_placed_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_logon_conf_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2652,6 +3027,7 @@ static unsigned dissect_deribit_ordersapi_new_order_request_v01(tvbuff_t *tvb, p
 static unsigned dissect_deribit_ordersapi_mass_quote_request_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_new_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_cancel_order_response_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
+static unsigned dissect_deribit_ordersapi_order_filled_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_order_placed_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_deribit_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_deribit_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
@@ -2695,6 +3071,7 @@ dissect_deribit_ordersapi_logon(tvbuff_t *tvb, packet_info *pinfo, proto_tree *t
     offset = parse_deribit_ordersapi_reset_seq_num(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_schema_version(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_session_cancel_on_disconnect(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_liquidation_notifications(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -2852,6 +3229,15 @@ dissect_deribit_ordersapi_quantity(tvbuff_t *tvb, packet_info *pinfo, proto_tree
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -2870,8 +3256,22 @@ dissect_deribit_ordersapi_show_qty(tvbuff_t *tvb, packet_info *pinfo, proto_tree
 
     unsigned start = offset;
 
-    offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_mantissa_optional(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == INT64_MIN) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            deribit_ordersapi_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -2929,7 +3329,7 @@ dissect_deribit_ordersapi_mass_quote_request(tvbuff_t *tvb, packet_info *pinfo, 
     return offset;
 }
 
-/* Mass Quote Request Message quotes Groups */
+/* Mass Quote Request Message Quotes Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -2937,14 +3337,14 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups(tvbuff_t *tvb
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_groups, &item, "Mass Quote Request Message quotes Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_groups, &item, "Mass Quote Request Message Quotes Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Request Message quotes Group: Num In Group entries */
+    /* Mass Quote Request Message Quotes Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -2977,7 +3377,7 @@ dissect_deribit_ordersapi_group_size_encoding(tvbuff_t *tvb, packet_info *pinfo,
     return offset;
 }
 
-/* Mass Quote Request Message quotes Group */
+/* Mass Quote Request Message Quotes Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_request_message_quotes_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -2986,8 +3386,8 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_group(tvbuff_t *tvb,
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group, &item, "Mass Quote Request Message quotes Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group, &item, "Mass Quote Request Message quotes Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group, &item, "Mass Quote Request Message Quotes Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group, &item, "Mass Quote Request Message Quotes Group");
     }
 
     unsigned start = offset;
@@ -3021,6 +3421,15 @@ dissect_deribit_ordersapi_bid_qty(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -3041,6 +3450,15 @@ dissect_deribit_ordersapi_ask_qty(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
 
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -3109,7 +3527,7 @@ dissect_deribit_ordersapi_new_order_response(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_flags_order_flags(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_flags_order_flags_v15(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvb, pinfo, tree, offset);
 
@@ -3132,6 +3550,15 @@ dissect_deribit_ordersapi_total_filled(tvbuff_t *tvb, packet_info *pinfo, proto_
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -3153,12 +3580,21 @@ dissect_deribit_ordersapi_visible_qty(tvbuff_t *tvb, packet_info *pinfo, proto_t
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
 }
 
-/* New Order Response Message fills Groups */
+/* New Order Response Message Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3166,14 +3602,14 @@ dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvbuff_t *tvb,
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_groups, &item, "New Order Response Message fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_groups, &item, "New Order Response Message Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* New Order Response Message fills Group: Num In Group entries */
+    /* New Order Response Message Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3185,7 +3621,7 @@ dissect_deribit_ordersapi_new_order_response_message_fills_groups(tvbuff_t *tvb,
     return offset;
 }
 
-/* New Order Response Message fills Group */
+/* New Order Response Message Fills Group */
 static unsigned
 dissect_deribit_ordersapi_new_order_response_message_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3194,8 +3630,8 @@ dissect_deribit_ordersapi_new_order_response_message_fills_group(tvbuff_t *tvb, 
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_group, &item, "New Order Response Message fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_group, &item, "New Order Response Message fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_group, &item, "New Order Response Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_fills_group, &item, "New Order Response Message Fills Group");
     }
 
     unsigned start = offset;
@@ -3225,12 +3661,21 @@ dissect_deribit_ordersapi_fill_qty(tvbuff_t *tvb, packet_info *pinfo, proto_tree
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
 }
 
-/* New Order Response Message legs Groups */
+/* New Order Response Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3238,14 +3683,14 @@ dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvbuff_t *tvb, 
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_groups, &item, "New Order Response Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_groups, &item, "New Order Response Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* New Order Response Message legs Group: Num In Group entries */
+    /* New Order Response Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3257,7 +3702,7 @@ dissect_deribit_ordersapi_new_order_response_message_legs_groups(tvbuff_t *tvb, 
     return offset;
 }
 
-/* New Order Response Message legs Group */
+/* New Order Response Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_new_order_response_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3266,8 +3711,8 @@ dissect_deribit_ordersapi_new_order_response_message_legs_group(tvbuff_t *tvb, p
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_group, &item, "New Order Response Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_group, &item, "New Order Response Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_group, &item, "New Order Response Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_new_order_response_message_legs_group, &item, "New Order Response Message Legs Group");
     }
 
     unsigned start = offset;
@@ -3322,7 +3767,7 @@ dissect_deribit_ordersapi_amend_order_response(tvbuff_t *tvb, packet_info *pinfo
     return offset;
 }
 
-/* Amend Order Response Message fills Groups */
+/* Amend Order Response Message Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_amend_order_response_message_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3330,14 +3775,14 @@ dissect_deribit_ordersapi_amend_order_response_message_fills_groups(tvbuff_t *tv
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_groups, &item, "Amend Order Response Message fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_groups, &item, "Amend Order Response Message Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Amend Order Response Message fills Group: Num In Group entries */
+    /* Amend Order Response Message Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3349,7 +3794,7 @@ dissect_deribit_ordersapi_amend_order_response_message_fills_groups(tvbuff_t *tv
     return offset;
 }
 
-/* Amend Order Response Message fills Group */
+/* Amend Order Response Message Fills Group */
 static unsigned
 dissect_deribit_ordersapi_amend_order_response_message_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3358,8 +3803,8 @@ dissect_deribit_ordersapi_amend_order_response_message_fills_group(tvbuff_t *tvb
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_group, &item, "Amend Order Response Message fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_group, &item, "Amend Order Response Message fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_group, &item, "Amend Order Response Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_fills_group, &item, "Amend Order Response Message Fills Group");
     }
 
     unsigned start = offset;
@@ -3373,7 +3818,7 @@ dissect_deribit_ordersapi_amend_order_response_message_fills_group(tvbuff_t *tvb
     return offset;
 }
 
-/* Amend Order Response Message legs Groups */
+/* Amend Order Response Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_amend_order_response_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3381,14 +3826,14 @@ dissect_deribit_ordersapi_amend_order_response_message_legs_groups(tvbuff_t *tvb
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_groups, &item, "Amend Order Response Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_groups, &item, "Amend Order Response Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Amend Order Response Message legs Group: Num In Group entries */
+    /* Amend Order Response Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3400,7 +3845,7 @@ dissect_deribit_ordersapi_amend_order_response_message_legs_groups(tvbuff_t *tvb
     return offset;
 }
 
-/* Amend Order Response Message legs Group */
+/* Amend Order Response Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_amend_order_response_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3409,8 +3854,8 @@ dissect_deribit_ordersapi_amend_order_response_message_legs_group(tvbuff_t *tvb,
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_group, &item, "Amend Order Response Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_group, &item, "Amend Order Response Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_group, &item, "Amend Order Response Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_amend_order_response_message_legs_group, &item, "Amend Order Response Message Legs Group");
     }
 
     unsigned start = offset;
@@ -3453,8 +3898,68 @@ dissect_deribit_ordersapi_cancel_order_response(tvbuff_t *tvb, packet_info *pinf
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
-    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
-    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity_v15(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_total_filled_v15(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Quantity */
+static unsigned
+dissect_deribit_ordersapi_quantity_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (deribit_ordersapi_show_structs) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_quantity_v15, &item, "Quantity");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
+
+/* Total Filled */
+static unsigned
+dissect_deribit_ordersapi_total_filled_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (deribit_ordersapi_show_structs) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_total_filled_v15, &item, "Total Filled");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
+    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -3493,7 +3998,7 @@ dissect_deribit_ordersapi_mass_quote_response(tvbuff_t *tvb, packet_info *pinfo,
     return offset;
 }
 
-/* Mass Quote Response Message quotes Groups */
+/* Mass Quote Response Message Quotes Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_quotes_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3501,14 +4006,14 @@ dissect_deribit_ordersapi_mass_quote_response_message_quotes_groups(tvbuff_t *tv
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_groups, &item, "Mass Quote Response Message quotes Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_groups, &item, "Mass Quote Response Message Quotes Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Response Message quotes Group: Num In Group entries */
+    /* Mass Quote Response Message Quotes Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3520,7 +4025,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_quotes_groups(tvbuff_t *tv
     return offset;
 }
 
-/* Mass Quote Response Message quotes Group */
+/* Mass Quote Response Message Quotes Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_quotes_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3529,8 +4034,8 @@ dissect_deribit_ordersapi_mass_quote_response_message_quotes_group(tvbuff_t *tvb
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_group, &item, "Mass Quote Response Message quotes Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_group, &item, "Mass Quote Response Message quotes Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_group, &item, "Mass Quote Response Message Quotes Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_quotes_group, &item, "Mass Quote Response Message Quotes Group");
     }
 
     unsigned start = offset;
@@ -3570,6 +4075,15 @@ dissect_deribit_ordersapi_bid_filled_qty(tvbuff_t *tvb, packet_info *pinfo, prot
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -3591,12 +4105,21 @@ dissect_deribit_ordersapi_ask_filled_qty(tvbuff_t *tvb, packet_info *pinfo, prot
     offset = parse_deribit_ordersapi_mantissa(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        deribit_ordersapi_format_exponent(value, mantissa, exponent);
+        proto_item_append_text(item, ": %s", value);
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
 }
 
-/* Mass Quote Response Message bid Fills Groups */
+/* Mass Quote Response Message Bid Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3604,14 +4127,14 @@ dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_groups(tvbuff_t 
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_groups, &item, "Mass Quote Response Message bid Fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_groups, &item, "Mass Quote Response Message Bid Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Response Message bid Fills Group: Num In Group entries */
+    /* Mass Quote Response Message Bid Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3623,7 +4146,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_groups(tvbuff_t 
     return offset;
 }
 
-/* Mass Quote Response Message bid Fills Group */
+/* Mass Quote Response Message Bid Fills Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3632,8 +4155,8 @@ dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_group(tvbuff_t *
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_group, &item, "Mass Quote Response Message bid Fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_group, &item, "Mass Quote Response Message bid Fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_group, &item, "Mass Quote Response Message Bid Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_bid_fills_group, &item, "Mass Quote Response Message Bid Fills Group");
     }
 
     unsigned start = offset;
@@ -3648,7 +4171,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_bid_fills_group(tvbuff_t *
     return offset;
 }
 
-/* Mass Quote Response Message ask Fills Groups */
+/* Mass Quote Response Message Ask Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3656,14 +4179,14 @@ dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_groups(tvbuff_t 
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_groups, &item, "Mass Quote Response Message ask Fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_groups, &item, "Mass Quote Response Message Ask Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Response Message ask Fills Group: Num In Group entries */
+    /* Mass Quote Response Message Ask Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3675,7 +4198,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_groups(tvbuff_t 
     return offset;
 }
 
-/* Mass Quote Response Message ask Fills Group */
+/* Mass Quote Response Message Ask Fills Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3684,8 +4207,8 @@ dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_group(tvbuff_t *
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_group, &item, "Mass Quote Response Message ask Fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_group, &item, "Mass Quote Response Message ask Fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_group, &item, "Mass Quote Response Message Ask Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_ask_fills_group, &item, "Mass Quote Response Message Ask Fills Group");
     }
 
     unsigned start = offset;
@@ -3700,7 +4223,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_ask_fills_group(tvbuff_t *
     return offset;
 }
 
-/* Mass Quote Response Message legs Groups */
+/* Mass Quote Response Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3708,14 +4231,14 @@ dissect_deribit_ordersapi_mass_quote_response_message_legs_groups(tvbuff_t *tvb,
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_groups, &item, "Mass Quote Response Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_groups, &item, "Mass Quote Response Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Response Message legs Group: Num In Group entries */
+    /* Mass Quote Response Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3727,7 +4250,7 @@ dissect_deribit_ordersapi_mass_quote_response_message_legs_groups(tvbuff_t *tvb,
     return offset;
 }
 
-/* Mass Quote Response Message legs Group */
+/* Mass Quote Response Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_response_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3736,8 +4259,8 @@ dissect_deribit_ordersapi_mass_quote_response_message_legs_group(tvbuff_t *tvb, 
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_group, &item, "Mass Quote Response Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_group, &item, "Mass Quote Response Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_group, &item, "Mass Quote Response Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_response_message_legs_group, &item, "Mass Quote Response Message Legs Group");
     }
 
     unsigned start = offset;
@@ -3852,7 +4375,7 @@ dissect_deribit_ordersapi_order_filled(tvbuff_t *tvb, packet_info *pinfo, proto_
     return offset;
 }
 
-/* Order Filled Message fills Groups */
+/* Order Filled Message Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_order_filled_message_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3860,14 +4383,14 @@ dissect_deribit_ordersapi_order_filled_message_fills_groups(tvbuff_t *tvb, packe
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_groups, &item, "Order Filled Message fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_groups, &item, "Order Filled Message Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Order Filled Message fills Group: Num In Group entries */
+    /* Order Filled Message Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3879,7 +4402,7 @@ dissect_deribit_ordersapi_order_filled_message_fills_groups(tvbuff_t *tvb, packe
     return offset;
 }
 
-/* Order Filled Message fills Group */
+/* Order Filled Message Fills Group */
 static unsigned
 dissect_deribit_ordersapi_order_filled_message_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3888,8 +4411,8 @@ dissect_deribit_ordersapi_order_filled_message_fills_group(tvbuff_t *tvb, packet
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group, &item, "Order Filled Message fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group, &item, "Order Filled Message fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group, &item, "Order Filled Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group, &item, "Order Filled Message Fills Group");
     }
 
     unsigned start = offset;
@@ -3909,7 +4432,7 @@ dissect_deribit_ordersapi_order_filled_message_fills_group(tvbuff_t *tvb, packet
     return offset;
 }
 
-/* Order Filled Message legs Groups */
+/* Order Filled Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_order_filled_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3917,14 +4440,14 @@ dissect_deribit_ordersapi_order_filled_message_legs_groups(tvbuff_t *tvb, packet
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_groups, &item, "Order Filled Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_groups, &item, "Order Filled Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Order Filled Message legs Group: Num In Group entries */
+    /* Order Filled Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -3936,7 +4459,7 @@ dissect_deribit_ordersapi_order_filled_message_legs_groups(tvbuff_t *tvb, packet
     return offset;
 }
 
-/* Order Filled Message legs Group */
+/* Order Filled Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_order_filled_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -3945,8 +4468,8 @@ dissect_deribit_ordersapi_order_filled_message_legs_group(tvbuff_t *tvb, packet_
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_group, &item, "Order Filled Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_group, &item, "Order Filled Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_group, &item, "Order Filled Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_legs_group, &item, "Order Filled Message Legs Group");
     }
 
     unsigned start = offset;
@@ -3974,7 +4497,7 @@ dissect_deribit_ordersapi_orders_canceled(tvbuff_t *tvb, packet_info *pinfo, pro
     return offset;
 }
 
-/* Orders Canceled Message orders Groups */
+/* Orders Canceled Message Orders Groups */
 static unsigned
 dissect_deribit_ordersapi_orders_canceled_message_orders_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -3982,14 +4505,14 @@ dissect_deribit_ordersapi_orders_canceled_message_orders_groups(tvbuff_t *tvb, p
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_groups, &item, "Orders Canceled Message orders Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_groups, &item, "Orders Canceled Message Orders Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Orders Canceled Message orders Group: Num In Group entries */
+    /* Orders Canceled Message Orders Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4001,7 +4524,7 @@ dissect_deribit_ordersapi_orders_canceled_message_orders_groups(tvbuff_t *tvb, p
     return offset;
 }
 
-/* Orders Canceled Message orders Group */
+/* Orders Canceled Message Orders Group */
 static unsigned
 dissect_deribit_ordersapi_orders_canceled_message_orders_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4010,8 +4533,8 @@ dissect_deribit_ordersapi_orders_canceled_message_orders_group(tvbuff_t *tvb, pa
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_group, &item, "Orders Canceled Message orders Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_group, &item, "Orders Canceled Message orders Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_group, &item, "Orders Canceled Message Orders Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_orders_canceled_message_orders_group, &item, "Orders Canceled Message Orders Group");
     }
 
     unsigned start = offset;
@@ -4043,7 +4566,7 @@ dissect_deribit_ordersapi_order_placed(tvbuff_t *tvb, packet_info *pinfo, proto_
     offset = dissect_deribit_ordersapi_visible_qty(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_status(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_cancel_reason(tvb, pinfo, tree, offset);
-    offset += DERIBIT_ORDERSAPI_PADDING_3_SIZE;
+    if (deribit_ordersapi_show_padding) { proto_tree_add_item(tree, hf_deribit_ordersapi_padding_3, tvb, offset, DERIBIT_ORDERSAPI_PADDING_3_SIZE, DERIBIT_ORDERSAPI_PADDING_3_ENCODING); } offset += DERIBIT_ORDERSAPI_PADDING_3_SIZE;
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_order_placed_message_fills_groups(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_order_placed_message_legs_groups(tvb, pinfo, tree, offset);
@@ -4051,7 +4574,7 @@ dissect_deribit_ordersapi_order_placed(tvbuff_t *tvb, packet_info *pinfo, proto_
     return offset;
 }
 
-/* Order Placed Message fills Groups */
+/* Order Placed Message Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_order_placed_message_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4059,14 +4582,14 @@ dissect_deribit_ordersapi_order_placed_message_fills_groups(tvbuff_t *tvb, packe
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_groups, &item, "Order Placed Message fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_groups, &item, "Order Placed Message Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Order Placed Message fills Group: Num In Group entries */
+    /* Order Placed Message Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4078,7 +4601,7 @@ dissect_deribit_ordersapi_order_placed_message_fills_groups(tvbuff_t *tvb, packe
     return offset;
 }
 
-/* Order Placed Message fills Group */
+/* Order Placed Message Fills Group */
 static unsigned
 dissect_deribit_ordersapi_order_placed_message_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4087,8 +4610,8 @@ dissect_deribit_ordersapi_order_placed_message_fills_group(tvbuff_t *tvb, packet
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_group, &item, "Order Placed Message fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_group, &item, "Order Placed Message fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_group, &item, "Order Placed Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_fills_group, &item, "Order Placed Message Fills Group");
     }
 
     unsigned start = offset;
@@ -4102,7 +4625,7 @@ dissect_deribit_ordersapi_order_placed_message_fills_group(tvbuff_t *tvb, packet
     return offset;
 }
 
-/* Order Placed Message legs Groups */
+/* Order Placed Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_order_placed_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4110,14 +4633,14 @@ dissect_deribit_ordersapi_order_placed_message_legs_groups(tvbuff_t *tvb, packet
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_groups, &item, "Order Placed Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_groups, &item, "Order Placed Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Order Placed Message legs Group: Num In Group entries */
+    /* Order Placed Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4129,7 +4652,7 @@ dissect_deribit_ordersapi_order_placed_message_legs_groups(tvbuff_t *tvb, packet
     return offset;
 }
 
-/* Order Placed Message legs Group */
+/* Order Placed Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_order_placed_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4138,8 +4661,8 @@ dissect_deribit_ordersapi_order_placed_message_legs_group(tvbuff_t *tvb, packet_
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_group, &item, "Order Placed Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_group, &item, "Order Placed Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_group, &item, "Order Placed Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_placed_message_legs_group, &item, "Order Placed Message Legs Group");
     }
 
     unsigned start = offset;
@@ -4169,7 +4692,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed(tvbuff_t *tvb, packet_info *p
     return offset;
 }
 
-/* Mass Quote Orders Placed Message orders Groups */
+/* Mass Quote Orders Placed Message Orders Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4177,14 +4700,14 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_groups(tvbuff_
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_groups, &item, "Mass Quote Orders Placed Message orders Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_groups, &item, "Mass Quote Orders Placed Message Orders Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Orders Placed Message orders Group: Num In Group entries */
+    /* Mass Quote Orders Placed Message Orders Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4196,7 +4719,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_groups(tvbuff_
     return offset;
 }
 
-/* Mass Quote Orders Placed Message orders Group */
+/* Mass Quote Orders Placed Message Orders Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4205,8 +4728,8 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_group(tvbuff_t
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_group, &item, "Mass Quote Orders Placed Message orders Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_group, &item, "Mass Quote Orders Placed Message orders Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_group, &item, "Mass Quote Orders Placed Message Orders Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_orders_group, &item, "Mass Quote Orders Placed Message Orders Group");
     }
 
     unsigned start = offset;
@@ -4227,7 +4750,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_orders_group(tvbuff_t
     return offset;
 }
 
-/* Mass Quote Orders Placed Message fills Groups */
+/* Mass Quote Orders Placed Message Fills Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4235,14 +4758,14 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups(tvbuff_t
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups, &item, "Mass Quote Orders Placed Message fills Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups, &item, "Mass Quote Orders Placed Message Fills Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Orders Placed Message fills Group: Num In Group entries */
+    /* Mass Quote Orders Placed Message Fills Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4254,7 +4777,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_groups(tvbuff_t
     return offset;
 }
 
-/* Mass Quote Orders Placed Message fills Group */
+/* Mass Quote Orders Placed Message Fills Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4263,8 +4786,8 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_group(tvbuff_t 
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group, &item, "Mass Quote Orders Placed Message fills Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group, &item, "Mass Quote Orders Placed Message fills Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group, &item, "Mass Quote Orders Placed Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group, &item, "Mass Quote Orders Placed Message Fills Group");
     }
 
     unsigned start = offset;
@@ -4279,7 +4802,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_group(tvbuff_t 
     return offset;
 }
 
-/* Mass Quote Orders Placed Message legs Groups */
+/* Mass Quote Orders Placed Message Legs Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4287,14 +4810,14 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups(tvbuff_t 
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups, &item, "Mass Quote Orders Placed Message legs Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups, &item, "Mass Quote Orders Placed Message Legs Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Orders Placed Message legs Group: Num In Group entries */
+    /* Mass Quote Orders Placed Message Legs Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4306,7 +4829,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups(tvbuff_t 
     return offset;
 }
 
-/* Mass Quote Orders Placed Message legs Group */
+/* Mass Quote Orders Placed Message Legs Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_orders_placed_message_legs_group(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4315,8 +4838,8 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_legs_group(tvbuff_t *
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group, &item, "Mass Quote Orders Placed Message legs Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group, &item, "Mass Quote Orders Placed Message legs Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group, &item, "Mass Quote Orders Placed Message Legs Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group, &item, "Mass Quote Orders Placed Message Legs Group");
     }
 
     unsigned start = offset;
@@ -4388,6 +4911,23 @@ dissect_deribit_ordersapi_orders_mmp_unfrozen(tvbuff_t *tvb, packet_info *pinfo,
     return offset;
 }
 
+/* Position Moved Message */
+static unsigned
+dissect_deribit_ordersapi_position_moved(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_match_id(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_role(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_reason_position_move_reason(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Logon Message V14 */
 static unsigned
 dissect_deribit_ordersapi_logon_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -4435,6 +4975,75 @@ dissect_deribit_ordersapi_cancel_order_response_v14(tvbuff_t *tvb, packet_info *
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Order Filled Message V14 */
+static unsigned
+dissect_deribit_ordersapi_order_filled_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Order Filled Message Fills Groups */
+static unsigned
+dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (deribit_ordersapi_show_structs) {
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_groups_v14, &item, "Order Filled Message Fills Groups");
+    }
+
+    unsigned start = offset;
+
+    offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
+
+    /* Order Filled Message Fills Group: Num In Group entries */
+    uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
+
+    for (uint32_t index = 0; index < num_in_group; index++) {
+        offset = dissect_deribit_ordersapi_order_filled_message_fills_group_v14(tvb, pinfo, group, offset, index + 1);
+    }
+
+    proto_item_set_len(item, offset - start);
+
+    return offset;
+}
+
+/* Order Filled Message Fills Group */
+static unsigned
+dissect_deribit_ordersapi_order_filled_message_fills_group_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
+{
+    proto_item *item = NULL;
+    proto_tree *group = tree;
+
+    if (deribit_ordersapi_show_structs) {
+        group = deribit_ordersapi_pref_show_indexes
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group_v14, &item, "Order Filled Message Fills Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_order_filled_message_fills_group_v14, &item, "Order Filled Message Fills Group");
+    }
+
+    unsigned start = offset;
+
+    offset = parse_deribit_ordersapi_client_order_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_match_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_price(tvb, pinfo, group, offset);
+    offset = dissect_deribit_ordersapi_fill_qty(tvb, pinfo, group, offset);
+    offset = dissect_deribit_ordersapi_total_filled(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_side(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_flags_fill_flags_v14(tvb, pinfo, group, offset);
+
+    proto_item_set_len(item, offset - start);
 
     return offset;
 }
@@ -4498,6 +5107,18 @@ dissect_deribit_ordersapi_cancel_order_response_v13(tvbuff_t *tvb, packet_info *
     return offset;
 }
 
+/* Order Filled Message V13 */
+static unsigned
+dissect_deribit_ordersapi_order_filled_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Logon Message V10 */
 static unsigned
 dissect_deribit_ordersapi_logon_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -4551,7 +5172,7 @@ dissect_deribit_ordersapi_mass_quote_request_v10(tvbuff_t *tvb, packet_info *pin
     return offset;
 }
 
-/* Mass Quote Request Message quotes Groups */
+/* Mass Quote Request Message Quotes Groups */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
@@ -4559,14 +5180,14 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10(tvbuff_t 
     proto_tree *group = tree;
 
     if (deribit_ordersapi_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10, &item, "Mass Quote Request Message quotes Groups");
+        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10, &item, "Mass Quote Request Message Quotes Groups");
     }
 
     unsigned start = offset;
 
     offset = dissect_deribit_ordersapi_group_size_encoding(tvb, pinfo, group, offset);
 
-    /* Mass Quote Request Message quotes Group: Num In Group entries */
+    /* Mass Quote Request Message Quotes Group: Num In Group entries */
     uint32_t num_in_group = tvb_get_letohs(tvb, start + 2);
 
     for (uint32_t index = 0; index < num_in_group; index++) {
@@ -4578,7 +5199,7 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10(tvbuff_t 
     return offset;
 }
 
-/* Mass Quote Request Message quotes Group */
+/* Mass Quote Request Message Quotes Group */
 static unsigned
 dissect_deribit_ordersapi_mass_quote_request_message_quotes_group_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
 {
@@ -4587,8 +5208,8 @@ dissect_deribit_ordersapi_mass_quote_request_message_quotes_group_v10(tvbuff_t *
 
     if (deribit_ordersapi_show_structs) {
         group = deribit_ordersapi_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10, &item, "Mass Quote Request Message quotes Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10, &item, "Mass Quote Request Message quotes Group");
+            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10, &item, "Mass Quote Request Message Quotes Group %u", index)
+            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10, &item, "Mass Quote Request Message Quotes Group");
     }
 
     unsigned start = offset;
@@ -4641,6 +5262,18 @@ dissect_deribit_ordersapi_cancel_order_response_v10(tvbuff_t *tvb, packet_info *
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_receive_time(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
+/* Order Filled Message V10 */
+static unsigned
+dissect_deribit_ordersapi_order_filled_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4758,6 +5391,18 @@ dissect_deribit_ordersapi_cancel_order_response_v01(tvbuff_t *tvb, packet_info *
     return offset;
 }
 
+/* Order Filled Message V01 */
+static unsigned
+dissect_deribit_ordersapi_order_filled_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
+{
+    offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_fills_groups_v14(tvb, pinfo, tree, offset);
+    offset = dissect_deribit_ordersapi_order_filled_message_legs_groups(tvb, pinfo, tree, offset);
+
+    return offset;
+}
+
 /* Order Placed Message V01 */
 static unsigned
 dissect_deribit_ordersapi_order_placed_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -4824,6 +5469,7 @@ static const value_string deribit_ordersapi_messages[] = {
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_TRIGGERED, "Orders Mmp Triggered Message" },
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_QUOTE_MMP_UNFROZEN, "Mass Quote Mmp Unfrozen Message" },
     { DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN, "Orders Mmp Unfrozen Message" },
+    { DERIBIT_ORDERSAPI_TEMPLATE_ID_POSITION_MOVED, "Position Moved Message" },
     { 0, NULL }
 };
 
@@ -4831,8 +5477,6 @@ static const value_string deribit_ordersapi_messages[] = {
 static unsigned
 dissect_deribit_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages, "Unknown (%u)"));
-
     switch (template_id) {
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
         return dissect_deribit_ordersapi_logon(tvb, pinfo, tree, offset);
@@ -4914,6 +5558,8 @@ dissect_deribit_ordersapi_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
         return dissect_deribit_ordersapi_mass_quote_mmp_unfrozen(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN:
         return dissect_deribit_ordersapi_orders_mmp_unfrozen(tvb, pinfo, tree, offset);
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_POSITION_MOVED:
+        return dissect_deribit_ordersapi_position_moved(tvb, pinfo, tree, offset);
     }
 
     return offset;
@@ -4967,8 +5613,6 @@ static const value_string deribit_ordersapi_messages_v14[] = {
 static unsigned
 dissect_deribit_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages_v14, "Unknown (%u)"));
-
     switch (template_id) {
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
         return dissect_deribit_ordersapi_logon_v14(tvb, pinfo, tree, offset);
@@ -5035,7 +5679,7 @@ dissect_deribit_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REJECT:
         return dissect_deribit_ordersapi_get_orders_mmp_status_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
-        return dissect_deribit_ordersapi_order_filled(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_order_filled_v14(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED:
         return dissect_deribit_ordersapi_orders_canceled(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED:
@@ -5103,8 +5747,6 @@ static const value_string deribit_ordersapi_messages_v13[] = {
 static unsigned
 dissect_deribit_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages_v13, "Unknown (%u)"));
-
     switch (template_id) {
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
         return dissect_deribit_ordersapi_logon_v13(tvb, pinfo, tree, offset);
@@ -5171,7 +5813,7 @@ dissect_deribit_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_GET_ORDERS_MMP_STATUS_REJECT:
         return dissect_deribit_ordersapi_get_orders_mmp_status_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
-        return dissect_deribit_ordersapi_order_filled(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_order_filled_v13(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED:
         return dissect_deribit_ordersapi_orders_canceled(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED:
@@ -5232,8 +5874,6 @@ static const value_string deribit_ordersapi_messages_v10[] = {
 static unsigned
 dissect_deribit_ordersapi_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages_v10, "Unknown (%u)"));
-
     switch (template_id) {
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
         return dissect_deribit_ordersapi_logon_v10(tvb, pinfo, tree, offset);
@@ -5286,7 +5926,7 @@ dissect_deribit_ordersapi_payload_v10(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REJECT:
         return dissect_deribit_ordersapi_mass_cancel_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
-        return dissect_deribit_ordersapi_order_filled(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_order_filled_v10(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED:
         return dissect_deribit_ordersapi_orders_canceled(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED:
@@ -5347,8 +5987,6 @@ static const value_string deribit_ordersapi_messages_v01[] = {
 static unsigned
 dissect_deribit_ordersapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, deribit_ordersapi_messages_v01, "Unknown (%u)"));
-
     switch (template_id) {
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_LOGON:
         return dissect_deribit_ordersapi_logon_v01(tvb, pinfo, tree, offset);
@@ -5401,7 +6039,7 @@ dissect_deribit_ordersapi_payload_v01(tvbuff_t *tvb, packet_info *pinfo, proto_t
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_MASS_CANCEL_REJECT:
         return dissect_deribit_ordersapi_mass_cancel_reject(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_FILLED:
-        return dissect_deribit_ordersapi_order_filled(tvb, pinfo, tree, offset);
+        return dissect_deribit_ordersapi_order_filled_v01(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_CANCELED:
         return dissect_deribit_ordersapi_orders_canceled(tvb, pinfo, tree, offset);
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDER_PLACED:
@@ -5506,6 +6144,8 @@ deribit_ordersapi_show(uint32_t template_id)
         return deribit_ordersapi_show_application_messages;
     case DERIBIT_ORDERSAPI_TEMPLATE_ID_ORDERS_MMP_UNFROZEN:
         return deribit_ordersapi_show_application_messages;
+    case DERIBIT_ORDERSAPI_TEMPLATE_ID_POSITION_MOVED:
+        return deribit_ordersapi_show_application_messages;
     }
 
     return true;
@@ -5565,7 +6205,9 @@ dissect_deribit_ordersapi_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
     uint32_t padding = message_length - (uint32_t)(position - offset);
 
     if (padding > 0) {
-        proto_tree_add_item(message, hf_deribit_ordersapi_padding, tvb, position, padding, DERIBIT_ORDERSAPI_PADDING_ENCODING);
+        if (deribit_ordersapi_show_padding) {
+            proto_tree_add_item(message, hf_deribit_ordersapi_padding, tvb, position, padding, DERIBIT_ORDERSAPI_PADDING_ENCODING);
+        }
         position += padding;
     }
 
@@ -5582,12 +6224,15 @@ dissect_deribit_ordersapi_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree 
 static unsigned
 dissect_deribit_ordersapi_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const deribit_ordersapi_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 4) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -5596,11 +6241,15 @@ dissect_deribit_ordersapi_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_deribit_ordersapi_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -5640,6 +6289,13 @@ deribit_ordersapi_heur_port(packet_info *pinfo)
         || value_is_in_range(deribit_ordersapi_pref_ports, pinfo->srcport);
 }
 
+/* Protocol Id: Deribit Starbase */
+static bool
+deribit_ordersapi_heur_identifier(tvbuff_t *tvb)
+{
+    return tvb_get_uint8(tvb, 0) == 0xDB;
+}
+
 /* The first frame's declared length fits the stream */
 static bool
 deribit_ordersapi_heur_frame(tvbuff_t *tvb)
@@ -5654,6 +6310,10 @@ static bool
 deribit_ordersapi_heur_accepts(tvbuff_t *tvb, packet_info *pinfo)
 {
     if (!deribit_ordersapi_heur_port(pinfo)) {
+        return false;
+    }
+
+    if (!deribit_ordersapi_heur_identifier(tvb)) {
         return false;
     }
 
@@ -5795,7 +6455,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_CANCEL_REASON_FILTER,
               DERIBIT_ORDERSAPI_CANCEL_REASON_TYPE,
               DERIBIT_ORDERSAPI_CANCEL_REASON_DISPLAY,
-              VALS(deribit_ordersapi_cancel_reason_vals),
+              CF_FUNC(deribit_ordersapi_format_cancel_reason),
               DERIBIT_ORDERSAPI_CANCEL_REASON_MASK,
               DERIBIT_ORDERSAPI_CANCEL_REASON_DESCRIPTION,
               HFILL } },
@@ -5831,7 +6491,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_CORRELATION_ID_OPTIONAL_FILTER,
               DERIBIT_ORDERSAPI_CORRELATION_ID_OPTIONAL_TYPE,
               DERIBIT_ORDERSAPI_CORRELATION_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_CORRELATION_ID_OPTIONAL_MASK,
               DERIBIT_ORDERSAPI_CORRELATION_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -5876,7 +6536,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_EXEC_ID_FILTER,
               DERIBIT_ORDERSAPI_EXEC_ID_TYPE,
               DERIBIT_ORDERSAPI_EXEC_ID_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_EXEC_ID_MASK,
               DERIBIT_ORDERSAPI_EXEC_ID_DESCRIPTION,
               HFILL } },
@@ -5957,7 +6617,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_INSTRUMENT_ID_OPTIONAL_FILTER,
               DERIBIT_ORDERSAPI_INSTRUMENT_ID_OPTIONAL_TYPE,
               DERIBIT_ORDERSAPI_INSTRUMENT_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_INSTRUMENT_ID_OPTIONAL_MASK,
               DERIBIT_ORDERSAPI_INSTRUMENT_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -5979,6 +6639,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_LEG_SIDE_MASK,
               DERIBIT_ORDERSAPI_LEG_SIDE_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_liquidation_notifications,
+            { DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_NAME,
+              DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_FILTER,
+              DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_TYPE,
+              DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_DISPLAY,
+              VALS(deribit_ordersapi_liquidation_notifications_vals),
+              DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_MASK,
+              DERIBIT_ORDERSAPI_LIQUIDATION_NOTIFICATIONS_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_mantissa,
             { DERIBIT_ORDERSAPI_MANTISSA_NAME,
               DERIBIT_ORDERSAPI_MANTISSA_FILTER,
@@ -5987,6 +6656,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_MANTISSA_MASK,
               NULL,
+              HFILL } },
+        { &hf_deribit_ordersapi_mantissa_optional,
+            { DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_NAME,
+              DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_FILTER,
+              DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_TYPE,
+              DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_DISPLAY,
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
+              DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_MASK,
+              DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_match_id,
             { DERIBIT_ORDERSAPI_MATCH_ID_NAME,
@@ -6056,7 +6734,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_FILTER,
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_TYPE,
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_MASK,
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -6101,7 +6779,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_PROTOCOL_ID_FILTER,
               DERIBIT_ORDERSAPI_PROTOCOL_ID_TYPE,
               DERIBIT_ORDERSAPI_PROTOCOL_ID_DISPLAY,
-              NULL,
+              VALS(deribit_ordersapi_protocol_id_vals),
               DERIBIT_ORDERSAPI_PROTOCOL_ID_MASK,
               DERIBIT_ORDERSAPI_PROTOCOL_ID_DESCRIPTION,
               HFILL } },
@@ -6186,6 +6864,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_MASK,
               DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_reason_position_move_reason,
+            { DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_NAME,
+              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_FILTER,
+              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_TYPE,
+              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DISPLAY,
+              VALS(deribit_ordersapi_reason_position_move_reason_vals),
+              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_MASK,
+              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_reason_reject_reason,
             { DERIBIT_ORDERSAPI_REASON_REJECT_REASON_NAME,
               DERIBIT_ORDERSAPI_REASON_REJECT_REASON_FILTER,
@@ -6222,6 +6909,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_RESET_SEQ_NUM_MASK,
               DERIBIT_ORDERSAPI_RESET_SEQ_NUM_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_role,
+            { DERIBIT_ORDERSAPI_ROLE_NAME,
+              DERIBIT_ORDERSAPI_ROLE_FILTER,
+              DERIBIT_ORDERSAPI_ROLE_TYPE,
+              DERIBIT_ORDERSAPI_ROLE_DISPLAY,
+              VALS(deribit_ordersapi_role_vals),
+              DERIBIT_ORDERSAPI_ROLE_MASK,
+              NULL,
+              HFILL } },
         { &hf_deribit_ordersapi_schema_version,
             { DERIBIT_ORDERSAPI_SCHEMA_VERSION_NAME,
               DERIBIT_ORDERSAPI_SCHEMA_VERSION_FILTER,
@@ -6245,7 +6941,7 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_SELF_MATCH_PREVENTION_ID_FILTER,
               DERIBIT_ORDERSAPI_SELF_MATCH_PREVENTION_ID_TYPE,
               DERIBIT_ORDERSAPI_SELF_MATCH_PREVENTION_ID_DISPLAY,
-              CF_FUNC(deribit_ordersapi_format_nullable_64),
+              CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_SELF_MATCH_PREVENTION_ID_MASK,
               DERIBIT_ORDERSAPI_SELF_MATCH_PREVENTION_ID_DESCRIPTION,
               HFILL } },
@@ -6395,6 +7091,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_IS_LAST_MESSAGE_MASK,
               DERIBIT_ORDERSAPI_IS_LAST_MESSAGE_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_is_liquidation,
+            { DERIBIT_ORDERSAPI_IS_LIQUIDATION_NAME,
+              DERIBIT_ORDERSAPI_IS_LIQUIDATION_FILTER,
+              DERIBIT_ORDERSAPI_IS_LIQUIDATION_TYPE,
+              DERIBIT_ORDERSAPI_IS_LIQUIDATION_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_IS_LIQUIDATION_MASK,
+              DERIBIT_ORDERSAPI_IS_LIQUIDATION_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_is_quote,
             { DERIBIT_ORDERSAPI_IS_QUOTE_NAME,
               DERIBIT_ORDERSAPI_IS_QUOTE_FILTER,
@@ -6449,6 +7154,60 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_POST_ONLY_REJECT_MASK,
               DERIBIT_ORDERSAPI_POST_ONLY_REJECT_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_reserved_10,
+            { DERIBIT_ORDERSAPI_RESERVED_10_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_10_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_10_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_10_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_10_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_10_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reserved_13,
+            { DERIBIT_ORDERSAPI_RESERVED_13_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_13_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_13_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_13_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_13_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_13_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reserved_5,
+            { DERIBIT_ORDERSAPI_RESERVED_5_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_5_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_5_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_5_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_5_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_5_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reserved_6,
+            { DERIBIT_ORDERSAPI_RESERVED_6_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_6_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_6_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_6_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_6_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_6_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reserved_7,
+            { DERIBIT_ORDERSAPI_RESERVED_7_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_7_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_7_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_7_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_7_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_7_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reserved_bits,
+            { DERIBIT_ORDERSAPI_RESERVED_BITS_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_BITS_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_BITS_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_BITS_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_RESERVED_BITS_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_BITS_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_reset_mmp,
             { DERIBIT_ORDERSAPI_RESET_MMP_NAME,
               DERIBIT_ORDERSAPI_RESET_MMP_FILTER,
@@ -6457,6 +7216,24 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_RESET_MMP_MASK,
               DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_unused_order_flags_0,
+            { DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_NAME,
+              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_FILTER,
+              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_TYPE,
+              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_MASK,
+              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_unused_replace_order_flags_0,
+            { DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_NAME,
+              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_FILTER,
+              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_TYPE,
+              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_MASK,
+              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */
@@ -6514,6 +7291,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_ASK_FLAGS_MASK,
               DERIBIT_ORDERSAPI_ASK_FLAGS_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_flags_order_flags_v15,
+            { DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_NAME,
+              DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_FILTER,
+              DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_TYPE,
+              DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_MASK,
+              DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_flags_fill_flags,
             { DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_NAME,
               DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_FILTER,
@@ -6540,6 +7326,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_FLAGS_CANCEL_FLAGS_MASK,
               DERIBIT_ORDERSAPI_FLAGS_CANCEL_FLAGS_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_flags_fill_flags_v14,
+            { DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_NAME,
+              DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_FILTER,
+              DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_TYPE,
+              DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_DISPLAY,
+              NULL,
+              DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_MASK,
+              DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_flags_order_flags_v10,
             { DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V10_NAME,
@@ -6580,9 +7375,11 @@ proto_register_deribit_ordersapi(void)
         &ett_deribit_ordersapi_flags_mass_quote_flags,
         &ett_deribit_ordersapi_bid_flags,
         &ett_deribit_ordersapi_ask_flags,
+        &ett_deribit_ordersapi_flags_order_flags_v15,
         &ett_deribit_ordersapi_flags_fill_flags,
         &ett_deribit_ordersapi_flags_multi_part_event_flags,
         &ett_deribit_ordersapi_flags_cancel_flags,
+        &ett_deribit_ordersapi_flags_fill_flags_v14,
         &ett_deribit_ordersapi_flags_order_flags_v10,
         &ett_deribit_ordersapi_bid_flags_v10,
         &ett_deribit_ordersapi_ask_flags_v10,
@@ -6607,6 +7404,8 @@ proto_register_deribit_ordersapi(void)
         &ett_deribit_ordersapi_amend_order_response_message_fills_group,
         &ett_deribit_ordersapi_amend_order_response_message_legs_groups,
         &ett_deribit_ordersapi_amend_order_response_message_legs_group,
+        &ett_deribit_ordersapi_quantity_v15,
+        &ett_deribit_ordersapi_total_filled_v15,
         &ett_deribit_ordersapi_mass_quote_response_message_quotes_groups,
         &ett_deribit_ordersapi_mass_quote_response_message_quotes_group,
         &ett_deribit_ordersapi_bid_filled_qty,
@@ -6633,6 +7432,8 @@ proto_register_deribit_ordersapi(void)
         &ett_deribit_ordersapi_mass_quote_orders_placed_message_fills_group,
         &ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_groups,
         &ett_deribit_ordersapi_mass_quote_orders_placed_message_legs_group,
+        &ett_deribit_ordersapi_order_filled_message_fills_groups_v14,
+        &ett_deribit_ordersapi_order_filled_message_fills_group_v14,
         &ett_deribit_ordersapi_mass_quote_request_message_quotes_groups_v10,
         &ett_deribit_ordersapi_mass_quote_request_message_quotes_group_v10,
     };
@@ -6662,7 +7463,7 @@ proto_register_deribit_ordersapi(void)
         DERIBIT_ORDERSAPI_VERSION_PREFERENCE_TITLE,
         DERIBIT_ORDERSAPI_VERSION_PREFERENCE_DESCRIPTION,
         &deribit_ordersapi_pref_version,
-        deribit_ordersapi_version_vals,
+        deribit_ordersapi_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -6685,6 +7486,13 @@ proto_register_deribit_ordersapi(void)
         DERIBIT_ORDERSAPI_SHOW_STRUCTS_PREFERENCE_TITLE,
         DERIBIT_ORDERSAPI_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &deribit_ordersapi_show_structs);
+
+    prefs_register_bool_preference(
+        preferences,
+        DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_NAME,
+        DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_TITLE,
+        DERIBIT_ORDERSAPI_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &deribit_ordersapi_show_padding);
 
     prefs_register_uint_preference(
         preferences,

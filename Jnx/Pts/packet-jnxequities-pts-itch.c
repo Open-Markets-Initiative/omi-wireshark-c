@@ -182,7 +182,7 @@ static expert_field ei_jnxequities_pts_itch_length;
 #define JNXEQUITIES_PTS_ITCH_VERSION_AUTOMATIC 0
 #define JNXEQUITIES_PTS_ITCH_VERSION_1_7     1
 
-static const enum_val_t jnxequities_pts_itch_version_vals[] = {
+static const enum_val_t jnxequities_pts_itch_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", JNXEQUITIES_PTS_ITCH_VERSION_AUTOMATIC },
     { "v1.7", "1.7", JNXEQUITIES_PTS_ITCH_VERSION_1_7 },
     { NULL, NULL, 0 }
@@ -436,7 +436,7 @@ jnxequities_pts_itch_utc(packet_info *pinfo, uint64_t seconds, uint32_t nanoseco
     instant->nsecs = (int)nanoseconds;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 jnxequities_pts_itch_decimal_places(char *buf)
 {
@@ -452,12 +452,41 @@ jnxequities_pts_itch_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 1 decimal place value */
@@ -1794,8 +1823,6 @@ static const value_string jnxequities_pts_itch_client_packet_messages[] = {
 static unsigned
 dissect_jnxequities_pts_itch_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t client_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, client_packet_type, jnxequities_pts_itch_client_packet_messages, "Unknown (%u)"));
-
     switch (client_packet_type) {
     case JNXEQUITIES_PTS_ITCH_CLIENT_PACKET_TYPE_DEBUG_PACKET:
         return dissect_jnxequities_pts_itch_debug_packet(tvb, pinfo, tree, offset);
@@ -1826,8 +1853,6 @@ static const value_string jnxequities_pts_itch_server_packet_messages[] = {
 static unsigned
 dissect_jnxequities_pts_itch_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t server_packet_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, server_packet_type, jnxequities_pts_itch_server_packet_messages, "Unknown (%u)"));
-
     switch (server_packet_type) {
     case JNXEQUITIES_PTS_ITCH_SERVER_PACKET_TYPE_DEBUG_PACKET:
         return dissect_jnxequities_pts_itch_debug_packet(tvb, pinfo, tree, offset);
@@ -1865,8 +1890,6 @@ static const value_string jnxequities_pts_itch_sequenced_message_messages[] = {
 static unsigned
 dissect_jnxequities_pts_itch_sequenced_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t sequenced_message_type)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, sequenced_message_type, jnxequities_pts_itch_sequenced_message_messages, "Unknown (%u)"));
-
     switch (sequenced_message_type) {
     case JNXEQUITIES_PTS_ITCH_SEQUENCED_MESSAGE_TYPE_TIMESTAMP_SECONDS:
         return dissect_jnxequities_pts_itch_seconds(tvb, pinfo, tree, offset);
@@ -2148,12 +2171,15 @@ dissect_jnxequities_pts_itch_client_packet_message(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_jnxequities_pts_itch_client_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const jnxequities_pts_itch_client_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -2162,11 +2188,15 @@ dissect_jnxequities_pts_itch_client_packet_messages(tvbuff_t *tvb, packet_info *
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_jnxequities_pts_itch_client_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -2234,12 +2264,15 @@ dissect_jnxequities_pts_itch_server_packet_message(tvbuff_t *tvb, packet_info *p
 static unsigned
 dissect_jnxequities_pts_itch_server_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const jnxequities_pts_itch_server_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -2248,11 +2281,15 @@ dissect_jnxequities_pts_itch_server_packet_messages(tvbuff_t *tvb, packet_info *
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_jnxequities_pts_itch_server_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -2371,7 +2408,7 @@ dissect_jnxequities_pts_itch_packet(tvbuff_t *tvb, packet_info *pinfo, proto_tre
         return tvb_captured_length(tvb);
     }
 
-    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u %s", count, count == 1 ? "Message" : "Messages");
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u ITCH %s", count, count == 1 ? "Message" : "Messages");
 
     position = dissect_jnxequities_pts_itch_packet_messages(tvb, pinfo, packet, position, count, parse);
 
@@ -3098,7 +3135,7 @@ proto_register_jnxequities_pts_itch(void)
         JNXEQUITIES_PTS_ITCH_VERSION_PREFERENCE_TITLE,
         JNXEQUITIES_PTS_ITCH_VERSION_PREFERENCE_DESCRIPTION,
         &jnxequities_pts_itch_pref_version,
-        jnxequities_pts_itch_version_vals,
+        jnxequities_pts_itch_pref_version_vals,
         false);
 
     prefs_register_bool_preference(

@@ -478,7 +478,7 @@ static expert_field ei_globex_ilink3_length;
 #define GLOBEX_ILINK3_VERSION_8_3     7
 #define GLOBEX_ILINK3_VERSION_8_2     8
 
-static const enum_val_t globex_ilink3_version_vals[] = {
+static const enum_val_t globex_ilink3_pref_version_vals[] = {
     { "automatic", "Automatic (by send time)", GLOBEX_ILINK3_VERSION_AUTOMATIC },
     { "v8.9", "8.9", GLOBEX_ILINK3_VERSION_8_9 },
     { "v8.8", "8.8", GLOBEX_ILINK3_VERSION_8_8 },
@@ -544,6 +544,13 @@ static int globex_ilink3_pref_version = GLOBEX_ILINK3_VERSION_AUTOMATIC;
 static bool globex_ilink3_show_headers = true;
 static bool globex_ilink3_show_application_messages = true;
 static bool globex_ilink3_show_structs = true;
+
+/* Show padding preference */
+#define GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_NAME "show.padding"
+#define GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_TITLE "Show Padding"
+#define GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_DESCRIPTION "Show padding bytes in the protocol tree"
+
+static bool globex_ilink3_show_padding = false;
 
 /* Decimal places shown, the wire precision by default */
 #define GLOBEX_ILINK3_DECIMAL_PREFERENCE_NAME "decimal.places"
@@ -665,7 +672,7 @@ globex_ilink3_conversation_of(packet_info *pinfo)
     return state;
 }
 
-/* Cap the fraction at the preferred decimal places */
+/* Round the fraction to the preferred decimal places, half away from zero */
 static void
 globex_ilink3_decimal_places(char *buf)
 {
@@ -681,12 +688,41 @@ globex_ilink3_decimal_places(char *buf)
         return;
     }
 
+    /* The first digit dropped decides the rounding */
+    bool up = point[1 + places] >= '5';
+    char *end = point + 1 + places;
+
     if (places == 0) {
-        *point = '\0';
+        end = point;
+    }
+
+    *end = '\0';
+
+    if (!up) {
         return;
     }
 
-    point[1 + places] = '\0';
+    /* Carry from the last digit kept, over the point, the nines turning to zeros */
+    char *digit = end - 1;
+
+    while (digit >= buf && (*digit == '9' || *digit == '.')) {
+        if (*digit == '9') {
+            *digit = '0';
+        }
+
+        digit--;
+    }
+
+    if (digit >= buf && *digit >= '0' && *digit <= '8') {
+        (*digit)++;
+        return;
+    }
+
+    /* Every digit carried, so a one leads them, after the sign */
+    char *lead = digit + 1;
+
+    memmove(lead + 1, lead, strlen(lead) + 1);
+    *lead = '1';
 }
 
 /* Format an implied 9 decimal place value */
@@ -740,7 +776,77 @@ globex_ilink3_format_decimal_9_64_nullable(char *buf, uint64_t raw)
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-globex_ilink3_format_nullable_32(char *buf, uint32_t raw)
+globex_ilink3_format_nullable_int32_127(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == 127) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_int32_2147483647(char *buf, uint32_t raw)
+{
+    int64_t value = (int32_t)raw;
+
+    if (value == 2147483647) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_int64_9223372036854775807(char *buf, uint64_t raw)
+{
+    int64_t value = (int64_t)raw;
+
+    if (value == 9223372036854775807) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRId64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_uint32_0(char *buf, uint32_t raw)
+{
+    uint64_t value = (uint32_t)raw;
+
+    if (value == 0) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_uint32_255(char *buf, uint32_t raw)
+{
+    uint64_t value = (uint32_t)raw;
+
+    if (value == UINT8_MAX) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_uint32_4294967295(char *buf, uint32_t raw)
 {
     uint64_t value = (uint32_t)raw;
 
@@ -754,7 +860,21 @@ globex_ilink3_format_nullable_32(char *buf, uint32_t raw)
 
 /* Format a nullable integer, the label alone for the sentinel */
 static void
-globex_ilink3_format_nullable_64(char *buf, uint64_t raw)
+globex_ilink3_format_nullable_uint32_65535(char *buf, uint32_t raw)
+{
+    uint64_t value = (uint32_t)raw;
+
+    if (value == UINT16_MAX) {
+        snprintf(buf, ITEM_LABEL_LENGTH, "%s", "No Value");
+        return;
+    }
+
+    snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+}
+
+/* Format a nullable integer, the label alone for the sentinel */
+static void
+globex_ilink3_format_nullable_uint64_18446744073709551615(char *buf, uint64_t raw)
 {
     uint64_t value = (uint64_t)raw;
 
@@ -764,6 +884,53 @@ globex_ilink3_format_nullable_64(char *buf, uint64_t raw)
     }
 
     snprintf(buf, ITEM_LABEL_LENGTH, "%" PRIu64, value);
+}
+
+/* Format a mantissa scaled by a power of ten, written from its own digits */
+static void
+globex_ilink3_format_exponent(char *buf, int64_t mantissa, int exponent)
+{
+    char digits[24];
+    uint64_t magnitude = (uint64_t)mantissa;
+    const char *sign = "";
+
+    if (mantissa < 0) {
+        magnitude = (uint64_t)0 - magnitude;
+        sign = "-";
+    }
+
+    snprintf(digits, sizeof digits, "%" PRIu64, magnitude);
+
+    size_t length = strlen(digits);
+    int written = snprintf(buf, ITEM_LABEL_LENGTH, "%s", sign);
+
+    if (exponent >= 0) {
+        written += snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%s", digits);
+
+        for (int zero = 0; zero < exponent && written < ITEM_LABEL_LENGTH - 1; zero++) {
+            buf[written++] = '0';
+        }
+
+        buf[written] = '\0';
+        return;
+    }
+
+    size_t places = (size_t)(-exponent);
+
+    if (length > places) {
+        snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%.*s.%s", (int)(length - places), digits, digits + length - places);
+    }
+    else {
+        written += snprintf(buf + written, ITEM_LABEL_LENGTH - written, "0.");
+
+        for (size_t zero = length; zero < places && written < ITEM_LABEL_LENGTH - 1; zero++) {
+            buf[written++] = '0';
+        }
+
+        snprintf(buf + written, ITEM_LABEL_LENGTH - written, "%s", digits);
+    }
+
+    globex_ilink3_decimal_places(buf);
 }
 
 /*
@@ -1757,10 +1924,15 @@ parse_globex_ilink3_dk_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree 
 #define GLOBEX_ILINK3_ENCODING_TYPE_NAME     "Encoding Type"
 #define GLOBEX_ILINK3_ENCODING_TYPE_FILTER   "globex.ilink3.encodingtype"
 #define GLOBEX_ILINK3_ENCODING_TYPE_TYPE     FT_UINT16
-#define GLOBEX_ILINK3_ENCODING_TYPE_DISPLAY  BASE_HEX
+#define GLOBEX_ILINK3_ENCODING_TYPE_DISPLAY  BASE_DEC
 #define GLOBEX_ILINK3_ENCODING_TYPE_MASK     0x0
 #define GLOBEX_ILINK3_ENCODING_TYPE_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_ENCODING_TYPE_SIZE     2
+
+static const value_string globex_ilink3_encoding_type_vals[] = {
+    { 51966, "Cme Sbe Message" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_globex_ilink3_encoding_type(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -5363,10 +5535,15 @@ parse_globex_ilink3_rfq_side_v83(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define GLOBEX_ILINK3_SCHEMA_ID_NAME     "Schema Id"
 #define GLOBEX_ILINK3_SCHEMA_ID_FILTER   "globex.ilink3.schemaid"
 #define GLOBEX_ILINK3_SCHEMA_ID_TYPE     FT_UINT16
-#define GLOBEX_ILINK3_SCHEMA_ID_DISPLAY  BASE_HEX
+#define GLOBEX_ILINK3_SCHEMA_ID_DISPLAY  BASE_DEC
 #define GLOBEX_ILINK3_SCHEMA_ID_MASK     0x0
 #define GLOBEX_ILINK3_SCHEMA_ID_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_SCHEMA_ID_SIZE     2
+
+static const value_string globex_ilink3_schema_id_vals[] = {
+    { 8, "iLink3" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_globex_ilink3_schema_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -6707,7 +6884,7 @@ parse_globex_ilink3_uuid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
 #define GLOBEX_ILINK3_VERSION_NAME     "Version"
 #define GLOBEX_ILINK3_VERSION_FILTER   "globex.ilink3.version"
 #define GLOBEX_ILINK3_VERSION_TYPE     FT_UINT16
-#define GLOBEX_ILINK3_VERSION_DISPLAY  BASE_HEX
+#define GLOBEX_ILINK3_VERSION_DISPLAY  BASE_DEC
 #define GLOBEX_ILINK3_VERSION_MASK     0x0
 #define GLOBEX_ILINK3_VERSION_ENCODING ENC_LITTLE_ENDIAN
 #define GLOBEX_ILINK3_VERSION_SIZE     2
@@ -8153,6 +8330,20 @@ dissect_globex_ilink3_leg_option_delta(tvbuff_t *tvb, packet_info *pinfo, proto_
     offset = parse_globex_ilink3_mantissa_32(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letohl(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 4);
+
+        if (mantissa == 2147483647) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -8877,6 +9068,20 @@ dissect_globex_ilink3_calculated_ccy_last_qty(tvbuff_t *tvb, packet_info *pinfo,
     offset = parse_globex_ilink3_mantissa(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == 9223372036854775807) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -8897,6 +9102,20 @@ dissect_globex_ilink3_gross_trade_amt(tvbuff_t *tvb, packet_info *pinfo, proto_t
 
     offset = parse_globex_ilink3_mantissa(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == 9223372036854775807) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -9027,6 +9246,20 @@ dissect_globex_ilink3_contra_gross_trade_amt(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_globex_ilink3_mantissa(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == 9223372036854775807) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -9047,6 +9280,20 @@ dissect_globex_ilink3_contra_calculated_ccy_last_qty(tvbuff_t *tvb, packet_info 
 
     offset = parse_globex_ilink3_mantissa(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == 9223372036854775807) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -9266,6 +9513,20 @@ dissect_globex_ilink3_volatility(tvbuff_t *tvb, packet_info *pinfo, proto_tree *
     offset = parse_globex_ilink3_mantissa(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letoh64(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 8);
+
+        if (mantissa == 9223372036854775807) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -9286,6 +9547,20 @@ dissect_globex_ilink3_option_delta(tvbuff_t *tvb, packet_info *pinfo, proto_tree
 
     offset = parse_globex_ilink3_mantissa_32(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letohl(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 4);
+
+        if (mantissa == 2147483647) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -9308,6 +9583,20 @@ dissect_globex_ilink3_time_to_expiration(tvbuff_t *tvb, packet_info *pinfo, prot
     offset = parse_globex_ilink3_mantissa_32(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
 
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letohl(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 4);
+
+        if (mantissa == 2147483647) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
+
     proto_item_set_len(item, offset - start);
 
     return offset;
@@ -9328,6 +9617,20 @@ dissect_globex_ilink3_risk_free_rate(tvbuff_t *tvb, packet_info *pinfo, proto_tr
 
     offset = parse_globex_ilink3_mantissa_32(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_exponent(tvb, pinfo, group, offset);
+
+    if (item != NULL) {
+        char value[ITEM_LABEL_LENGTH];
+        int64_t mantissa = (int64_t)tvb_get_letohl(tvb, start);
+        int exponent = (int)(int8_t)tvb_get_uint8(tvb, start + 4);
+
+        if (mantissa == 2147483647) {
+            proto_item_append_text(item, ": %s", "No Value");
+        }
+        else {
+            globex_ilink3_format_exponent(value, mantissa, exponent);
+            proto_item_append_text(item, ": %s", value);
+        }
+    }
 
     proto_item_set_len(item, offset - start);
 
@@ -16203,7 +16506,7 @@ dissect_globex_ilink3_party_details_definition_request_v82(tvbuff_t *tvb, packet
     offset = parse_globex_ilink3_cust_order_handling_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_executor(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_idm_short_code(tvb, pinfo, tree, offset);
-    offset += GLOBEX_ILINK3_PADDING_272_SIZE;
+    if (globex_ilink3_show_padding) { proto_tree_add_item(tree, hf_globex_ilink3_padding_272, tvb, offset, GLOBEX_ILINK3_PADDING_272_SIZE, GLOBEX_ILINK3_PADDING_272_ENCODING); } offset += GLOBEX_ILINK3_PADDING_272_SIZE;
     offset = dissect_globex_ilink3_party_details_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_ilink3_trd_reg_publications_groups(tvb, pinfo, tree, offset);
 
@@ -17267,8 +17570,6 @@ static const value_string globex_ilink3_client_packet_messages[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17350,8 +17651,6 @@ static const value_string globex_ilink3_client_packet_messages_v88[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v88(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v88, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17423,8 +17722,6 @@ static const value_string globex_ilink3_client_packet_messages_v87[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v87, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17496,8 +17793,6 @@ static const value_string globex_ilink3_client_packet_messages_v86[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v86, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17569,8 +17864,6 @@ static const value_string globex_ilink3_client_packet_messages_v85[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v85(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v85, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17642,8 +17935,6 @@ static const value_string globex_ilink3_client_packet_messages_v84[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v84(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v84, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17715,8 +18006,6 @@ static const value_string globex_ilink3_client_packet_messages_v83[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v83(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v83, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17788,8 +18077,6 @@ static const value_string globex_ilink3_client_packet_messages_v82[] = {
 static unsigned
 dissect_globex_ilink3_client_packet_client_payload_v82(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_client_packet_messages_v82, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATE:
         return dissect_globex_ilink3_negotiate(tvb, pinfo, tree, offset);
@@ -17874,8 +18161,6 @@ static const value_string globex_ilink3_server_packet_messages[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response(tvb, pinfo, tree, offset);
@@ -17985,8 +18270,6 @@ static const value_string globex_ilink3_server_packet_messages_v88[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v88(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v88, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v88(tvb, pinfo, tree, offset);
@@ -18094,8 +18377,6 @@ static const value_string globex_ilink3_server_packet_messages_v87[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v87, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v87(tvb, pinfo, tree, offset);
@@ -18203,8 +18484,6 @@ static const value_string globex_ilink3_server_packet_messages_v86[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v86, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v86(tvb, pinfo, tree, offset);
@@ -18312,8 +18591,6 @@ static const value_string globex_ilink3_server_packet_messages_v85[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v85(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v85, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v85(tvb, pinfo, tree, offset);
@@ -18421,8 +18698,6 @@ static const value_string globex_ilink3_server_packet_messages_v84[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v84(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v84, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v84(tvb, pinfo, tree, offset);
@@ -18530,8 +18805,6 @@ static const value_string globex_ilink3_server_packet_messages_v83[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v83(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v83, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v83(tvb, pinfo, tree, offset);
@@ -18639,8 +18912,6 @@ static const value_string globex_ilink3_server_packet_messages_v82[] = {
 static unsigned
 dissect_globex_ilink3_server_packet_server_payload_v82(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
 {
-    col_append_sep_str(pinfo->cinfo, COL_INFO, ", ", val_to_str(pinfo->pool, template_id, globex_ilink3_server_packet_messages_v82, "Unknown (%u)"));
-
     switch (template_id) {
     case GLOBEX_ILINK3_TEMPLATE_ID_NEGOTIATION_RESPONSE:
         return dissect_globex_ilink3_negotiation_response_v82(tvb, pinfo, tree, offset);
@@ -19006,12 +19277,15 @@ dissect_globex_ilink3_client_packet_message(tvbuff_t *tvb, packet_info *pinfo, p
 static unsigned
 dissect_globex_ilink3_client_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const globex_ilink3_client_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -19020,11 +19294,15 @@ dissect_globex_ilink3_client_packet_messages(tvbuff_t *tvb, packet_info *pinfo, 
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_globex_ilink3_client_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -19091,12 +19369,15 @@ dissect_globex_ilink3_server_packet_message(tvbuff_t *tvb, packet_info *pinfo, p
 static unsigned
 dissect_globex_ilink3_server_packet_messages(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, const globex_ilink3_server_packet_parse *parse)
 {
+    uint32_t messages = 0;
+
     while (offset < tvb_reported_length(tvb)) {
         unsigned remaining = tvb_reported_length(tvb) - offset;
 
         if (remaining < 2) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = DESEGMENT_ONE_MORE_SEGMENT;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
@@ -19105,11 +19386,15 @@ dissect_globex_ilink3_server_packet_messages(tvbuff_t *tvb, packet_info *pinfo, 
         if (remaining < frame) {
             pinfo->desegment_offset = (int)offset;
             pinfo->desegment_len = frame - remaining;
+            if (messages > 0) { col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages"); }
             return offset;
         }
 
         offset += dissect_globex_ilink3_server_packet_message(tvb, pinfo, tree, offset, parse);
+        messages++;
     }
+
+    col_append_sep_fstr(pinfo->cinfo, COL_INFO, ", ", "%u SBE %s", messages, messages == 1 ? "Message" : "Messages");
 
     return offset;
 }
@@ -19455,7 +19740,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BID_SIZE_FILTER,
               GLOBEX_ILINK3_BID_SIZE_TYPE,
               GLOBEX_ILINK3_BID_SIZE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_BID_SIZE_MASK,
               GLOBEX_ILINK3_BID_SIZE_DESCRIPTION,
               HFILL } },
@@ -19482,7 +19767,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BROKEN_DATE_GUID_FILTER,
               GLOBEX_ILINK3_BROKEN_DATE_GUID_TYPE,
               GLOBEX_ILINK3_BROKEN_DATE_GUID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_BROKEN_DATE_GUID_MASK,
               GLOBEX_ILINK3_BROKEN_DATE_GUID_DESCRIPTION,
               HFILL } },
@@ -19491,7 +19776,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BROKEN_DATE_SECURITY_ID_FILTER,
               GLOBEX_ILINK3_BROKEN_DATE_SECURITY_ID_TYPE,
               GLOBEX_ILINK3_BROKEN_DATE_SECURITY_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_2147483647),
               GLOBEX_ILINK3_BROKEN_DATE_SECURITY_ID_MASK,
               GLOBEX_ILINK3_BROKEN_DATE_SECURITY_ID_DESCRIPTION,
               HFILL } },
@@ -19509,7 +19794,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BROKEN_DATE_TERM_TYPE_FILTER,
               GLOBEX_ILINK3_BROKEN_DATE_TERM_TYPE_TYPE,
               GLOBEX_ILINK3_BROKEN_DATE_TERM_TYPE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_BROKEN_DATE_TERM_TYPE_MASK,
               GLOBEX_ILINK3_BROKEN_DATE_TERM_TYPE_DESCRIPTION,
               HFILL } },
@@ -19527,7 +19812,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_BUSINESS_REJECT_REF_ID_FILTER,
               GLOBEX_ILINK3_BUSINESS_REJECT_REF_ID_TYPE,
               GLOBEX_ILINK3_BUSINESS_REJECT_REF_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_BUSINESS_REJECT_REF_ID_MASK,
               GLOBEX_ILINK3_BUSINESS_REJECT_REF_ID_DESCRIPTION,
               HFILL } },
@@ -19617,7 +19902,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_CROSS_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_CROSS_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_CROSS_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_CROSS_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_CROSS_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -19635,7 +19920,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_CROSS_TYPE_V88_FILTER,
               GLOBEX_ILINK3_CROSS_TYPE_V88_TYPE,
               GLOBEX_ILINK3_CROSS_TYPE_V88_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_CROSS_TYPE_V88_MASK,
               GLOBEX_ILINK3_CROSS_TYPE_V88_DESCRIPTION,
               HFILL } },
@@ -19644,7 +19929,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_CROSS_TYPE_OPTIONAL_FILTER,
               GLOBEX_ILINK3_CROSS_TYPE_OPTIONAL_TYPE,
               GLOBEX_ILINK3_CROSS_TYPE_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_CROSS_TYPE_OPTIONAL_MASK,
               GLOBEX_ILINK3_CROSS_TYPE_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -19716,7 +20001,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_DAY_FILTER,
               GLOBEX_ILINK3_DAY_TYPE,
               GLOBEX_ILINK3_DAY_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_DAY_MASK,
               GLOBEX_ILINK3_DAY_DESCRIPTION,
               HFILL } },
@@ -19725,7 +20010,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_DELAY_DURATION_FILTER,
               GLOBEX_ILINK3_DELAY_DURATION_TYPE,
               GLOBEX_ILINK3_DELAY_DURATION_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_DELAY_DURATION_MASK,
               GLOBEX_ILINK3_DELAY_DURATION_DESCRIPTION,
               HFILL } },
@@ -19734,7 +20019,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_DELAY_TO_TIME_FILTER,
               GLOBEX_ILINK3_DELAY_TO_TIME_TYPE,
               GLOBEX_ILINK3_DELAY_TO_TIME_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_DELAY_TO_TIME_MASK,
               GLOBEX_ILINK3_DELAY_TO_TIME_DESCRIPTION,
               HFILL } },
@@ -19761,7 +20046,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_DISPLAY_QTY_FILTER,
               GLOBEX_ILINK3_DISPLAY_QTY_TYPE,
               GLOBEX_ILINK3_DISPLAY_QTY_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_DISPLAY_QTY_MASK,
               GLOBEX_ILINK3_DISPLAY_QTY_DESCRIPTION,
               HFILL } },
@@ -19779,7 +20064,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ENCODING_TYPE_FILTER,
               GLOBEX_ILINK3_ENCODING_TYPE_TYPE,
               GLOBEX_ILINK3_ENCODING_TYPE_DISPLAY,
-              NULL,
+              VALS(globex_ilink3_encoding_type_vals),
               GLOBEX_ILINK3_ENCODING_TYPE_MASK,
               NULL,
               HFILL } },
@@ -19797,7 +20082,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ENVIRONMENT_INDICATOR_FILTER,
               GLOBEX_ILINK3_ENVIRONMENT_INDICATOR_TYPE,
               GLOBEX_ILINK3_ENVIRONMENT_INDICATOR_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_ENVIRONMENT_INDICATOR_MASK,
               GLOBEX_ILINK3_ENVIRONMENT_INDICATOR_DESCRIPTION,
               HFILL } },
@@ -19878,7 +20163,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_EXECUTOR_FILTER,
               GLOBEX_ILINK3_EXECUTOR_TYPE,
               GLOBEX_ILINK3_EXECUTOR_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_EXECUTOR_MASK,
               GLOBEX_ILINK3_EXECUTOR_DESCRIPTION,
               HFILL } },
@@ -19905,7 +20190,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_EXPONENT_FILTER,
               GLOBEX_ILINK3_EXPONENT_TYPE,
               GLOBEX_ILINK3_EXPONENT_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_127),
               GLOBEX_ILINK3_EXPONENT_MASK,
               NULL,
               HFILL } },
@@ -20004,7 +20289,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_HOST_CROSS_ID_FILTER,
               GLOBEX_ILINK3_HOST_CROSS_ID_TYPE,
               GLOBEX_ILINK3_HOST_CROSS_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_HOST_CROSS_ID_MASK,
               GLOBEX_ILINK3_HOST_CROSS_ID_DESCRIPTION,
               HFILL } },
@@ -20013,7 +20298,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_IDM_SHORT_CODE_FILTER,
               GLOBEX_ILINK3_IDM_SHORT_CODE_TYPE,
               GLOBEX_ILINK3_IDM_SHORT_CODE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_IDM_SHORT_CODE_MASK,
               GLOBEX_ILINK3_IDM_SHORT_CODE_DESCRIPTION,
               HFILL } },
@@ -20076,7 +20361,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_LAST_UUID_FILTER,
               GLOBEX_ILINK3_LAST_UUID_TYPE,
               GLOBEX_ILINK3_LAST_UUID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_LAST_UUID_MASK,
               GLOBEX_ILINK3_LAST_UUID_DESCRIPTION,
               HFILL } },
@@ -20112,7 +20397,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_LEG_EXEC_REF_ID_FILTER,
               GLOBEX_ILINK3_LEG_EXEC_REF_ID_TYPE,
               GLOBEX_ILINK3_LEG_EXEC_REF_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_LEG_EXEC_REF_ID_MASK,
               GLOBEX_ILINK3_LEG_EXEC_REF_ID_DESCRIPTION,
               HFILL } },
@@ -20148,7 +20433,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_LEG_RATIO_QTY_FILTER,
               GLOBEX_ILINK3_LEG_RATIO_QTY_TYPE,
               GLOBEX_ILINK3_LEG_RATIO_QTY_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_LEG_RATIO_QTY_MASK,
               GLOBEX_ILINK3_LEG_RATIO_QTY_DESCRIPTION,
               HFILL } },
@@ -20184,7 +20469,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_LEG_TRADE_REF_ID_FILTER,
               GLOBEX_ILINK3_LEG_TRADE_REF_ID_TYPE,
               GLOBEX_ILINK3_LEG_TRADE_REF_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_LEG_TRADE_REF_ID_MASK,
               GLOBEX_ILINK3_LEG_TRADE_REF_ID_DESCRIPTION,
               HFILL } },
@@ -20238,7 +20523,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MANTISSA_FILTER,
               GLOBEX_ILINK3_MANTISSA_TYPE,
               GLOBEX_ILINK3_MANTISSA_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_int64_9223372036854775807),
               GLOBEX_ILINK3_MANTISSA_MASK,
               NULL,
               HFILL } },
@@ -20247,7 +20532,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MANTISSA_32_FILTER,
               GLOBEX_ILINK3_MANTISSA_32_TYPE,
               GLOBEX_ILINK3_MANTISSA_32_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_2147483647),
               GLOBEX_ILINK3_MANTISSA_32_MASK,
               GLOBEX_ILINK3_MANTISSA_32_DESCRIPTION,
               HFILL } },
@@ -20274,7 +20559,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MARKET_SEGMENT_ID_FILTER,
               GLOBEX_ILINK3_MARKET_SEGMENT_ID_TYPE,
               GLOBEX_ILINK3_MARKET_SEGMENT_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_MARKET_SEGMENT_ID_MASK,
               GLOBEX_ILINK3_MARKET_SEGMENT_ID_DESCRIPTION,
               HFILL } },
@@ -20292,7 +20577,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MASS_ACTION_REJECT_REASON_FILTER,
               GLOBEX_ILINK3_MASS_ACTION_REJECT_REASON_TYPE,
               GLOBEX_ILINK3_MASS_ACTION_REJECT_REASON_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_MASS_ACTION_REJECT_REASON_MASK,
               GLOBEX_ILINK3_MASS_ACTION_REJECT_REASON_DESCRIPTION,
               HFILL } },
@@ -20355,7 +20640,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MASS_STATUS_REQ_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_MASS_STATUS_REQ_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_MASS_STATUS_REQ_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_MASS_STATUS_REQ_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_MASS_STATUS_REQ_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -20391,7 +20676,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MAX_NO_OF_SUBSTITUTIONS_FILTER,
               GLOBEX_ILINK3_MAX_NO_OF_SUBSTITUTIONS_TYPE,
               GLOBEX_ILINK3_MAX_NO_OF_SUBSTITUTIONS_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_MAX_NO_OF_SUBSTITUTIONS_MASK,
               GLOBEX_ILINK3_MAX_NO_OF_SUBSTITUTIONS_DESCRIPTION,
               HFILL } },
@@ -20427,7 +20712,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MIN_QTY_FILTER,
               GLOBEX_ILINK3_MIN_QTY_TYPE,
               GLOBEX_ILINK3_MIN_QTY_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_MIN_QTY_MASK,
               GLOBEX_ILINK3_MIN_QTY_DESCRIPTION,
               HFILL } },
@@ -20445,7 +20730,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_MONTH_FILTER,
               GLOBEX_ILINK3_MONTH_TYPE,
               GLOBEX_ILINK3_MONTH_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_MONTH_MASK,
               GLOBEX_ILINK3_MONTH_DESCRIPTION,
               HFILL } },
@@ -20535,7 +20820,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_OFFER_SIZE_FILTER,
               GLOBEX_ILINK3_OFFER_SIZE_TYPE,
               GLOBEX_ILINK3_OFFER_SIZE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_OFFER_SIZE_MASK,
               GLOBEX_ILINK3_OFFER_SIZE_DESCRIPTION,
               HFILL } },
@@ -20580,7 +20865,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORD_STATUS_REQ_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_ORD_STATUS_REQ_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_ORD_STATUS_REQ_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_ORD_STATUS_REQ_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_ORD_STATUS_REQ_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -20706,7 +20991,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORDER_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_ORDER_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_ORDER_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_ORDER_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_ORDER_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -20724,7 +21009,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORDER_QTY_OPTIONAL_FILTER,
               GLOBEX_ILINK3_ORDER_QTY_OPTIONAL_TYPE,
               GLOBEX_ILINK3_ORDER_QTY_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_ORDER_QTY_OPTIONAL_MASK,
               GLOBEX_ILINK3_ORDER_QTY_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -20751,7 +21036,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORIG_SECONDARY_EXECUTION_ID_FILTER,
               GLOBEX_ILINK3_ORIG_SECONDARY_EXECUTION_ID_TYPE,
               GLOBEX_ILINK3_ORIG_SECONDARY_EXECUTION_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_ORIG_SECONDARY_EXECUTION_ID_MASK,
               GLOBEX_ILINK3_ORIG_SECONDARY_EXECUTION_ID_DESCRIPTION,
               HFILL } },
@@ -20760,7 +21045,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORIG_SIDE_TRADE_ID_FILTER,
               GLOBEX_ILINK3_ORIG_SIDE_TRADE_ID_TYPE,
               GLOBEX_ILINK3_ORIG_SIDE_TRADE_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_ORIG_SIDE_TRADE_ID_MASK,
               GLOBEX_ILINK3_ORIG_SIDE_TRADE_ID_DESCRIPTION,
               HFILL } },
@@ -20778,7 +21063,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_ORIGINAL_ORDER_EVENT_EXEC_ID_FILTER,
               GLOBEX_ILINK3_ORIGINAL_ORDER_EVENT_EXEC_ID_TYPE,
               GLOBEX_ILINK3_ORIGINAL_ORDER_EVENT_EXEC_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_ORIGINAL_ORDER_EVENT_EXEC_ID_MASK,
               GLOBEX_ILINK3_ORIGINAL_ORDER_EVENT_EXEC_ID_DESCRIPTION,
               HFILL } },
@@ -20859,7 +21144,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_PARTY_DETAILS_LIST_REQ_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_PARTY_DETAILS_LIST_REQ_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_PARTY_DETAILS_LIST_REQ_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_PARTY_DETAILS_LIST_REQ_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_PARTY_DETAILS_LIST_REQ_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -20940,7 +21225,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_PRIORITY_INDICATOR_FILTER,
               GLOBEX_ILINK3_PRIORITY_INDICATOR_TYPE,
               GLOBEX_ILINK3_PRIORITY_INDICATOR_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_PRIORITY_INDICATOR_MASK,
               GLOBEX_ILINK3_PRIORITY_INDICATOR_DESCRIPTION,
               HFILL } },
@@ -21012,7 +21297,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_QUOTE_ENTRY_REJECT_REASON_OPTIONAL_FILTER,
               GLOBEX_ILINK3_QUOTE_ENTRY_REJECT_REASON_OPTIONAL_TYPE,
               GLOBEX_ILINK3_QUOTE_ENTRY_REJECT_REASON_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_QUOTE_ENTRY_REJECT_REASON_OPTIONAL_MASK,
               GLOBEX_ILINK3_QUOTE_ENTRY_REJECT_REASON_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -21039,7 +21324,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_QUOTE_REJECT_REASON_FILTER,
               GLOBEX_ILINK3_QUOTE_REJECT_REASON_TYPE,
               GLOBEX_ILINK3_QUOTE_REJECT_REASON_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_QUOTE_REJECT_REASON_MASK,
               GLOBEX_ILINK3_QUOTE_REJECT_REASON_DESCRIPTION,
               HFILL } },
@@ -21057,7 +21342,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_QUOTE_REQ_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_QUOTE_REQ_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_QUOTE_REQ_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_QUOTE_REQ_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_QUOTE_REQ_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -21102,7 +21387,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_REF_SEQ_NUM_FILTER,
               GLOBEX_ILINK3_REF_SEQ_NUM_TYPE,
               GLOBEX_ILINK3_REF_SEQ_NUM_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_REF_SEQ_NUM_MASK,
               GLOBEX_ILINK3_REF_SEQ_NUM_DESCRIPTION,
               HFILL } },
@@ -21111,7 +21396,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_REF_TAG_ID_FILTER,
               GLOBEX_ILINK3_REF_TAG_ID_TYPE,
               GLOBEX_ILINK3_REF_TAG_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_REF_TAG_ID_MASK,
               GLOBEX_ILINK3_REF_TAG_ID_DESCRIPTION,
               HFILL } },
@@ -21219,7 +21504,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SCHEMA_ID_FILTER,
               GLOBEX_ILINK3_SCHEMA_ID_TYPE,
               GLOBEX_ILINK3_SCHEMA_ID_DISPLAY,
-              NULL,
+              VALS(globex_ilink3_schema_id_vals),
               GLOBEX_ILINK3_SCHEMA_ID_MASK,
               NULL,
               HFILL } },
@@ -21237,7 +21522,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SECRET_KEY_SECURE_ID_EXPIRATION_FILTER,
               GLOBEX_ILINK3_SECRET_KEY_SECURE_ID_EXPIRATION_TYPE,
               GLOBEX_ILINK3_SECRET_KEY_SECURE_ID_EXPIRATION_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_SECRET_KEY_SECURE_ID_EXPIRATION_MASK,
               GLOBEX_ILINK3_SECRET_KEY_SECURE_ID_EXPIRATION_DESCRIPTION,
               HFILL } },
@@ -21264,7 +21549,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_FILTER,
               GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_TYPE,
               GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_2147483647),
               GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_MASK,
               GLOBEX_ILINK3_SECURITY_ID_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -21318,7 +21603,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SELF_MATCH_PREVENTION_ID_FILTER,
               GLOBEX_ILINK3_SELF_MATCH_PREVENTION_ID_TYPE,
               GLOBEX_ILINK3_SELF_MATCH_PREVENTION_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_64),
+              CF_FUNC(globex_ilink3_format_nullable_uint64_18446744073709551615),
               GLOBEX_ILINK3_SELF_MATCH_PREVENTION_ID_MASK,
               GLOBEX_ILINK3_SELF_MATCH_PREVENTION_ID_DESCRIPTION,
               HFILL } },
@@ -21444,7 +21729,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_SOURCE_REPO_ID_FILTER,
               GLOBEX_ILINK3_SOURCE_REPO_ID_TYPE,
               GLOBEX_ILINK3_SOURCE_REPO_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_2147483647),
               GLOBEX_ILINK3_SOURCE_REPO_ID_MASK,
               GLOBEX_ILINK3_SOURCE_REPO_ID_DESCRIPTION,
               HFILL } },
@@ -21543,7 +21828,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_OPTIONAL_FILTER,
               GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_OPTIONAL_TYPE,
               GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_OPTIONAL_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_OPTIONAL_MASK,
               GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_OPTIONAL_DESCRIPTION,
               HFILL } },
@@ -21606,7 +21891,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_TRADE_LINK_ID_FILTER,
               GLOBEX_ILINK3_TRADE_LINK_ID_TYPE,
               GLOBEX_ILINK3_TRADE_LINK_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_4294967295),
               GLOBEX_ILINK3_TRADE_LINK_ID_MASK,
               GLOBEX_ILINK3_TRADE_LINK_ID_DESCRIPTION,
               HFILL } },
@@ -21678,7 +21963,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_TRD_TYPE_FILTER,
               GLOBEX_ILINK3_TRD_TYPE_TYPE,
               GLOBEX_ILINK3_TRD_TYPE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_TRD_TYPE_MASK,
               GLOBEX_ILINK3_TRD_TYPE_DESCRIPTION,
               HFILL } },
@@ -21696,7 +21981,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_UNDERLYING_SECURITY_ID_FILTER,
               GLOBEX_ILINK3_UNDERLYING_SECURITY_ID_TYPE,
               GLOBEX_ILINK3_UNDERLYING_SECURITY_ID_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_int32_2147483647),
               GLOBEX_ILINK3_UNDERLYING_SECURITY_ID_MASK,
               GLOBEX_ILINK3_UNDERLYING_SECURITY_ID_DESCRIPTION,
               HFILL } },
@@ -21705,7 +21990,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_UNSOLICITED_CANCEL_TYPE_FILTER,
               GLOBEX_ILINK3_UNSOLICITED_CANCEL_TYPE_TYPE,
               GLOBEX_ILINK3_UNSOLICITED_CANCEL_TYPE_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_0),
               GLOBEX_ILINK3_UNSOLICITED_CANCEL_TYPE_MASK,
               GLOBEX_ILINK3_UNSOLICITED_CANCEL_TYPE_DESCRIPTION,
               HFILL } },
@@ -21741,7 +22026,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_WEEK_FILTER,
               GLOBEX_ILINK3_WEEK_TYPE,
               GLOBEX_ILINK3_WEEK_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_255),
               GLOBEX_ILINK3_WEEK_MASK,
               GLOBEX_ILINK3_WEEK_DESCRIPTION,
               HFILL } },
@@ -21750,7 +22035,7 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_YEAR_FILTER,
               GLOBEX_ILINK3_YEAR_TYPE,
               GLOBEX_ILINK3_YEAR_DISPLAY,
-              CF_FUNC(globex_ilink3_format_nullable_32),
+              CF_FUNC(globex_ilink3_format_nullable_uint32_65535),
               GLOBEX_ILINK3_YEAR_MASK,
               GLOBEX_ILINK3_YEAR_DESCRIPTION,
               HFILL } },
@@ -21965,7 +22250,7 @@ proto_register_globex_ilink3(void)
         GLOBEX_ILINK3_VERSION_PREFERENCE_TITLE,
         GLOBEX_ILINK3_VERSION_PREFERENCE_DESCRIPTION,
         &globex_ilink3_pref_version,
-        globex_ilink3_version_vals,
+        globex_ilink3_pref_version_vals,
         false);
 
     prefs_register_bool_preference(
@@ -21988,6 +22273,13 @@ proto_register_globex_ilink3(void)
         GLOBEX_ILINK3_SHOW_STRUCTS_PREFERENCE_TITLE,
         GLOBEX_ILINK3_SHOW_STRUCTS_PREFERENCE_DESCRIPTION,
         &globex_ilink3_show_structs);
+
+    prefs_register_bool_preference(
+        preferences,
+        GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_NAME,
+        GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_TITLE,
+        GLOBEX_ILINK3_SHOW_PADDING_PREFERENCE_DESCRIPTION,
+        &globex_ilink3_show_padding);
 
     prefs_register_uint_preference(
         preferences,
