@@ -133,6 +133,7 @@ static int hf_globex_mdp3_fix_rate_local_time_zone;
 static int hf_globex_mdp3_flow_schedule_type;
 static int hf_globex_mdp3_fx_benchmark_rate_fix;
 static int hf_globex_mdp3_fx_currency_symbol;
+static int hf_globex_mdp3_fx_min_lot_size;
 static int hf_globex_mdp3_gt_orders_eligibility;
 static int hf_globex_mdp3_halt_reason;
 static int hf_globex_mdp3_heart_bt_int;
@@ -229,8 +230,6 @@ static int hf_globex_mdp3_min_cab_price;
 static int hf_globex_mdp3_min_cab_price_v19;
 static int hf_globex_mdp3_min_cab_price_ex;
 static int hf_globex_mdp3_min_lot_size;
-static int hf_globex_mdp3_min_lot_size_decimal_qty;
-static int hf_globex_mdp3_min_lot_size_u_int_64;
 static int hf_globex_mdp3_min_price_increment;
 static int hf_globex_mdp3_min_price_increment_amount;
 static int hf_globex_mdp3_min_price_increment_amount_v19;
@@ -374,8 +373,7 @@ static int hf_globex_mdp3_unit_of_measure;
 static int hf_globex_mdp3_unit_of_measure_qty;
 static int hf_globex_mdp3_unit_of_measure_qty_v19;
 static int hf_globex_mdp3_unit_of_measure_qty_ex;
-static int hf_globex_mdp3_unused_settl_price_type_5;
-static int hf_globex_mdp3_unused_settl_price_type_6;
+static int hf_globex_mdp3_unused_2;
 static int hf_globex_mdp3_user_defined_instrument;
 static int hf_globex_mdp3_uuid;
 static int hf_globex_mdp3_variable_cab_eligible;
@@ -504,8 +502,6 @@ static int ett_globex_mdp3_incremental_refresh_trade_summary_groups_v111;
 static int ett_globex_mdp3_incremental_refresh_trade_summary_group_v111;
 static int ett_globex_mdp3_inst_attrib_groups_v111;
 static int ett_globex_mdp3_inst_attrib_group_v111;
-static int ett_globex_mdp3_lot_type_rules_groups_v111;
-static int ett_globex_mdp3_lot_type_rules_group_v111;
 static int ett_globex_mdp3_repo_underlyings_groups_v110;
 static int ett_globex_mdp3_repo_underlyings_group_v110;
 static int ett_globex_mdp3_inst_attrib_groups_v19;
@@ -1283,7 +1279,7 @@ parse_globex_mdp3_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 #define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_DESCRIPTION "BlockTradeEligible"
 #define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_FILTER      "globex.mdp3.blocktradeeligible"
 #define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_BLOCK_TRADE_ELIGIBLE_MASK        0x04
 
 /* Broken Date End */
@@ -1638,7 +1634,7 @@ parse_globex_mdp3_current_chunk(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_DESCRIPTION "DailyProductEligibility"
 #define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_FILTER      "globex.mdp3.dailyproducteligibility"
 #define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_DISPLAY     8
+#define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_DISPLAY     32
 #define GLOBEX_MDP3_DAILY_PRODUCT_ELIGIBILITY_MASK        0x20000
 
 /* Dated Date */
@@ -1744,7 +1740,7 @@ parse_globex_mdp3_decay_start_date(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_DESCRIPTION "DecayingProductEligibility"
 #define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_FILTER      "globex.mdp3.decayingproducteligibility"
 #define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_DISPLAY     8
+#define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_DISPLAY     32
 #define GLOBEX_MDP3_DECAYING_PRODUCT_ELIGIBILITY_MASK        0x8000
 
 /* Dirty Price */
@@ -1827,7 +1823,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_EBF_ELIGIBLE_DESCRIPTION "EBFEligible"
 #define GLOBEX_MDP3_EBF_ELIGIBLE_FILTER      "globex.mdp3.ebfeligible"
 #define GLOBEX_MDP3_EBF_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_EBF_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_EBF_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_EBF_ELIGIBLE_MASK        0x10
 
 /* Efix Instrument */
@@ -1835,7 +1831,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_EFIX_INSTRUMENT_DESCRIPTION "eFIXInstrument"
 #define GLOBEX_MDP3_EFIX_INSTRUMENT_FILTER      "globex.mdp3.efixinstrument"
 #define GLOBEX_MDP3_EFIX_INSTRUMENT_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_EFIX_INSTRUMENT_DISPLAY     8
+#define GLOBEX_MDP3_EFIX_INSTRUMENT_DISPLAY     32
 #define GLOBEX_MDP3_EFIX_INSTRUMENT_MASK        0x4000000
 
 /* Efp Eligible */
@@ -1843,7 +1839,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_EFP_ELIGIBLE_DESCRIPTION "EFPEligible"
 #define GLOBEX_MDP3_EFP_ELIGIBLE_FILTER      "globex.mdp3.efpeligible"
 #define GLOBEX_MDP3_EFP_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_EFP_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_EFP_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_EFP_ELIGIBLE_MASK        0x08
 
 /* Efr Eligible */
@@ -1851,7 +1847,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_EFR_ELIGIBLE_DESCRIPTION "EFREligible"
 #define GLOBEX_MDP3_EFR_ELIGIBLE_FILTER      "globex.mdp3.efreligible"
 #define GLOBEX_MDP3_EFR_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_EFR_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_EFR_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_EFR_ELIGIBLE_MASK        0x40
 
 /* Efs Eligible */
@@ -1859,7 +1855,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_EFS_ELIGIBLE_DESCRIPTION "EFSEligible"
 #define GLOBEX_MDP3_EFS_ELIGIBLE_FILTER      "globex.mdp3.efseligible"
 #define GLOBEX_MDP3_EFS_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_EFS_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_EFS_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_EFS_ELIGIBLE_MASK        0x20
 
 /* Electronic Match Eligible */
@@ -1867,7 +1863,7 @@ parse_globex_mdp3_display_factor_ex(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_DESCRIPTION "ElectronicMatchEligible"
 #define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_FILTER      "globex.mdp3.electronicmatcheligible"
 #define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_ELECTRONIC_MATCH_ELIGIBLE_MASK        0x01
 
 /* Encoding Type */
@@ -2150,12 +2146,31 @@ parse_globex_mdp3_fx_currency_symbol(tvbuff_t *tvb, packet_info *pinfo _U_, prot
     return offset + GLOBEX_MDP3_FX_CURRENCY_SYMBOL_SIZE;
 }
 
+/* Fx Min Lot Size */
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_NAME        "Fx Min Lot Size"
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_DESCRIPTION "For FX instruments in the repeating group with Tag 1093-LotType=2, Tag 1231-MinLotSize provides a Regular Amount - a default order size on the Workstation screen. With tag 1093-LotType= 5, Tag 1231-MinLotSize value represents standard min order qty increment. With tag 1093-LotType=6 tag 1231-MinLotSize contains SizePriorityQty for instruments trading with Match Algorithm = P (Size Priority)"
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_FIX         1231
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_FILTER      "globex.mdp3.fxminlotsize"
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_TYPE        FT_UINT64
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_DISPLAY     BASE_DEC
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_MASK        0x0
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_ENCODING    ENC_LITTLE_ENDIAN
+#define GLOBEX_MDP3_FX_MIN_LOT_SIZE_SIZE        8
+
+static unsigned
+parse_globex_mdp3_fx_min_lot_size(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_globex_mdp3_fx_min_lot_size, tvb, offset, GLOBEX_MDP3_FX_MIN_LOT_SIZE_SIZE, GLOBEX_MDP3_FX_MIN_LOT_SIZE_ENCODING);
+
+    return offset + GLOBEX_MDP3_FX_MIN_LOT_SIZE_SIZE;
+}
+
 /* Gt Orders Eligibility */
 #define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_NAME        "Gt Orders Eligibility"
 #define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_DESCRIPTION "GTOrdersEligibility"
 #define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_FILTER      "globex.mdp3.gtorderseligibility"
 #define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_DISPLAY     8
+#define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_DISPLAY     32
 #define GLOBEX_MDP3_GT_ORDERS_ELIGIBILITY_MASK        0x40000
 
 /* Halt Reason */
@@ -2213,7 +2228,7 @@ parse_globex_mdp3_heart_bt_int(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
 #define GLOBEX_MDP3_HEDGE_INSTRUMENT_DESCRIPTION "HedgeInstrument"
 #define GLOBEX_MDP3_HEDGE_INSTRUMENT_FILTER      "globex.mdp3.hedgeinstrument"
 #define GLOBEX_MDP3_HEDGE_INSTRUMENT_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_HEDGE_INSTRUMENT_DISPLAY     8
+#define GLOBEX_MDP3_HEDGE_INSTRUMENT_DISPLAY     32
 #define GLOBEX_MDP3_HEDGE_INSTRUMENT_MASK        0x8000000
 
 /* High Limit Price */
@@ -2297,7 +2312,7 @@ parse_globex_mdp3_hmac_signature(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_DESCRIPTION "iLinkIndicativeMassQuotingEligible"
 #define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_FILTER      "globex.mdp3.ilinkindicativemassquotingeligible"
 #define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_ILINK_INDICATIVE_MASS_QUOTING_ELIGIBLE_MASK        0x100
 
 /* Implied Matching Eligibility */
@@ -2305,7 +2320,7 @@ parse_globex_mdp3_hmac_signature(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
 #define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_DESCRIPTION "ImpliedMatchingEligibility"
 #define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_FILTER      "globex.mdp3.impliedmatchingeligibility"
 #define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_DISPLAY     8
+#define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_DISPLAY     32
 #define GLOBEX_MDP3_IMPLIED_MATCHING_ELIGIBILITY_MASK        0x80000
 
 /* Instrument Guid */
@@ -2358,7 +2373,7 @@ parse_globex_mdp3_intervening_days(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_MDP3_INVERTED_BOOK_DESCRIPTION "InvertedBook"
 #define GLOBEX_MDP3_INVERTED_BOOK_FILTER      "globex.mdp3.invertedbook"
 #define GLOBEX_MDP3_INVERTED_BOOK_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_INVERTED_BOOK_DISPLAY     8
+#define GLOBEX_MDP3_INVERTED_BOOK_DISPLAY     32
 #define GLOBEX_MDP3_INVERTED_BOOK_MASK        0x400000
 
 /* Is Aon Instrument */
@@ -2366,7 +2381,7 @@ parse_globex_mdp3_intervening_days(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_MDP3_IS_AON_INSTRUMENT_DESCRIPTION "IsAoNInstrument"
 #define GLOBEX_MDP3_IS_AON_INSTRUMENT_FILTER      "globex.mdp3.isaoninstrument"
 #define GLOBEX_MDP3_IS_AON_INSTRUMENT_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_IS_AON_INSTRUMENT_DISPLAY     8
+#define GLOBEX_MDP3_IS_AON_INSTRUMENT_DISPLAY     32
 #define GLOBEX_MDP3_IS_AON_INSTRUMENT_MASK        0x800000
 
 /* Is Fractional */
@@ -2374,7 +2389,7 @@ parse_globex_mdp3_intervening_days(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define GLOBEX_MDP3_IS_FRACTIONAL_DESCRIPTION "IsFractional"
 #define GLOBEX_MDP3_IS_FRACTIONAL_FILTER      "globex.mdp3.isfractional"
 #define GLOBEX_MDP3_IS_FRACTIONAL_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_IS_FRACTIONAL_DISPLAY     8
+#define GLOBEX_MDP3_IS_FRACTIONAL_DISPLAY     32
 #define GLOBEX_MDP3_IS_FRACTIONAL_MASK        0x800
 
 /* Issue Date */
@@ -3881,44 +3896,6 @@ parse_globex_mdp3_min_lot_size(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree
     return offset + GLOBEX_MDP3_MIN_LOT_SIZE_SIZE;
 }
 
-/* Min Lot Size Decimal Qty */
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_NAME        "Min Lot Size Decimal Qty"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_DESCRIPTION "Minimum quantity accepted for order entry. If tag 1093-LotType=4, this value is the minimum quantity for order entry expressed in the applicable units, specified in tag 996-UnitOfMeasure, e.g. megawatts"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_FIX         1231
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_FILTER      "globex.mdp3.minlotsizedecimalqty"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_TYPE        FT_INT32
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_DISPLAY     BASE_CUSTOM
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_MASK        0x0
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_SIZE        4
-
-static unsigned
-parse_globex_mdp3_min_lot_size_decimal_qty(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_min_lot_size_decimal_qty, tvb, offset, GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_SIZE, GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_ENCODING);
-
-    return offset + GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_SIZE;
-}
-
-/* Min Lot Size u Int 64 */
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_NAME        "Min Lot Size u Int 64"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_DESCRIPTION "For FX instruments in the repeating group with Tag 1093-LotType=2, Tag 1231-MinLotSize provides a Regular Amount - a default order size on the Workstation screen. With tag 1093-LotType= 5, Tag 1231-MinLotSize value represents standard min order qty increment. With tag 1093-LotType=6 tag 1231-MinLotSize contains SizePriorityQty for instruments trading with Match Algorithm = P (Size Priority)"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_FIX         1231
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_FILTER      "globex.mdp3.minlotsizeuint64"
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_TYPE        FT_UINT64
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_DISPLAY     BASE_DEC
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_MASK        0x0
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_SIZE        8
-
-static unsigned
-parse_globex_mdp3_min_lot_size_u_int_64(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_mdp3_min_lot_size_u_int_64, tvb, offset, GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_SIZE, GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_ENCODING);
-
-    return offset + GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_SIZE;
-}
-
 /* Min Price Increment */
 #define GLOBEX_MDP3_MIN_PRICE_INCREMENT_NAME        "Min Price Increment"
 #define GLOBEX_MDP3_MIN_PRICE_INCREMENT_DESCRIPTION "Minimum constant tick for the instrument, sent only if instrument is non-VTT (Variable Tick table) eligible"
@@ -4152,7 +4129,7 @@ parse_globex_mdp3_month(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
 #define GLOBEX_MDP3_MTF_REGULATED_DESCRIPTION "MTFRegulated"
 #define GLOBEX_MDP3_MTF_REGULATED_FILTER      "globex.mdp3.mtfregulated"
 #define GLOBEX_MDP3_MTF_REGULATED_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_MTF_REGULATED_DISPLAY     8
+#define GLOBEX_MDP3_MTF_REGULATED_DISPLAY     32
 #define GLOBEX_MDP3_MTF_REGULATED_MASK        0x2000000
 
 /* Negative Price Outright Eligible */
@@ -4160,7 +4137,7 @@ parse_globex_mdp3_month(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
 #define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_DESCRIPTION "NegativePriceOutrightEligible"
 #define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_FILTER      "globex.mdp3.negativepriceoutrighteligible"
 #define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_NEGATIVE_PRICE_OUTRIGHT_ELIGIBLE_MASK        0x400
 
 /* Negative Strike Eligible */
@@ -4168,7 +4145,7 @@ parse_globex_mdp3_month(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
 #define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_DESCRIPTION "NegativeStrikeEligible"
 #define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_FILTER      "globex.mdp3.negativestrikeeligible"
 #define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_NEGATIVE_STRIKE_ELIGIBLE_MASK        0x200
 
 /* No Chunks */
@@ -4339,7 +4316,7 @@ parse_globex_mdp3_open_interest_qty(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_DESCRIPTION "OrderCrossEligible"
 #define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_FILTER      "globex.mdp3.ordercrosseligible"
 #define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_ORDER_CROSS_ELIGIBLE_MASK        0x02
 
 /* Order Id */
@@ -4449,7 +4426,7 @@ parse_globex_mdp3_original_contract_size(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define GLOBEX_MDP3_OTC_ELIGIBLE_DESCRIPTION "OTCEligible"
 #define GLOBEX_MDP3_OTC_ELIGIBLE_FILTER      "globex.mdp3.otceligible"
 #define GLOBEX_MDP3_OTC_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_OTC_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_OTC_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_OTC_ELIGIBLE_MASK        0x80
 
 /* Packet Sequence Number */
@@ -5004,7 +4981,7 @@ parse_globex_mdp3_request_timestamp(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_DESCRIPTION "RFQCrossEligible"
 #define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_FILTER      "globex.mdp3.rfqcrosseligible"
 #define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_RFQ_CROSS_ELIGIBLE_MASK        0x2000
 
 /* Risk Set */
@@ -5377,7 +5354,7 @@ parse_globex_mdp3_security_update_action(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define GLOBEX_MDP3_SEF_REGULATED_DESCRIPTION "SEFRegulated"
 #define GLOBEX_MDP3_SEF_REGULATED_FILTER      "globex.mdp3.sefregulated"
 #define GLOBEX_MDP3_SEF_REGULATED_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_SEF_REGULATED_DISPLAY     8
+#define GLOBEX_MDP3_SEF_REGULATED_DISPLAY     32
 #define GLOBEX_MDP3_SEF_REGULATED_MASK        0x1000000
 
 /* Sending Time */
@@ -6219,7 +6196,7 @@ parse_globex_mdp3_transact_time(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
 #define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_DESCRIPTION "TriangulationEligible"
 #define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_FILTER      "globex.mdp3.triangulationeligible"
 #define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_MASK        0x100000
 
 /* Underlying Country Of Issue */
@@ -6633,21 +6610,13 @@ parse_globex_mdp3_unit_of_measure_qty_ex(tvbuff_t *tvb, packet_info *pinfo _U_, 
     return offset + GLOBEX_MDP3_UNIT_OF_MEASURE_QTY_EX_SIZE;
 }
 
-/* Unused Settl Price Type 5 */
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_NAME        "Unused Settl Price Type 5"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_DESCRIPTION "Unused SettlPriceType 5"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_FILTER      "globex.mdp3.unusedsettlpricetype5"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_DISPLAY     8
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_MASK        0x20
-
-/* Unused Settl Price Type 6 */
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_NAME        "Unused Settl Price Type 6"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_DESCRIPTION "Unused SettlPriceType 6"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_FILTER      "globex.mdp3.unusedsettlpricetype6"
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_DISPLAY     8
-#define GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_MASK        0x40
+/* Unused 2 */
+#define GLOBEX_MDP3_UNUSED_2_NAME        "Unused 2"
+#define GLOBEX_MDP3_UNUSED_2_DESCRIPTION "2 unused bits"
+#define GLOBEX_MDP3_UNUSED_2_FILTER      "globex.mdp3.unused2"
+#define GLOBEX_MDP3_UNUSED_2_TYPE        FT_UINT8
+#define GLOBEX_MDP3_UNUSED_2_DISPLAY     BASE_DEC
+#define GLOBEX_MDP3_UNUSED_2_MASK        0x60
 
 /* User Defined Instrument */
 #define GLOBEX_MDP3_USER_DEFINED_INSTRUMENT_NAME        "User Defined Instrument"
@@ -6692,7 +6661,7 @@ parse_globex_mdp3_uuid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
 #define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_DESCRIPTION "VariableCabEligible"
 #define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_FILTER      "globex.mdp3.variablecabeligible"
 #define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_MASK        0x200000
 
 /* Variable Product Eligibility */
@@ -6700,7 +6669,7 @@ parse_globex_mdp3_uuid(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
 #define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_DESCRIPTION "VariableProductEligibility"
 #define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_FILTER      "globex.mdp3.variableproducteligibility"
 #define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_DISPLAY     8
+#define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_DISPLAY     32
 #define GLOBEX_MDP3_VARIABLE_PRODUCT_ELIGIBILITY_MASK        0x10000
 
 /* Version */
@@ -6725,7 +6694,7 @@ parse_globex_mdp3_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 #define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_DESCRIPTION "VolatilityQuotedOption"
 #define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_FILTER      "globex.mdp3.volatilityquotedoption"
 #define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_DISPLAY     8
+#define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_DISPLAY     32
 #define GLOBEX_MDP3_VOLATILITY_QUOTED_OPTION_MASK        0x1000
 
 /* Week */
@@ -6796,7 +6765,7 @@ parse_globex_mdp3_year(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
 #define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_DESCRIPTION "ZeroPriceOutrightEligible"
 #define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_FILTER      "globex.mdp3.zeropriceoutrighteligible"
 #define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_TYPE        FT_BOOLEAN
-#define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_DISPLAY     8
+#define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_DISPLAY     32
 #define GLOBEX_MDP3_ZERO_PRICE_OUTRIGHT_ELIGIBLE_MASK        0x4000
 
 /*
@@ -6846,8 +6815,7 @@ parse_globex_mdp3_match_event_indicator(tvbuff_t *tvb, packet_info *pinfo _U_, p
 
 static int * const globex_mdp3_settl_price_type_fields[] = {
     &hf_globex_mdp3_null_value,
-    &hf_globex_mdp3_unused_settl_price_type_6,
-    &hf_globex_mdp3_unused_settl_price_type_5,
+    &hf_globex_mdp3_unused_2,
     &hf_globex_mdp3_reserved_bits,
     &hf_globex_mdp3_intraday,
     &hf_globex_mdp3_rounded,
@@ -7008,8 +6976,7 @@ parse_globex_mdp3_match_event_indicator_v19(tvbuff_t *tvb, packet_info *pinfo _U
 
 static int * const globex_mdp3_settl_price_type_v19_fields[] = {
     &hf_globex_mdp3_null_value,
-    &hf_globex_mdp3_unused_settl_price_type_6,
-    &hf_globex_mdp3_unused_settl_price_type_5,
+    &hf_globex_mdp3_unused_2,
     &hf_globex_mdp3_reserved_bits_v19,
     &hf_globex_mdp3_intraday,
     &hf_globex_mdp3_rounded,
@@ -7085,8 +7052,7 @@ parse_globex_mdp3_inst_attrib_value_v19(tvbuff_t *tvb, packet_info *pinfo _U_, p
 
 static int * const globex_mdp3_settl_price_type_v18_fields[] = {
     &hf_globex_mdp3_null_value,
-    &hf_globex_mdp3_unused_settl_price_type_6,
-    &hf_globex_mdp3_unused_settl_price_type_5,
+    &hf_globex_mdp3_unused_2,
     &hf_globex_mdp3_reserved_bits_v19,
     &hf_globex_mdp3_intraday,
     &hf_globex_mdp3_rounded,
@@ -7297,8 +7263,6 @@ static unsigned dissect_globex_mdp3_incremental_refresh_trade_summary_group_v111
 static unsigned dissect_globex_mdp3_md_instrument_definition_future_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_inst_attrib_groups_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_inst_attrib_group_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
-static unsigned dissect_globex_mdp3_lot_type_rules_groups_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_mdp3_lot_type_rules_group_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index);
 static unsigned dissect_globex_mdp3_md_instrument_definition_option_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_md_instrument_definition_spread_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_mdp3_md_instrument_definition_fixed_income_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -8729,7 +8693,7 @@ dissect_globex_mdp3_lot_type_rules_group(tvbuff_t *tvb, packet_info *pinfo, prot
     unsigned start = offset;
 
     offset = parse_globex_mdp3_lot_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_min_lot_size_decimal_qty(tvb, pinfo, group, offset);
+    offset = parse_globex_mdp3_min_lot_size(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
 
@@ -9664,7 +9628,7 @@ dissect_globex_mdp3_fx_lot_type_rules_group(tvbuff_t *tvb, packet_info *pinfo, p
     unsigned start = offset;
 
     offset = parse_globex_mdp3_lot_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_min_lot_size_u_int_64(tvb, pinfo, group, offset);
+    offset = parse_globex_mdp3_fx_min_lot_size(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
 
@@ -11055,7 +11019,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v111(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -11103,56 +11067,6 @@ dissect_globex_mdp3_inst_attrib_group_v111(tvbuff_t *tvb, packet_info *pinfo, pr
     unsigned start = offset;
 
     offset = parse_globex_mdp3_inst_attrib_value_v111(tvb, pinfo, group, offset);
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Lot Type Rules Groups */
-static unsigned
-dissect_globex_mdp3_lot_type_rules_groups_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_lot_type_rules_groups_v111, &item, "Lot Type Rules Groups");
-    }
-
-    unsigned start = offset;
-
-    offset = dissect_globex_mdp3_group_size(tvb, pinfo, group, offset);
-
-    /* Lot Type Rules Group: Num In Group entries */
-    uint32_t num_in_group = tvb_get_uint8(tvb, start + 2);
-
-    for (uint32_t index = 0; index < num_in_group; index++) {
-        offset = dissect_globex_mdp3_lot_type_rules_group_v111(tvb, pinfo, group, offset, index + 1);
-    }
-
-    proto_item_set_len(item, offset - start);
-
-    return offset;
-}
-
-/* Lot Type Rules Group */
-static unsigned
-dissect_globex_mdp3_lot_type_rules_group_v111(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t index)
-{
-    proto_item *item = NULL;
-    proto_tree *group = tree;
-
-    if (globex_mdp3_show_structs) {
-        group = globex_mdp3_pref_show_indexes
-            ? proto_tree_add_subtree_format(tree, tvb, offset, -1, ett_globex_mdp3_lot_type_rules_group_v111, &item, "Lot Type Rules Group %u", index)
-            : proto_tree_add_subtree(tree, tvb, offset, -1, ett_globex_mdp3_lot_type_rules_group_v111, &item, "Lot Type Rules Group");
-    }
-
-    unsigned start = offset;
-
-    offset = parse_globex_mdp3_lot_type(tvb, pinfo, group, offset);
-    offset = parse_globex_mdp3_min_lot_size(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
 
@@ -11209,7 +11123,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v111(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -11266,7 +11180,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v111(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -11331,7 +11245,7 @@ dissect_globex_mdp3_md_instrument_definition_fixed_income_v111(tvbuff_t *tvb, pa
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -11386,7 +11300,7 @@ dissect_globex_mdp3_md_instrument_definition_repo_v111(tvbuff_t *tvb, packet_inf
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -11472,7 +11386,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v110(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -11527,7 +11441,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v110(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -11584,7 +11498,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v110(tvbuff_t *tvb, packet_i
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -11649,7 +11563,7 @@ dissect_globex_mdp3_md_instrument_definition_fixed_income_v110(tvbuff_t *tvb, pa
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -11703,7 +11617,7 @@ dissect_globex_mdp3_md_instrument_definition_repo_v110(tvbuff_t *tvb, packet_inf
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v111(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_underlyings_groups_v110(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_repo_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -11853,7 +11767,7 @@ dissect_globex_mdp3_md_instrument_definition_future_legacy(tvbuff_t *tvb, packet
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -11952,7 +11866,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_legacy(tvbuff_t *tvb, packet
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legacy_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -12502,7 +12416,7 @@ dissect_globex_mdp3_md_instrument_definition_option_legacy(tvbuff_t *tvb, packet
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -12818,7 +12732,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v19(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -12872,7 +12786,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v19(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -12924,7 +12838,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v19(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v19(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legs_groups_v19(tvb, pinfo, tree, offset);
 
     return offset;
@@ -13057,7 +12971,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v18(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -13156,7 +13070,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v18(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legacy_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -13706,7 +13620,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v18(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_related_instruments_groups(tvb, pinfo, tree, offset);
 
@@ -13993,7 +13907,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v16(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -14043,7 +13957,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v16(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legacy_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -14234,7 +14148,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v16(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -14382,7 +14296,7 @@ dissect_globex_mdp3_md_instrument_definition_future_v15(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -14431,7 +14345,7 @@ dissect_globex_mdp3_md_instrument_definition_spread_v15(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_legacy_legs_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -14566,7 +14480,7 @@ dissect_globex_mdp3_md_instrument_definition_option_v15(tvbuff_t *tvb, packet_in
     offset = dissect_globex_mdp3_events_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_feed_types_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_inst_attrib_groups_v18(tvb, pinfo, tree, offset);
-    offset = dissect_globex_mdp3_lot_type_rules_groups_v111(tvb, pinfo, tree, offset);
+    offset = dissect_globex_mdp3_lot_type_rules_groups(tvb, pinfo, tree, offset);
     offset = dissect_globex_mdp3_option_underlyings_groups(tvb, pinfo, tree, offset);
 
     return offset;
@@ -17627,6 +17541,15 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_FX_CURRENCY_SYMBOL_MASK,
               GLOBEX_MDP3_FX_CURRENCY_SYMBOL_DESCRIPTION,
               HFILL } },
+        { &hf_globex_mdp3_fx_min_lot_size,
+            { GLOBEX_MDP3_FX_MIN_LOT_SIZE_NAME,
+              GLOBEX_MDP3_FX_MIN_LOT_SIZE_FILTER,
+              GLOBEX_MDP3_FX_MIN_LOT_SIZE_TYPE,
+              GLOBEX_MDP3_FX_MIN_LOT_SIZE_DISPLAY,
+              NULL,
+              GLOBEX_MDP3_FX_MIN_LOT_SIZE_MASK,
+              GLOBEX_MDP3_FX_MIN_LOT_SIZE_DESCRIPTION,
+              HFILL } },
         { &hf_globex_mdp3_halt_reason,
             { GLOBEX_MDP3_HALT_REASON_NAME,
               GLOBEX_MDP3_HALT_REASON_FILTER,
@@ -18319,24 +18242,6 @@ proto_register_globex_mdp3(void)
               CF_FUNC(globex_mdp3_format_decimal_4_32_nullable),
               GLOBEX_MDP3_MIN_LOT_SIZE_MASK,
               GLOBEX_MDP3_MIN_LOT_SIZE_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_min_lot_size_decimal_qty,
-            { GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_NAME,
-              GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_FILTER,
-              GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_TYPE,
-              GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_DISPLAY,
-              CF_FUNC(globex_mdp3_format_decimal_4_32_nullable),
-              GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_MASK,
-              GLOBEX_MDP3_MIN_LOT_SIZE_DECIMAL_QTY_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_min_lot_size_u_int_64,
-            { GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_NAME,
-              GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_FILTER,
-              GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_TYPE,
-              GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_DISPLAY,
-              NULL,
-              GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_MASK,
-              GLOBEX_MDP3_MIN_LOT_SIZE_U_INT_64_DESCRIPTION,
               HFILL } },
         { &hf_globex_mdp3_min_price_increment,
             { GLOBEX_MDP3_MIN_PRICE_INCREMENT_NAME,
@@ -19888,23 +19793,14 @@ proto_register_globex_mdp3(void)
               GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_MASK,
               GLOBEX_MDP3_TRIANGULATION_ELIGIBLE_DESCRIPTION,
               HFILL } },
-        { &hf_globex_mdp3_unused_settl_price_type_5,
-            { GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_NAME,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_FILTER,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_TYPE,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_DISPLAY,
+        { &hf_globex_mdp3_unused_2,
+            { GLOBEX_MDP3_UNUSED_2_NAME,
+              GLOBEX_MDP3_UNUSED_2_FILTER,
+              GLOBEX_MDP3_UNUSED_2_TYPE,
+              GLOBEX_MDP3_UNUSED_2_DISPLAY,
               NULL,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_MASK,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_5_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_mdp3_unused_settl_price_type_6,
-            { GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_NAME,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_FILTER,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_TYPE,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_DISPLAY,
-              NULL,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_MASK,
-              GLOBEX_MDP3_UNUSED_SETTL_PRICE_TYPE_6_DESCRIPTION,
+              GLOBEX_MDP3_UNUSED_2_MASK,
+              GLOBEX_MDP3_UNUSED_2_DESCRIPTION,
               HFILL } },
         { &hf_globex_mdp3_variable_cab_eligible,
             { GLOBEX_MDP3_VARIABLE_CAB_ELIGIBLE_NAME,
@@ -20141,8 +20037,6 @@ proto_register_globex_mdp3(void)
         &ett_globex_mdp3_incremental_refresh_trade_summary_group_v111,
         &ett_globex_mdp3_inst_attrib_groups_v111,
         &ett_globex_mdp3_inst_attrib_group_v111,
-        &ett_globex_mdp3_lot_type_rules_groups_v111,
-        &ett_globex_mdp3_lot_type_rules_group_v111,
         &ett_globex_mdp3_repo_underlyings_groups_v110,
         &ett_globex_mdp3_repo_underlyings_group_v110,
         &ett_globex_mdp3_inst_attrib_groups_v19,

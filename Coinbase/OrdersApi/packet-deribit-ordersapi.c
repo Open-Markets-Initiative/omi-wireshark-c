@@ -84,6 +84,7 @@ static int hf_deribit_ordersapi_bid_reject_reason;
 static int hf_deribit_ordersapi_bid_status;
 static int hf_deribit_ordersapi_block_length;
 static int hf_deribit_ordersapi_cancel_on_disconnect;
+static int hf_deribit_ordersapi_cancel_order_reject_reason;
 static int hf_deribit_ordersapi_cancel_reason;
 static int hf_deribit_ordersapi_client_id;
 static int hf_deribit_ordersapi_client_order_id;
@@ -123,17 +124,21 @@ static int hf_deribit_ordersapi_liquidation_notifications;
 static int hf_deribit_ordersapi_mantissa;
 static int hf_deribit_ordersapi_mantissa_optional;
 static int hf_deribit_ordersapi_market_limit;
+static int hf_deribit_ordersapi_mass_cancel_reject_reason;
+static int hf_deribit_ordersapi_mass_quote_reject_reason;
 static int hf_deribit_ordersapi_match_id;
 static int hf_deribit_ordersapi_message_length;
 static int hf_deribit_ordersapi_mmp;
 static int hf_deribit_ordersapi_mmp_group_id;
+static int hf_deribit_ordersapi_mmp_status_reject_reason;
 static int hf_deribit_ordersapi_new_sequence_number;
 static int hf_deribit_ordersapi_num_in_group;
 static int hf_deribit_ordersapi_order_id;
-static int hf_deribit_ordersapi_order_id_fill_id;
 static int hf_deribit_ordersapi_order_id_optional;
+static int hf_deribit_ordersapi_order_reject_reason;
 static int hf_deribit_ordersapi_padding;
 static int hf_deribit_ordersapi_padding_3;
+static int hf_deribit_ordersapi_position_move_reason;
 static int hf_deribit_ordersapi_post_only;
 static int hf_deribit_ordersapi_post_only_reject;
 static int hf_deribit_ordersapi_price;
@@ -141,17 +146,11 @@ static int hf_deribit_ordersapi_product_type;
 static int hf_deribit_ordersapi_protocol_id;
 static int hf_deribit_ordersapi_quantity_level;
 static int hf_deribit_ordersapi_quote_id;
-static int hf_deribit_ordersapi_reason_cancel_order_reject_reason;
 static int hf_deribit_ordersapi_reason_data;
 static int hf_deribit_ordersapi_reason_length;
-static int hf_deribit_ordersapi_reason_mass_cancel_reject_reason;
-static int hf_deribit_ordersapi_reason_mass_quote_reject_reason;
-static int hf_deribit_ordersapi_reason_mmp_status_reject_reason;
-static int hf_deribit_ordersapi_reason_order_reject_reason;
-static int hf_deribit_ordersapi_reason_position_move_reason;
-static int hf_deribit_ordersapi_reason_reject_reason;
 static int hf_deribit_ordersapi_receive_time;
 static int hf_deribit_ordersapi_ref_sequence_number;
+static int hf_deribit_ordersapi_reject_reason;
 static int hf_deribit_ordersapi_reserved_10;
 static int hf_deribit_ordersapi_reserved_13;
 static int hf_deribit_ordersapi_reserved_5;
@@ -177,8 +176,7 @@ static int hf_deribit_ordersapi_timestamp;
 static int hf_deribit_ordersapi_to_sequence_number;
 static int hf_deribit_ordersapi_total_order_count;
 static int hf_deribit_ordersapi_trigger;
-static int hf_deribit_ordersapi_unused_order_flags_0;
-static int hf_deribit_ordersapi_unused_replace_order_flags_0;
+static int hf_deribit_ordersapi_unused_1;
 static int hf_deribit_ordersapi_vega_level;
 
 /*
@@ -873,8 +871,39 @@ parse_deribit_ordersapi_block_length(tvbuff_t *tvb, packet_info *pinfo _U_, prot
 #define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_DESCRIPTION "cancelOnDisconnect"
 #define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_FILTER      "deribit.ordersapi.cancelondisconnect"
 #define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_DISPLAY     8
+#define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_DISPLAY     16
 #define DERIBIT_ORDERSAPI_CANCEL_ON_DISCONNECT_MASK        0x01
+
+/* Cancel Order Reject Reason */
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_NAME        "Cancel Order Reject Reason"
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_FILTER      "deribit.ordersapi.cancelorderrejectreason"
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_cancel_order_reject_reason_vals[] = {
+    { 0, "Error" },
+    { 1, "Unknown Order" },
+    { 2, "Client Permission Error" },
+    { 3, "Not Allowed By Market State" },
+    { 4, "Cancel Pending" },
+    { 5, "In Liquidation" },
+    { 6, "Invalid Instrument" },
+    { 7, "Time In Force" },
+    { 8, "Speed Bump Converted To Ioc" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_cancel_order_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_cancel_order_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_SIZE;
+}
 
 /* Cancel Reason */
 #define DERIBIT_ORDERSAPI_CANCEL_REASON_NAME        "Cancel Reason"
@@ -1405,8 +1434,67 @@ parse_deribit_ordersapi_mantissa_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_MARKET_LIMIT_DESCRIPTION "marketLimit"
 #define DERIBIT_ORDERSAPI_MARKET_LIMIT_FILTER      "deribit.ordersapi.marketlimit"
 #define DERIBIT_ORDERSAPI_MARKET_LIMIT_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_MARKET_LIMIT_DISPLAY     8
+#define DERIBIT_ORDERSAPI_MARKET_LIMIT_DISPLAY     16
 #define DERIBIT_ORDERSAPI_MARKET_LIMIT_MASK        0x08
+
+/* Mass Cancel Reject Reason */
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_NAME        "Mass Cancel Reject Reason"
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_FILTER      "deribit.ordersapi.masscancelrejectreason"
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_mass_cancel_reject_reason_vals[] = {
+    { 0, "Error" },
+    { 1, "Invalid Mmp Group" },
+    { 2, "Client Permission Error" },
+    { 3, "Not Allowed By Market State" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_mass_cancel_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_mass_cancel_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_SIZE;
+}
+
+/* Mass Quote Reject Reason */
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_NAME        "Mass Quote Reject Reason"
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_FILTER      "deribit.ordersapi.massquoterejectreason"
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_mass_quote_reject_reason_vals[] = {
+    { 0, "System Error" },
+    { 1, "Invalid Mmp Group" },
+    { 2, "Mmp Group Disabled" },
+    { 3, "Mmp Group Frozen" },
+    { 4, "Too Many Quotes" },
+    { 5, "Invalid Instrument" },
+    { 6, "Rate Limit" },
+    { 7, "Portfolio Locked" },
+    { 8, "Duplicate Instrument" },
+    { 9, "Mmp Min Freeze Time Not Elapsed" },
+    { 10, "Portfolio Instrument Not Allowed" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_mass_quote_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_mass_quote_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_SIZE;
+}
 
 /* Match Id */
 #define DERIBIT_ORDERSAPI_MATCH_ID_NAME        "Match Id"
@@ -1448,7 +1536,7 @@ parse_deribit_ordersapi_message_length(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define DERIBIT_ORDERSAPI_MMP_NAME    "Mmp"
 #define DERIBIT_ORDERSAPI_MMP_FILTER  "deribit.ordersapi.mmp"
 #define DERIBIT_ORDERSAPI_MMP_TYPE    FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_MMP_DISPLAY 8
+#define DERIBIT_ORDERSAPI_MMP_DISPLAY 16
 #define DERIBIT_ORDERSAPI_MMP_MASK    0x10
 
 /* Mmp Group Id */
@@ -1467,6 +1555,30 @@ parse_deribit_ordersapi_mmp_group_id(tvbuff_t *tvb, packet_info *pinfo _U_, prot
     proto_tree_add_item(tree, hf_deribit_ordersapi_mmp_group_id, tvb, offset, DERIBIT_ORDERSAPI_MMP_GROUP_ID_SIZE, DERIBIT_ORDERSAPI_MMP_GROUP_ID_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_MMP_GROUP_ID_SIZE;
+}
+
+/* Mmp Status Reject Reason */
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_NAME        "Mmp Status Reject Reason"
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_FILTER      "deribit.ordersapi.mmpstatusrejectreason"
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_mmp_status_reject_reason_vals[] = {
+    { 0, "System Error" },
+    { 1, "Invalid Mmp Group" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_mmp_status_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_mmp_status_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_SIZE;
 }
 
 /* New Sequence Number */
@@ -1523,24 +1635,6 @@ parse_deribit_ordersapi_order_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     return offset + DERIBIT_ORDERSAPI_ORDER_ID_SIZE;
 }
 
-/* Order Id Fill Id */
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_NAME        "Order Id Fill Id"
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DESCRIPTION "orderId"
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_FILTER      "deribit.ordersapi.orderidfillid"
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_TYPE        FT_INT64
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_MASK        0x0
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_SIZE        8
-
-static unsigned
-parse_deribit_ordersapi_order_id_fill_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_order_id_fill_id, tvb, offset, DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_SIZE, DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_SIZE;
-}
-
 /* Order Id Optional */
 #define DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_NAME        "Order Id Optional"
 #define DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_DESCRIPTION "orderId"
@@ -1557,6 +1651,62 @@ parse_deribit_ordersapi_order_id_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
     proto_tree_add_item(tree, hf_deribit_ordersapi_order_id_optional, tvb, offset, DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_SIZE, DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_SIZE;
+}
+
+/* Order Reject Reason */
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_NAME        "Order Reject Reason"
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_FILTER      "deribit.ordersapi.orderrejectreason"
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_order_reject_reason_vals[] = {
+    { 0, "System Error" },
+    { 1, "Invalid Instrument" },
+    { 2, "Invalid Field" },
+    { 3, "Insufficient Margin" },
+    { 4, "Duplicate Client Order Id" },
+    { 5, "Invalid Quantity" },
+    { 6, "Invalid Price" },
+    { 7, "Not Allowed By Market State" },
+    { 8, "Post Only" },
+    { 9, "Too Many Open Orders" },
+    { 10, "Permission Error" },
+    { 11, "Portfolio Not Found" },
+    { 12, "Order Not Found" },
+    { 13, "Mmp Not Configured" },
+    { 14, "Mmp Max Quote Qty Exceeded" },
+    { 15, "Mmp Group Frozen" },
+    { 16, "Invalid Margin Mode" },
+    { 17, "In Liquidation" },
+    { 18, "Risk Check Timed Out" },
+    { 19, "Too Many Pending Replaces" },
+    { 20, "Iceberg Not Allowed" },
+    { 21, "Invalid Allocations" },
+    { 22, "Price Too High" },
+    { 23, "Price Too Low" },
+    { 24, "Price Band Unavailable" },
+    { 25, "Rate Limit" },
+    { 26, "Portfolio Locked" },
+    { 27, "Position Limit Exceeded" },
+    { 28, "Order Size Limit Exceeded" },
+    { 29, "Member Speed Bump Limit Exceeded" },
+    { 30, "Mmp Min Freeze Time Not Elapsed" },
+    { 31, "Cancel Only" },
+    { 32, "Portfolio Instrument Not Allowed" },
+    { 33, "Mmp Required" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_order_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_order_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_SIZE;
 }
 
 /* Padding */
@@ -1578,12 +1728,36 @@ parse_deribit_ordersapi_order_id_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_PADDING_3_ENCODING    ENC_NA
 #define DERIBIT_ORDERSAPI_PADDING_3_SIZE        3
 
+/* Position Move Reason */
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_NAME        "Position Move Reason"
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_FILTER      "deribit.ordersapi.positionmovereason"
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_position_move_reason_vals[] = {
+    { 1, "Lsp" },
+    { 2, "Adl" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_position_move_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_position_move_reason, tvb, offset, DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_SIZE, DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_SIZE;
+}
+
 /* Post Only */
 #define DERIBIT_ORDERSAPI_POST_ONLY_NAME        "Post Only"
 #define DERIBIT_ORDERSAPI_POST_ONLY_DESCRIPTION "postOnly"
 #define DERIBIT_ORDERSAPI_POST_ONLY_FILTER      "deribit.ordersapi.postonly"
 #define DERIBIT_ORDERSAPI_POST_ONLY_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_POST_ONLY_DISPLAY     8
+#define DERIBIT_ORDERSAPI_POST_ONLY_DISPLAY     16
 #define DERIBIT_ORDERSAPI_POST_ONLY_MASK        0x02
 
 /* Post Only Reject */
@@ -1591,7 +1765,7 @@ parse_deribit_ordersapi_order_id_optional(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_DESCRIPTION "postOnlyReject"
 #define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_FILTER      "deribit.ordersapi.postonlyreject"
 #define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_DISPLAY     8
+#define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_DISPLAY     16
 #define DERIBIT_ORDERSAPI_POST_ONLY_REJECT_MASK        0x04
 
 /* Price */
@@ -1698,37 +1872,6 @@ parse_deribit_ordersapi_quote_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     return offset + DERIBIT_ORDERSAPI_QUOTE_ID_SIZE;
 }
 
-/* Reason Cancel Order Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_NAME        "Reason Cancel Order Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_FILTER      "deribit.ordersapi.reasoncancelorderrejectreason"
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_cancel_order_reject_reason_vals[] = {
-    { 0, "Error" },
-    { 1, "Unknown Order" },
-    { 2, "Client Permission Error" },
-    { 3, "Not Allowed By Market State" },
-    { 4, "Cancel Pending" },
-    { 5, "In Liquidation" },
-    { 6, "Invalid Instrument" },
-    { 7, "Time In Force" },
-    { 8, "Speed Bump Converted To Ioc" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_cancel_order_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_cancel_order_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_SIZE;
-}
-
 /* Reason Data */
 #define DERIBIT_ORDERSAPI_REASON_DATA_NAME     "Reason Data"
 #define DERIBIT_ORDERSAPI_REASON_DATA_FILTER   "deribit.ordersapi.reasondata"
@@ -1761,198 +1904,6 @@ parse_deribit_ordersapi_reason_length(tvbuff_t *tvb, packet_info *pinfo _U_, pro
     proto_tree_add_item(tree, hf_deribit_ordersapi_reason_length, tvb, offset, DERIBIT_ORDERSAPI_REASON_LENGTH_SIZE, DERIBIT_ORDERSAPI_REASON_LENGTH_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_REASON_LENGTH_SIZE;
-}
-
-/* Reason Mass Cancel Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_NAME        "Reason Mass Cancel Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_FILTER      "deribit.ordersapi.reasonmasscancelrejectreason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_mass_cancel_reject_reason_vals[] = {
-    { 0, "Error" },
-    { 1, "Invalid Mmp Group" },
-    { 2, "Client Permission Error" },
-    { 3, "Not Allowed By Market State" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_mass_cancel_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_mass_cancel_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_SIZE;
-}
-
-/* Reason Mass Quote Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_NAME        "Reason Mass Quote Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_FILTER      "deribit.ordersapi.reasonmassquoterejectreason"
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_mass_quote_reject_reason_vals[] = {
-    { 0, "System Error" },
-    { 1, "Invalid Mmp Group" },
-    { 2, "Mmp Group Disabled" },
-    { 3, "Mmp Group Frozen" },
-    { 4, "Too Many Quotes" },
-    { 5, "Invalid Instrument" },
-    { 6, "Rate Limit" },
-    { 7, "Portfolio Locked" },
-    { 8, "Duplicate Instrument" },
-    { 9, "Mmp Min Freeze Time Not Elapsed" },
-    { 10, "Portfolio Instrument Not Allowed" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_mass_quote_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_mass_quote_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_SIZE;
-}
-
-/* Reason Mmp Status Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_NAME        "Reason Mmp Status Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_FILTER      "deribit.ordersapi.reasonmmpstatusrejectreason"
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_mmp_status_reject_reason_vals[] = {
-    { 0, "System Error" },
-    { 1, "Invalid Mmp Group" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_mmp_status_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_mmp_status_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_SIZE;
-}
-
-/* Reason Order Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_NAME        "Reason Order Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_FILTER      "deribit.ordersapi.reasonorderrejectreason"
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_order_reject_reason_vals[] = {
-    { 0, "System Error" },
-    { 1, "Invalid Instrument" },
-    { 2, "Invalid Field" },
-    { 3, "Insufficient Margin" },
-    { 4, "Duplicate Client Order Id" },
-    { 5, "Invalid Quantity" },
-    { 6, "Invalid Price" },
-    { 7, "Not Allowed By Market State" },
-    { 8, "Post Only" },
-    { 9, "Too Many Open Orders" },
-    { 10, "Permission Error" },
-    { 11, "Portfolio Not Found" },
-    { 12, "Order Not Found" },
-    { 13, "Mmp Not Configured" },
-    { 14, "Mmp Max Quote Qty Exceeded" },
-    { 15, "Mmp Group Frozen" },
-    { 16, "Invalid Margin Mode" },
-    { 17, "In Liquidation" },
-    { 18, "Risk Check Timed Out" },
-    { 19, "Too Many Pending Replaces" },
-    { 20, "Iceberg Not Allowed" },
-    { 21, "Invalid Allocations" },
-    { 22, "Price Too High" },
-    { 23, "Price Too Low" },
-    { 24, "Price Band Unavailable" },
-    { 25, "Rate Limit" },
-    { 26, "Portfolio Locked" },
-    { 27, "Position Limit Exceeded" },
-    { 28, "Order Size Limit Exceeded" },
-    { 29, "Member Speed Bump Limit Exceeded" },
-    { 30, "Mmp Min Freeze Time Not Elapsed" },
-    { 31, "Cancel Only" },
-    { 32, "Portfolio Instrument Not Allowed" },
-    { 33, "Mmp Required" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_order_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_order_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_SIZE;
-}
-
-/* Reason Position Move Reason */
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_NAME        "Reason Position Move Reason"
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_FILTER      "deribit.ordersapi.reasonpositionmovereason"
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_position_move_reason_vals[] = {
-    { 1, "Lsp" },
-    { 2, "Adl" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_position_move_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_position_move_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_SIZE;
-}
-
-/* Reason Reject Reason */
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_NAME        "Reason Reject Reason"
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_DESCRIPTION "reason"
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_FILTER      "deribit.ordersapi.reasonrejectreason"
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_TYPE        FT_INT8
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_MASK        0x0
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
-#define DERIBIT_ORDERSAPI_REASON_REJECT_REASON_SIZE        1
-
-static const value_string deribit_ordersapi_reason_reject_reason_vals[] = {
-    { 1, "Invalid Schema Id" },
-    { 2, "Invalid Template Id" },
-    { 3, "Invalid Block Length" },
-    { 4, "Invalid Field Value" },
-    { 5, "Message Disabled" },
-    { 6, "Gateway Not Active" },
-    { 7, "Message Not Permitted" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_deribit_ordersapi_reason_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_deribit_ordersapi_reason_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REASON_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REASON_REJECT_REASON_ENCODING);
-
-    return offset + DERIBIT_ORDERSAPI_REASON_REJECT_REASON_SIZE;
 }
 
 /* Receive Time */
@@ -1989,6 +1940,35 @@ parse_deribit_ordersapi_ref_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U
     proto_tree_add_item(tree, hf_deribit_ordersapi_ref_sequence_number, tvb, offset, DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_SIZE, DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_ENCODING);
 
     return offset + DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_SIZE;
+}
+
+/* Reject Reason */
+#define DERIBIT_ORDERSAPI_REJECT_REASON_NAME        "Reject Reason"
+#define DERIBIT_ORDERSAPI_REJECT_REASON_DESCRIPTION "reason"
+#define DERIBIT_ORDERSAPI_REJECT_REASON_FILTER      "deribit.ordersapi.rejectreason"
+#define DERIBIT_ORDERSAPI_REJECT_REASON_TYPE        FT_INT8
+#define DERIBIT_ORDERSAPI_REJECT_REASON_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_REJECT_REASON_MASK        0x0
+#define DERIBIT_ORDERSAPI_REJECT_REASON_ENCODING    ENC_LITTLE_ENDIAN
+#define DERIBIT_ORDERSAPI_REJECT_REASON_SIZE        1
+
+static const value_string deribit_ordersapi_reject_reason_vals[] = {
+    { 1, "Invalid Schema Id" },
+    { 2, "Invalid Template Id" },
+    { 3, "Invalid Block Length" },
+    { 4, "Invalid Field Value" },
+    { 5, "Message Disabled" },
+    { 6, "Gateway Not Active" },
+    { 7, "Message Not Permitted" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_deribit_ordersapi_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_deribit_ordersapi_reject_reason, tvb, offset, DERIBIT_ORDERSAPI_REJECT_REASON_SIZE, DERIBIT_ORDERSAPI_REJECT_REASON_ENCODING);
+
+    return offset + DERIBIT_ORDERSAPI_REJECT_REASON_SIZE;
 }
 
 /* Reserved 10 */
@@ -2044,7 +2024,7 @@ parse_deribit_ordersapi_ref_sequence_number(tvbuff_t *tvb, packet_info *pinfo _U
 #define DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION "resetMmp"
 #define DERIBIT_ORDERSAPI_RESET_MMP_FILTER      "deribit.ordersapi.resetmmp"
 #define DERIBIT_ORDERSAPI_RESET_MMP_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_RESET_MMP_DISPLAY     8
+#define DERIBIT_ORDERSAPI_RESET_MMP_DISPLAY     16
 #define DERIBIT_ORDERSAPI_RESET_MMP_MASK        0x20
 
 /* Reset Seq Num */
@@ -2481,21 +2461,13 @@ parse_deribit_ordersapi_trigger(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
     return offset + DERIBIT_ORDERSAPI_TRIGGER_SIZE;
 }
 
-/* Unused Order Flags 0 */
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_NAME        "Unused Order Flags 0"
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DESCRIPTION "Unused OrderFlags 0"
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_FILTER      "deribit.ordersapi.unusedorderflags0"
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DISPLAY     8
-#define DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_MASK        0x01
-
-/* Unused Replace Order Flags 0 */
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_NAME        "Unused Replace Order Flags 0"
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DESCRIPTION "Unused ReplaceOrderFlags 0"
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_FILTER      "deribit.ordersapi.unusedreplaceorderflags0"
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DISPLAY     8
-#define DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_MASK        0x01
+/* Unused 1 */
+#define DERIBIT_ORDERSAPI_UNUSED_1_NAME        "Unused 1"
+#define DERIBIT_ORDERSAPI_UNUSED_1_DESCRIPTION "1 unused bit"
+#define DERIBIT_ORDERSAPI_UNUSED_1_FILTER      "deribit.ordersapi.unused1"
+#define DERIBIT_ORDERSAPI_UNUSED_1_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_UNUSED_1_DISPLAY     16
+#define DERIBIT_ORDERSAPI_UNUSED_1_MASK        0x01
 
 /* Vega Level */
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_NAME        "Vega Level"
@@ -2588,7 +2560,7 @@ static int * const deribit_ordersapi_flags_replace_order_flags_fields[] = {
     &hf_deribit_ordersapi_reserved_13,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_replace_order_flags_0,
+    &hf_deribit_ordersapi_unused_1,
     NULL
 };
 
@@ -2836,7 +2808,7 @@ static int * const deribit_ordersapi_flags_order_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_order_flags_0,
+    &hf_deribit_ordersapi_unused_1,
     NULL
 };
 
@@ -2866,7 +2838,7 @@ static int * const deribit_ordersapi_bid_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_order_flags_0,
+    &hf_deribit_ordersapi_unused_1,
     NULL
 };
 
@@ -2896,7 +2868,7 @@ static int * const deribit_ordersapi_ask_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_order_flags_0,
+    &hf_deribit_ordersapi_unused_1,
     NULL
 };
 
@@ -3167,7 +3139,7 @@ static unsigned
 dissect_deribit_ordersapi_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
     offset = parse_deribit_ordersapi_ref_sequence_number(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -3738,7 +3710,7 @@ dissect_deribit_ordersapi_new_order_reject(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_order_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -3881,7 +3853,7 @@ dissect_deribit_ordersapi_amend_order_reject(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_order_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_order_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_order_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -3974,7 +3946,7 @@ dissect_deribit_ordersapi_cancel_order_reject(tvbuff_t *tvb, packet_info *pinfo,
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_order_id_optional(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_instrument_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_cancel_order_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_cancel_order_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -4285,7 +4257,7 @@ dissect_deribit_ordersapi_mass_quote_reject(tvbuff_t *tvb, packet_info *pinfo, p
     offset = parse_deribit_ordersapi_quote_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_mmp_group_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_mass_quote_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_mass_quote_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -4311,7 +4283,7 @@ dissect_deribit_ordersapi_mass_cancel_reject(tvbuff_t *tvb, packet_info *pinfo, 
     offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_exec_id(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_mass_cancel_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_mass_cancel_reject_reason(tvb, pinfo, tree, offset);
     offset = dissect_deribit_ordersapi_details(tvb, pinfo, tree, offset);
 
     return offset;
@@ -4335,7 +4307,7 @@ dissect_deribit_ordersapi_get_mass_quote_mmp_status_reject(tvbuff_t *tvb, packet
 {
     offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_mmp_status_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_mmp_status_reject_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4358,7 +4330,7 @@ dissect_deribit_ordersapi_get_orders_mmp_status_reject(tvbuff_t *tvb, packet_inf
 {
     offset = parse_deribit_ordersapi_timestamp(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_correlation_id(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_mmp_status_reject_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_mmp_status_reject_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -4793,7 +4765,7 @@ dissect_deribit_ordersapi_mass_quote_orders_placed_message_fills_group(tvbuff_t 
     unsigned start = offset;
 
     offset = parse_deribit_ordersapi_match_id(tvb, pinfo, group, offset);
-    offset = parse_deribit_ordersapi_order_id_fill_id(tvb, pinfo, group, offset);
+    offset = parse_deribit_ordersapi_order_id(tvb, pinfo, group, offset);
     offset = parse_deribit_ordersapi_fill_price(tvb, pinfo, group, offset);
     offset = dissect_deribit_ordersapi_fill_qty(tvb, pinfo, group, offset);
 
@@ -4923,7 +4895,7 @@ dissect_deribit_ordersapi_position_moved(tvbuff_t *tvb, packet_info *pinfo, prot
     offset = dissect_deribit_ordersapi_quantity(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_side(tvb, pinfo, tree, offset);
     offset = parse_deribit_ordersapi_role(tvb, pinfo, tree, offset);
-    offset = parse_deribit_ordersapi_reason_position_move_reason(tvb, pinfo, tree, offset);
+    offset = parse_deribit_ordersapi_position_move_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -6450,6 +6422,15 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_BLOCK_LENGTH_MASK,
               DERIBIT_ORDERSAPI_BLOCK_LENGTH_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_cancel_order_reject_reason,
+            { DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_cancel_order_reject_reason_vals),
+              DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_CANCEL_ORDER_REJECT_REASON_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_cancel_reason,
             { DERIBIT_ORDERSAPI_CANCEL_REASON_NAME,
               DERIBIT_ORDERSAPI_CANCEL_REASON_FILTER,
@@ -6666,6 +6647,24 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_MASK,
               DERIBIT_ORDERSAPI_MANTISSA_OPTIONAL_DESCRIPTION,
               HFILL } },
+        { &hf_deribit_ordersapi_mass_cancel_reject_reason,
+            { DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_mass_cancel_reject_reason_vals),
+              DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_MASS_CANCEL_REJECT_REASON_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_mass_quote_reject_reason,
+            { DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_mass_quote_reject_reason_vals),
+              DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_MASS_QUOTE_REJECT_REASON_DESCRIPTION,
+              HFILL } },
         { &hf_deribit_ordersapi_match_id,
             { DERIBIT_ORDERSAPI_MATCH_ID_NAME,
               DERIBIT_ORDERSAPI_MATCH_ID_FILTER,
@@ -6692,6 +6691,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_MMP_GROUP_ID_MASK,
               DERIBIT_ORDERSAPI_MMP_GROUP_ID_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_mmp_status_reject_reason,
+            { DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_mmp_status_reject_reason_vals),
+              DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_MMP_STATUS_REJECT_REASON_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_new_sequence_number,
             { DERIBIT_ORDERSAPI_NEW_SEQUENCE_NUMBER_NAME,
@@ -6720,15 +6728,6 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_ORDER_ID_MASK,
               DERIBIT_ORDERSAPI_ORDER_ID_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_order_id_fill_id,
-            { DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_NAME,
-              DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_FILTER,
-              DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_TYPE,
-              DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DISPLAY,
-              NULL,
-              DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_MASK,
-              DERIBIT_ORDERSAPI_ORDER_ID_FILL_ID_DESCRIPTION,
-              HFILL } },
         { &hf_deribit_ordersapi_order_id_optional,
             { DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_NAME,
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_FILTER,
@@ -6737,6 +6736,15 @@ proto_register_deribit_ordersapi(void)
               CF_FUNC(deribit_ordersapi_format_nullable_int64_minus9223372036854775808),
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_MASK,
               DERIBIT_ORDERSAPI_ORDER_ID_OPTIONAL_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_order_reject_reason,
+            { DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_order_reject_reason_vals),
+              DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_ORDER_REJECT_REASON_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_padding,
             { DERIBIT_ORDERSAPI_PADDING_NAME,
@@ -6755,6 +6763,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_PADDING_3_MASK,
               DERIBIT_ORDERSAPI_PADDING_3_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_position_move_reason,
+            { DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_NAME,
+              DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_FILTER,
+              DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_TYPE,
+              DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_DISPLAY,
+              VALS(deribit_ordersapi_position_move_reason_vals),
+              DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_MASK,
+              DERIBIT_ORDERSAPI_POSITION_MOVE_REASON_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_price,
             { DERIBIT_ORDERSAPI_PRICE_NAME,
@@ -6801,15 +6818,6 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_QUOTE_ID_MASK,
               DERIBIT_ORDERSAPI_QUOTE_ID_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reason_cancel_order_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_cancel_order_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_CANCEL_ORDER_REJECT_REASON_DESCRIPTION,
-              HFILL } },
         { &hf_deribit_ordersapi_reason_data,
             { DERIBIT_ORDERSAPI_REASON_DATA_NAME,
               DERIBIT_ORDERSAPI_REASON_DATA_FILTER,
@@ -6828,60 +6836,6 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_REASON_LENGTH_MASK,
               NULL,
               HFILL } },
-        { &hf_deribit_ordersapi_reason_mass_cancel_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_mass_cancel_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_MASS_CANCEL_REJECT_REASON_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_reason_mass_quote_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_mass_quote_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_MASS_QUOTE_REJECT_REASON_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_reason_mmp_status_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_mmp_status_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_MMP_STATUS_REJECT_REASON_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_reason_order_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_order_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_ORDER_REJECT_REASON_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_reason_position_move_reason,
-            { DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_position_move_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_POSITION_MOVE_REASON_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_reason_reject_reason,
-            { DERIBIT_ORDERSAPI_REASON_REJECT_REASON_NAME,
-              DERIBIT_ORDERSAPI_REASON_REJECT_REASON_FILTER,
-              DERIBIT_ORDERSAPI_REASON_REJECT_REASON_TYPE,
-              DERIBIT_ORDERSAPI_REASON_REJECT_REASON_DISPLAY,
-              VALS(deribit_ordersapi_reason_reject_reason_vals),
-              DERIBIT_ORDERSAPI_REASON_REJECT_REASON_MASK,
-              DERIBIT_ORDERSAPI_REASON_REJECT_REASON_DESCRIPTION,
-              HFILL } },
         { &hf_deribit_ordersapi_receive_time,
             { DERIBIT_ORDERSAPI_RECEIVE_TIME_NAME,
               DERIBIT_ORDERSAPI_RECEIVE_TIME_FILTER,
@@ -6899,6 +6853,15 @@ proto_register_deribit_ordersapi(void)
               NULL,
               DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_MASK,
               DERIBIT_ORDERSAPI_REF_SEQUENCE_NUMBER_DESCRIPTION,
+              HFILL } },
+        { &hf_deribit_ordersapi_reject_reason,
+            { DERIBIT_ORDERSAPI_REJECT_REASON_NAME,
+              DERIBIT_ORDERSAPI_REJECT_REASON_FILTER,
+              DERIBIT_ORDERSAPI_REJECT_REASON_TYPE,
+              DERIBIT_ORDERSAPI_REJECT_REASON_DISPLAY,
+              VALS(deribit_ordersapi_reject_reason_vals),
+              DERIBIT_ORDERSAPI_REJECT_REASON_MASK,
+              DERIBIT_ORDERSAPI_REJECT_REASON_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_reset_seq_num,
             { DERIBIT_ORDERSAPI_RESET_SEQ_NUM_NAME,
@@ -7217,23 +7180,14 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_RESET_MMP_MASK,
               DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_unused_order_flags_0,
-            { DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_NAME,
-              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_FILTER,
-              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_TYPE,
-              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DISPLAY,
+        { &hf_deribit_ordersapi_unused_1,
+            { DERIBIT_ORDERSAPI_UNUSED_1_NAME,
+              DERIBIT_ORDERSAPI_UNUSED_1_FILTER,
+              DERIBIT_ORDERSAPI_UNUSED_1_TYPE,
+              DERIBIT_ORDERSAPI_UNUSED_1_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_MASK,
-              DERIBIT_ORDERSAPI_UNUSED_ORDER_FLAGS_0_DESCRIPTION,
-              HFILL } },
-        { &hf_deribit_ordersapi_unused_replace_order_flags_0,
-            { DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_NAME,
-              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_FILTER,
-              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_TYPE,
-              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DISPLAY,
-              NULL,
-              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_MASK,
-              DERIBIT_ORDERSAPI_UNUSED_REPLACE_ORDER_FLAGS_0_DESCRIPTION,
+              DERIBIT_ORDERSAPI_UNUSED_1_MASK,
+              DERIBIT_ORDERSAPI_UNUSED_1_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */

@@ -791,7 +791,7 @@ parse_deribit_marketdataapi_details(tvbuff_t *tvb, packet_info *pinfo _U_, proto
 #define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_DESCRIPTION "End of transaction indicator"
 #define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_FILTER      "deribit.marketdataapi.endoftransaction"
 #define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_DISPLAY     16
 #define DERIBIT_MARKETDATAAPI_END_OF_TRANSACTION_MASK        0x02
 
 /* Estimated Delivery Price */
@@ -993,7 +993,7 @@ parse_deribit_marketdataapi_incremental_timestamp(tvbuff_t *tvb, packet_info *pi
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_DESCRIPTION "Incremental update packet indicator (Bit 0)"
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_FILTER      "deribit.marketdataapi.incrementalupdate"
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_DISPLAY     16
 #define DERIBIT_MARKETDATAAPI_INCREMENTAL_UPDATE_MASK        0x01
 
 /* Index Id */
@@ -1055,7 +1055,7 @@ parse_deribit_marketdataapi_instrument_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_DESCRIPTION "isLiquidation"
 #define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_FILTER      "deribit.marketdataapi.isliquidation"
 #define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_DISPLAY     32
 #define DERIBIT_MARKETDATAAPI_IS_LIQUIDATION_MASK        0x02
 
 /* Is Perpetual */
@@ -1087,7 +1087,7 @@ parse_deribit_marketdataapi_instrument_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_IS_SELL_DESCRIPTION "isSell"
 #define DERIBIT_MARKETDATAAPI_IS_SELL_FILTER      "deribit.marketdataapi.issell"
 #define DERIBIT_MARKETDATAAPI_IS_SELL_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_IS_SELL_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_IS_SELL_DISPLAY     32
 #define DERIBIT_MARKETDATAAPI_IS_SELL_MASK        0x01
 
 /* Large Tick Size */
@@ -1682,7 +1682,7 @@ parse_deribit_marketdataapi_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
 #define DERIBIT_MARKETDATAAPI_RETRANSMIT_DESCRIPTION "Retransmit packet indicator (Bit 2)"
 #define DERIBIT_MARKETDATAAPI_RETRANSMIT_FILTER      "deribit.marketdataapi.retransmit"
 #define DERIBIT_MARKETDATAAPI_RETRANSMIT_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_RETRANSMIT_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_RETRANSMIT_DISPLAY     16
 #define DERIBIT_MARKETDATAAPI_RETRANSMIT_MASK        0x04
 
 /* Retry Delay Nanos */
@@ -1779,7 +1779,7 @@ parse_deribit_marketdataapi_settlement_price(tvbuff_t *tvb, packet_info *pinfo _
 #define DERIBIT_MARKETDATAAPI_SNAPSHOT_DESCRIPTION "Snapshot packet indicator (Bit 1)"
 #define DERIBIT_MARKETDATAAPI_SNAPSHOT_FILTER      "deribit.marketdataapi.snapshot"
 #define DERIBIT_MARKETDATAAPI_SNAPSHOT_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_SNAPSHOT_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_SNAPSHOT_DISPLAY     16
 #define DERIBIT_MARKETDATAAPI_SNAPSHOT_MASK        0x02
 
 /* Sort Order Id */
@@ -1805,7 +1805,7 @@ parse_deribit_marketdataapi_sort_order_id(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_DESCRIPTION "Start of transaction indicator"
 #define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_FILTER      "deribit.marketdataapi.startoftransaction"
 #define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_DISPLAY     16
 #define DERIBIT_MARKETDATAAPI_START_OF_TRANSACTION_MASK        0x01
 
 /* Status */
@@ -2145,7 +2145,7 @@ parse_deribit_marketdataapi_underlying(tvbuff_t *tvb, packet_info *pinfo _U_, pr
 #define DERIBIT_MARKETDATAAPI_WAS_DELAYED_DESCRIPTION "wasDelayed"
 #define DERIBIT_MARKETDATAAPI_WAS_DELAYED_FILTER      "deribit.marketdataapi.wasdelayed"
 #define DERIBIT_MARKETDATAAPI_WAS_DELAYED_TYPE        FT_BOOLEAN
-#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_DISPLAY     8
+#define DERIBIT_MARKETDATAAPI_WAS_DELAYED_DISPLAY     32
 #define DERIBIT_MARKETDATAAPI_WAS_DELAYED_MASK        0x04
 
 /* Week Of Month */

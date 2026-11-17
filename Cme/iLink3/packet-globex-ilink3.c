@@ -270,6 +270,7 @@ static int hf_globex_ilink3_quote_reject_reason;
 static int hf_globex_ilink3_quote_req_id;
 static int hf_globex_ilink3_quote_req_id_optional;
 static int hf_globex_ilink3_quote_set_id;
+static int hf_globex_ilink3_quote_side;
 static int hf_globex_ilink3_quote_type;
 static int hf_globex_ilink3_reason;
 static int hf_globex_ilink3_ref_msg_type;
@@ -308,7 +309,6 @@ static int hf_globex_ilink3_settl_date;
 static int hf_globex_ilink3_short_sale_type;
 static int hf_globex_ilink3_side;
 static int hf_globex_ilink3_side_optional;
-static int hf_globex_ilink3_side_side;
 static int hf_globex_ilink3_side_time_in_force;
 static int hf_globex_ilink3_side_trade_id;
 static int hf_globex_ilink3_source_repo_id;
@@ -5223,6 +5223,30 @@ parse_globex_ilink3_quote_set_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tr
     return offset + GLOBEX_ILINK3_QUOTE_SET_ID_SIZE;
 }
 
+/* Quote Side */
+#define GLOBEX_ILINK3_QUOTE_SIDE_NAME     "Quote Side"
+#define GLOBEX_ILINK3_QUOTE_SIDE_FIX      54
+#define GLOBEX_ILINK3_QUOTE_SIDE_FILTER   "globex.ilink3.quoteside"
+#define GLOBEX_ILINK3_QUOTE_SIDE_TYPE     FT_UINT8
+#define GLOBEX_ILINK3_QUOTE_SIDE_DISPLAY  BASE_DEC
+#define GLOBEX_ILINK3_QUOTE_SIDE_MASK     0x0
+#define GLOBEX_ILINK3_QUOTE_SIDE_ENCODING ENC_LITTLE_ENDIAN
+#define GLOBEX_ILINK3_QUOTE_SIDE_SIZE     1
+
+static const value_string globex_ilink3_quote_side_vals[] = {
+    { 1, "Buy" },
+    { 2, "Sell" },
+    { 0, NULL }
+};
+
+static unsigned
+parse_globex_ilink3_quote_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_globex_ilink3_quote_side, tvb, offset, GLOBEX_ILINK3_QUOTE_SIDE_SIZE, GLOBEX_ILINK3_QUOTE_SIDE_ENCODING);
+
+    return offset + GLOBEX_ILINK3_QUOTE_SIDE_SIZE;
+}
+
 /* Quote Type */
 #define GLOBEX_ILINK3_QUOTE_TYPE_NAME        "Quote Type"
 #define GLOBEX_ILINK3_QUOTE_TYPE_DESCRIPTION "Type of quote requested"
@@ -6074,31 +6098,6 @@ parse_globex_ilink3_side_optional(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
     proto_tree_add_item(tree, hf_globex_ilink3_side_optional, tvb, offset, GLOBEX_ILINK3_SIDE_OPTIONAL_SIZE, GLOBEX_ILINK3_SIDE_OPTIONAL_ENCODING);
 
     return offset + GLOBEX_ILINK3_SIDE_OPTIONAL_SIZE;
-}
-
-/* Side Side */
-#define GLOBEX_ILINK3_SIDE_SIDE_NAME        "Side Side"
-#define GLOBEX_ILINK3_SIDE_SIDE_DESCRIPTION "Quote side"
-#define GLOBEX_ILINK3_SIDE_SIDE_FIX         54
-#define GLOBEX_ILINK3_SIDE_SIDE_FILTER      "globex.ilink3.sideside"
-#define GLOBEX_ILINK3_SIDE_SIDE_TYPE        FT_UINT8
-#define GLOBEX_ILINK3_SIDE_SIDE_DISPLAY     BASE_DEC
-#define GLOBEX_ILINK3_SIDE_SIDE_MASK        0x0
-#define GLOBEX_ILINK3_SIDE_SIDE_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_ILINK3_SIDE_SIDE_SIZE        1
-
-static const value_string globex_ilink3_side_side_vals[] = {
-    { 1, "Buy" },
-    { 2, "Sell" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_globex_ilink3_side_side(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_ilink3_side_side, tvb, offset, GLOBEX_ILINK3_SIDE_SIDE_SIZE, GLOBEX_ILINK3_SIDE_SIDE_ENCODING);
-
-    return offset + GLOBEX_ILINK3_SIDE_SIDE_SIZE;
 }
 
 /* Side Time In Force */
@@ -8567,7 +8566,7 @@ dissect_globex_ilink3_mass_quote_request_entries_group(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_security_id(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_price(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_order_qty(tvb, pinfo, group, offset);
-    offset = parse_globex_ilink3_side_side(tvb, pinfo, group, offset);
+    offset = parse_globex_ilink3_quote_side(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_quote_entry_id(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_quote_set_id(tvb, pinfo, group, offset);
 
@@ -10939,7 +10938,7 @@ dissect_globex_ilink3_mass_quote_response_entries_group(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_quote_entry_id(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_quote_set_id(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_security_id(tvb, pinfo, group, offset);
-    offset = parse_globex_ilink3_side_side(tvb, pinfo, group, offset);
+    offset = parse_globex_ilink3_quote_side(tvb, pinfo, group, offset);
     offset = parse_globex_ilink3_quote_entry_reject_reason_optional(tvb, pinfo, group, offset);
 
     proto_item_set_len(item, offset - start);
@@ -21435,6 +21434,15 @@ proto_register_globex_ilink3(void)
               GLOBEX_ILINK3_QUOTE_SET_ID_MASK,
               GLOBEX_ILINK3_QUOTE_SET_ID_DESCRIPTION,
               HFILL } },
+        { &hf_globex_ilink3_quote_side,
+            { GLOBEX_ILINK3_QUOTE_SIDE_NAME,
+              GLOBEX_ILINK3_QUOTE_SIDE_FILTER,
+              GLOBEX_ILINK3_QUOTE_SIDE_TYPE,
+              GLOBEX_ILINK3_QUOTE_SIDE_DISPLAY,
+              VALS(globex_ilink3_quote_side_vals),
+              GLOBEX_ILINK3_QUOTE_SIDE_MASK,
+              NULL,
+              HFILL } },
         { &hf_globex_ilink3_quote_type,
             { GLOBEX_ILINK3_QUOTE_TYPE_NAME,
               GLOBEX_ILINK3_QUOTE_TYPE_FILTER,
@@ -21776,15 +21784,6 @@ proto_register_globex_ilink3(void)
               CF_FUNC(globex_ilink3_format_side_optional),
               GLOBEX_ILINK3_SIDE_OPTIONAL_MASK,
               GLOBEX_ILINK3_SIDE_OPTIONAL_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_ilink3_side_side,
-            { GLOBEX_ILINK3_SIDE_SIDE_NAME,
-              GLOBEX_ILINK3_SIDE_SIDE_FILTER,
-              GLOBEX_ILINK3_SIDE_SIDE_TYPE,
-              GLOBEX_ILINK3_SIDE_SIDE_DISPLAY,
-              VALS(globex_ilink3_side_side_vals),
-              GLOBEX_ILINK3_SIDE_SIDE_MASK,
-              GLOBEX_ILINK3_SIDE_SIDE_DESCRIPTION,
               HFILL } },
         { &hf_globex_ilink3_side_time_in_force,
             { GLOBEX_ILINK3_SIDE_TIME_IN_FORCE_NAME,

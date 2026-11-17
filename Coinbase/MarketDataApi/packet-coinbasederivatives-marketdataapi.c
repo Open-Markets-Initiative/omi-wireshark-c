@@ -1270,7 +1270,7 @@ parse_coinbasederivatives_marketdataapi_funding_rate(tvbuff_t *tvb, packet_info 
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_DESCRIPTION "fundingRateApplicable"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_FILTER      "coinbasederivatives.marketdataapi.fundingrateapplicable"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_DISPLAY     8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_DISPLAY     16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_FUNDING_RATE_APPLICABLE_MASK        0x10
 
 /* Futures Mark Price */
@@ -1451,7 +1451,7 @@ parse_coinbasederivatives_marketdataapi_instrument_side(tvbuff_t *tvb, packet_in
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_DESCRIPTION "isAnnounced"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_FILTER      "coinbasederivatives.marketdataapi.isannounced"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_DISPLAY     8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_DISPLAY     16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_ANNOUNCED_MASK        0x02
 
 /* Is Call */
@@ -1459,7 +1459,7 @@ parse_coinbasederivatives_marketdataapi_instrument_side(tvbuff_t *tvb, packet_in
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_DESCRIPTION "isCall"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_FILTER      "coinbasederivatives.marketdataapi.iscall"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_DISPLAY     8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_DISPLAY     16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_CALL_MASK        0x04
 
 /* Is Final */
@@ -1475,7 +1475,7 @@ parse_coinbasederivatives_marketdataapi_instrument_side(tvbuff_t *tvb, packet_in
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_DESCRIPTION "isPriorSettlementTheoretical"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_FILTER      "coinbasederivatives.marketdataapi.ispriorsettlementtheoretical"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_DISPLAY     8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_DISPLAY     16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_PRIOR_SETTLEMENT_THEORETICAL_MASK        0x01
 
 /* Is Strike Delisted */
@@ -1483,7 +1483,7 @@ parse_coinbasederivatives_marketdataapi_instrument_side(tvbuff_t *tvb, packet_in
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_DESCRIPTION "isStrikeDelisted"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_FILTER      "coinbasederivatives.marketdataapi.isstrikedelisted"
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_TYPE        FT_BOOLEAN
-#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_DISPLAY     8
+#define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_DISPLAY     16
 #define COINBASEDERIVATIVES_MARKETDATAAPI_IS_STRIKE_DELISTED_MASK        0x08
 
 /* Large Tick */
@@ -2529,6 +2529,11 @@ parse_coinbasederivatives_marketdataapi_retry_delay_nanos(tvbuff_t *tvb, packet_
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_MASK        0x0
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_ENCODING    ENC_LITTLE_ENDIAN
 #define COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_SIZE        2
+
+static const value_string coinbasederivatives_marketdataapi_schema_id_vals[] = {
+    { 1201, "Cb Dcm Gateway Sbe Codec Marketdata" },
+    { 0, NULL }
+};
 
 static unsigned
 parse_coinbasederivatives_marketdataapi_schema_id(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -5799,7 +5804,7 @@ proto_register_coinbasederivatives_marketdataapi(void)
               COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_FILTER,
               COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_TYPE,
               COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_DISPLAY,
-              NULL,
+              VALS(coinbasederivatives_marketdataapi_schema_id_vals),
               COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_MASK,
               COINBASEDERIVATIVES_MARKETDATAAPI_SCHEMA_ID_DESCRIPTION,
               HFILL } },

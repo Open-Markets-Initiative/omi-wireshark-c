@@ -84,10 +84,10 @@ static int hf_coinbasederivatives_ordersapi_current_session_only;
 static int hf_coinbasederivatives_ordersapi_data_length;
 static int hf_coinbasederivatives_ordersapi_data_value;
 static int hf_coinbasederivatives_ordersapi_details;
-static int hf_coinbasederivatives_ordersapi_details_string_55;
 static int hf_coinbasederivatives_ordersapi_end_exec_id;
 static int hf_coinbasederivatives_ordersapi_error_message;
 static int hf_coinbasederivatives_ordersapi_event_resend_reject_details;
+static int hf_coinbasederivatives_ordersapi_event_resend_reject_details_v15;
 static int hf_coinbasederivatives_ordersapi_exec_id;
 static int hf_coinbasederivatives_ordersapi_fill_price;
 static int hf_coinbasederivatives_ordersapi_fill_price_v13;
@@ -112,6 +112,7 @@ static int hf_coinbasederivatives_ordersapi_leg_2_fill_price;
 static int hf_coinbasederivatives_ordersapi_leg_2_fill_price_v13;
 static int hf_coinbasederivatives_ordersapi_limit_price;
 static int hf_coinbasederivatives_ordersapi_limit_price_v13;
+static int hf_coinbasederivatives_ordersapi_logout_reason;
 static int hf_coinbasederivatives_ordersapi_match_id;
 static int hf_coinbasederivatives_ordersapi_message_length;
 static int hf_coinbasederivatives_ordersapi_min_qty;
@@ -133,8 +134,6 @@ static int hf_coinbasederivatives_ordersapi_post_only;
 static int hf_coinbasederivatives_ordersapi_product_id;
 static int hf_coinbasederivatives_ordersapi_protocol_id;
 static int hf_coinbasederivatives_ordersapi_quantity;
-static int hf_coinbasederivatives_ordersapi_reason;
-static int hf_coinbasederivatives_ordersapi_reason_string_64;
 static int hf_coinbasederivatives_ordersapi_receive_time;
 static int hf_coinbasederivatives_ordersapi_ref_sequence_number;
 static int hf_coinbasederivatives_ordersapi_reject_reason;
@@ -736,24 +735,6 @@ parse_coinbasederivatives_ordersapi_details(tvbuff_t *tvb, packet_info *pinfo _U
     return offset + COINBASEDERIVATIVES_ORDERSAPI_DETAILS_SIZE;
 }
 
-/* Details String 55 */
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_NAME        "Details String 55"
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_DESCRIPTION "details"
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_FILTER      "coinbasederivatives.ordersapi.detailsstring55"
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_TYPE        FT_STRING
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_DISPLAY     BASE_NONE
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_MASK        0x0
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_ENCODING    ENC_ASCII
-#define COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_SIZE        55
-
-static unsigned
-parse_coinbasederivatives_ordersapi_details_string_55(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_details_string_55, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_SIZE, COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_ENCODING);
-
-    return offset + COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_SIZE;
-}
-
 /* End Exec Id */
 #define COINBASEDERIVATIVES_ORDERSAPI_END_EXEC_ID_NAME        "End Exec Id"
 #define COINBASEDERIVATIVES_ORDERSAPI_END_EXEC_ID_DESCRIPTION "endExecId"
@@ -798,7 +779,7 @@ parse_coinbasederivatives_ordersapi_error_message(tvbuff_t *tvb, packet_info *pi
 #define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_DISPLAY     BASE_NONE
 #define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_MASK        0x0
 #define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_ENCODING    ENC_ASCII
-#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_SIZE        23
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_SIZE        55
 
 static unsigned
 parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
@@ -806,6 +787,24 @@ parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvbuff_t *tvb, p
     proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_event_resend_reject_details, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_SIZE, COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_ENCODING);
 
     return offset + COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_SIZE;
+}
+
+/* Event Resend Reject Details V15 */
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_NAME        "Event Resend Reject Details"
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_DESCRIPTION "details"
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_FILTER      "coinbasederivatives.ordersapi.eventresendrejectdetails"
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_TYPE        FT_STRING
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_DISPLAY     BASE_NONE
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_MASK        0x0
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_ENCODING    ENC_ASCII
+#define COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_SIZE        23
+
+static unsigned
+parse_coinbasederivatives_ordersapi_event_resend_reject_details_v15(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_event_resend_reject_details_v15, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_SIZE, COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_ENCODING);
+
+    return offset + COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_SIZE;
 }
 
 /* Exec Id */
@@ -1252,6 +1251,24 @@ parse_coinbasederivatives_ordersapi_limit_price_v13(tvbuff_t *tvb, packet_info *
     return offset + COINBASEDERIVATIVES_ORDERSAPI_LIMIT_PRICE_V13_SIZE;
 }
 
+/* Logout Reason */
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_NAME        "Logout Reason"
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_DESCRIPTION "reason"
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_FILTER      "coinbasederivatives.ordersapi.logoutreason"
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_TYPE        FT_STRING
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_DISPLAY     BASE_NONE
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_MASK        0x0
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_ENCODING    ENC_ASCII
+#define COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_SIZE        64
+
+static unsigned
+parse_coinbasederivatives_ordersapi_logout_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
+{
+    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_logout_reason, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_SIZE, COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_ENCODING);
+
+    return offset + COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_SIZE;
+}
+
 /* Match Id */
 #define COINBASEDERIVATIVES_ORDERSAPI_MATCH_ID_NAME        "Match Id"
 #define COINBASEDERIVATIVES_ORDERSAPI_MATCH_ID_DESCRIPTION "matchId"
@@ -1611,41 +1628,6 @@ parse_coinbasederivatives_ordersapi_quantity(tvbuff_t *tvb, packet_info *pinfo _
     proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_quantity, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_QUANTITY_SIZE, COINBASEDERIVATIVES_ORDERSAPI_QUANTITY_ENCODING);
 
     return offset + COINBASEDERIVATIVES_ORDERSAPI_QUANTITY_SIZE;
-}
-
-/* Reason */
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_NAME     "Reason"
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_FILTER   "coinbasederivatives.ordersapi.reason"
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_TYPE     FT_STRING
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_DISPLAY  BASE_NONE
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_MASK     0x0
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_ENCODING ENC_ASCII
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_SIZE     64
-
-static unsigned
-parse_coinbasederivatives_ordersapi_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_reason, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_REASON_SIZE, COINBASEDERIVATIVES_ORDERSAPI_REASON_ENCODING);
-
-    return offset + COINBASEDERIVATIVES_ORDERSAPI_REASON_SIZE;
-}
-
-/* Reason String 64 */
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_NAME        "Reason String 64"
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_DESCRIPTION "reason"
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_FILTER      "coinbasederivatives.ordersapi.reasonstring64"
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_TYPE        FT_STRING
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_DISPLAY     BASE_NONE
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_MASK        0x0
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_ENCODING    ENC_ASCII
-#define COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_SIZE        64
-
-static unsigned
-parse_coinbasederivatives_ordersapi_reason_string_64(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_coinbasederivatives_ordersapi_reason_string_64, tvb, offset, COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_SIZE, COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_ENCODING);
-
-    return offset + COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_SIZE;
 }
 
 /* Receive Time */
@@ -2421,32 +2403,18 @@ static unsigned dissect_coinbasederivatives_ordersapi_reset_options_fill_protect
 static unsigned dissect_coinbasederivatives_ordersapi_reset_options_fill_protection_reject(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_session_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logout_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_session_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logout_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_new_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logout_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_new_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_replace_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_stream_order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_event_resend_reject_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_session_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logout_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_new_order_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_replace_order_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_event_resend_reject_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_session_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_order_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logout_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_coinbasederivatives_ordersapi_logged_out_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_new_order_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_replace_order_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_coinbasederivatives_ordersapi_stream_order_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -2462,10 +2430,6 @@ static unsigned dissect_coinbasederivatives_ordersapi_payload_v14(tvbuff_t *tvb,
 static unsigned dissect_coinbasederivatives_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t schema_id);
 static unsigned dissect_coinbasederivatives_ordersapi_session_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
-static unsigned dissect_coinbasederivatives_ordersapi_session_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
 static unsigned dissect_coinbasederivatives_ordersapi_order_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id);
@@ -2555,7 +2519,7 @@ dissect_coinbasederivatives_ordersapi_logon_conf(tvbuff_t *tvb, packet_info *pin
 static unsigned
 dissect_coinbasederivatives_ordersapi_logout(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_coinbasederivatives_ordersapi_reason_string_64(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_logout_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -2564,7 +2528,7 @@ dissect_coinbasederivatives_ordersapi_logout(tvbuff_t *tvb, packet_info *pinfo, 
 static unsigned
 dissect_coinbasederivatives_ordersapi_logged_out(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
 {
-    offset = parse_coinbasederivatives_ordersapi_reason_string_64(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_logout_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3026,7 +2990,7 @@ dissect_coinbasederivatives_ordersapi_event_resend_reject(tvbuff_t *tvb, packet_
 {
     offset = parse_coinbasederivatives_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_resend_reject_reason(tvb, pinfo, tree, offset);
-    offset = parse_coinbasederivatives_ordersapi_details_string_55(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3091,38 +3055,6 @@ dissect_coinbasederivatives_ordersapi_order_v17(tvbuff_t *tvb, packet_info *pinf
     return offset;
 }
 
-/* Logout Message V17 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logout_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Logged Out Message V17 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logged_out_v17(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Session Message */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    unsigned start = offset;
-
-
-    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
-
-    offset = dissect_coinbasederivatives_ordersapi_session_payload_v16(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
 /* Order Message */
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -3133,24 +3065,6 @@ dissect_coinbasederivatives_ordersapi_order_v16(tvbuff_t *tvb, packet_info *pinf
     uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v16(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
-/* Logout Message V16 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logout_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Logged Out Message V16 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logged_out_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3171,20 +3085,6 @@ dissect_coinbasederivatives_ordersapi_new_order_v16(tvbuff_t *tvb, packet_info *
     return offset;
 }
 
-/* Session Message */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    unsigned start = offset;
-
-
-    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
-
-    offset = dissect_coinbasederivatives_ordersapi_session_payload_v15(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
 /* Order Message */
 static unsigned
 dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
@@ -3195,24 +3095,6 @@ dissect_coinbasederivatives_ordersapi_order_v15(tvbuff_t *tvb, packet_info *pinf
     uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v15(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
-/* Logout Message V15 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logout_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Logged Out Message V15 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logged_out_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3265,21 +3147,7 @@ dissect_coinbasederivatives_ordersapi_event_resend_reject_v15(tvbuff_t *tvb, pac
 {
     offset = parse_coinbasederivatives_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_resend_reject_reason(tvb, pinfo, tree, offset);
-    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Session Message */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    unsigned start = offset;
-
-
-    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
-
-    offset = dissect_coinbasederivatives_ordersapi_session_payload_v14(tvb, pinfo, tree, offset, template_id);
+    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details_v15(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3294,24 +3162,6 @@ dissect_coinbasederivatives_ordersapi_order_v14(tvbuff_t *tvb, packet_info *pinf
     uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v14(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
-/* Logout Message V14 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logout_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Logged Out Message V14 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logged_out_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3349,21 +3199,7 @@ dissect_coinbasederivatives_ordersapi_event_resend_reject_v14(tvbuff_t *tvb, pac
 {
     offset = parse_coinbasederivatives_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_resend_reject_reason(tvb, pinfo, tree, offset);
-    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Session Message */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    unsigned start = offset;
-
-
-    uint32_t template_id = tvb_get_letohs(tvb, start - 6);
-
-    offset = dissect_coinbasederivatives_ordersapi_session_payload_v13(tvb, pinfo, tree, offset, template_id);
+    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details_v15(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3378,24 +3214,6 @@ dissect_coinbasederivatives_ordersapi_order_v13(tvbuff_t *tvb, packet_info *pinf
     uint32_t template_id = tvb_get_letohs(tvb, start - 6);
 
     offset = dissect_coinbasederivatives_ordersapi_order_payload_v13(tvb, pinfo, tree, offset, template_id);
-
-    return offset;
-}
-
-/* Logout Message V13 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logout_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Logged Out Message V13 */
-static unsigned
-dissect_coinbasederivatives_ordersapi_logged_out_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_coinbasederivatives_ordersapi_reason(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3506,7 +3324,7 @@ dissect_coinbasederivatives_ordersapi_event_resend_reject_v13(tvbuff_t *tvb, pac
 {
     offset = parse_coinbasederivatives_ordersapi_correlation_id(tvb, pinfo, tree, offset);
     offset = parse_coinbasederivatives_ordersapi_resend_reject_reason(tvb, pinfo, tree, offset);
-    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details(tvb, pinfo, tree, offset);
+    offset = parse_coinbasederivatives_ordersapi_event_resend_reject_details_v15(tvb, pinfo, tree, offset);
 
     return offset;
 }
@@ -3567,7 +3385,7 @@ dissect_coinbasederivatives_ordersapi_payload_v16(tvbuff_t *tvb, packet_info *pi
 {
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
-        return dissect_coinbasederivatives_ordersapi_session_v16(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_session_v17(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v16(tvb, pinfo, tree, offset);
     }
@@ -3587,7 +3405,7 @@ dissect_coinbasederivatives_ordersapi_payload_v15(tvbuff_t *tvb, packet_info *pi
 {
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
-        return dissect_coinbasederivatives_ordersapi_session_v15(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_session_v17(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v15(tvb, pinfo, tree, offset);
     }
@@ -3607,7 +3425,7 @@ dissect_coinbasederivatives_ordersapi_payload_v14(tvbuff_t *tvb, packet_info *pi
 {
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
-        return dissect_coinbasederivatives_ordersapi_session_v14(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_session_v17(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v14(tvb, pinfo, tree, offset);
     }
@@ -3627,7 +3445,7 @@ dissect_coinbasederivatives_ordersapi_payload_v13(tvbuff_t *tvb, packet_info *pi
 {
     switch (schema_id) {
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_SESSION:
-        return dissect_coinbasederivatives_ordersapi_session_v13(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_session_v17(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_SCHEMA_ID_ORDERS_API:
         return dissect_coinbasederivatives_ordersapi_order_v13(tvb, pinfo, tree, offset);
     }
@@ -3710,185 +3528,9 @@ dissect_coinbasederivatives_ordersapi_session_payload_v17(tvbuff_t *tvb, packet_
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF:
         return dissect_coinbasederivatives_ordersapi_logon_conf(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT:
-        return dissect_coinbasederivatives_ordersapi_logout_v17(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_logout(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT:
-        return dissect_coinbasederivatives_ordersapi_logged_out_v17(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT:
-        return dissect_coinbasederivatives_ordersapi_heartbeat(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_test_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_resend_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL:
-        return dissect_coinbasederivatives_ordersapi_gap_fill(tvb, pinfo, tree, offset);
-    }
-
-    return offset;
-}
-
-static const value_string coinbasederivatives_ordersapi_session_payload_messages_v16[] = {
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON, "Logon Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF, "Logon Conf Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT, "Logout Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT, "Logged Out Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT, "Heartbeat Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST, "Test Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST, "Resend Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL, "Gap Fill Message" },
-    { 0, NULL }
-};
-
-/* Session Payload: dispatch on template_id */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_payload_v16(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
-{
-    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
-
-    if (labelled != NULL) {
-        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v16, "Unknown (%u)"));
-    }
-
-    switch (template_id) {
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
-        return dissect_coinbasederivatives_ordersapi_logon(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF:
-        return dissect_coinbasederivatives_ordersapi_logon_conf(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT:
-        return dissect_coinbasederivatives_ordersapi_logout_v16(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT:
-        return dissect_coinbasederivatives_ordersapi_logged_out_v16(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT:
-        return dissect_coinbasederivatives_ordersapi_heartbeat(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_test_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_resend_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL:
-        return dissect_coinbasederivatives_ordersapi_gap_fill(tvb, pinfo, tree, offset);
-    }
-
-    return offset;
-}
-
-static const value_string coinbasederivatives_ordersapi_session_payload_messages_v15[] = {
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON, "Logon Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF, "Logon Conf Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT, "Logout Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT, "Logged Out Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT, "Heartbeat Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST, "Test Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST, "Resend Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL, "Gap Fill Message" },
-    { 0, NULL }
-};
-
-/* Session Payload: dispatch on template_id */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_payload_v15(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
-{
-    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
-
-    if (labelled != NULL) {
-        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v15, "Unknown (%u)"));
-    }
-
-    switch (template_id) {
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
-        return dissect_coinbasederivatives_ordersapi_logon(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF:
-        return dissect_coinbasederivatives_ordersapi_logon_conf(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT:
-        return dissect_coinbasederivatives_ordersapi_logout_v15(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT:
-        return dissect_coinbasederivatives_ordersapi_logged_out_v15(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT:
-        return dissect_coinbasederivatives_ordersapi_heartbeat(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_test_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_resend_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL:
-        return dissect_coinbasederivatives_ordersapi_gap_fill(tvb, pinfo, tree, offset);
-    }
-
-    return offset;
-}
-
-static const value_string coinbasederivatives_ordersapi_session_payload_messages_v14[] = {
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON, "Logon Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF, "Logon Conf Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT, "Logout Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT, "Logged Out Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT, "Heartbeat Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST, "Test Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST, "Resend Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL, "Gap Fill Message" },
-    { 0, NULL }
-};
-
-/* Session Payload: dispatch on template_id */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_payload_v14(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
-{
-    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
-
-    if (labelled != NULL) {
-        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v14, "Unknown (%u)"));
-    }
-
-    switch (template_id) {
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
-        return dissect_coinbasederivatives_ordersapi_logon(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF:
-        return dissect_coinbasederivatives_ordersapi_logon_conf(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT:
-        return dissect_coinbasederivatives_ordersapi_logout_v14(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT:
-        return dissect_coinbasederivatives_ordersapi_logged_out_v14(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT:
-        return dissect_coinbasederivatives_ordersapi_heartbeat(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_test_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST:
-        return dissect_coinbasederivatives_ordersapi_resend_request(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL:
-        return dissect_coinbasederivatives_ordersapi_gap_fill(tvb, pinfo, tree, offset);
-    }
-
-    return offset;
-}
-
-static const value_string coinbasederivatives_ordersapi_session_payload_messages_v13[] = {
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON, "Logon Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF, "Logon Conf Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT, "Logout Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT, "Logged Out Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT, "Heartbeat Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST, "Test Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_RESEND_REQUEST, "Resend Request Message" },
-    { COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_GAP_FILL, "Gap Fill Message" },
-    { 0, NULL }
-};
-
-/* Session Payload: dispatch on template_id */
-static unsigned
-dissect_coinbasederivatives_ordersapi_session_payload_v13(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset, uint32_t template_id)
-{
-    proto_item *labelled = (proto_item *)p_get_proto_data(pinfo->pool, pinfo, proto_coinbasederivatives_ordersapi, 0);
-
-    if (labelled != NULL) {
-        proto_item_set_text(labelled, "%s", val_to_str(pinfo->pool, template_id, coinbasederivatives_ordersapi_session_payload_messages_v13, "Unknown (%u)"));
-    }
-
-    switch (template_id) {
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON:
-        return dissect_coinbasederivatives_ordersapi_logon(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGON_CONF:
-        return dissect_coinbasederivatives_ordersapi_logon_conf(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGOUT:
-        return dissect_coinbasederivatives_ordersapi_logout_v13(tvb, pinfo, tree, offset);
-    case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_LOGGED_OUT:
-        return dissect_coinbasederivatives_ordersapi_logged_out_v13(tvb, pinfo, tree, offset);
+        return dissect_coinbasederivatives_ordersapi_logged_out(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_HEARTBEAT:
         return dissect_coinbasederivatives_ordersapi_heartbeat(tvb, pinfo, tree, offset);
     case COINBASEDERIVATIVES_ORDERSAPI_TEMPLATE_ID_SESSION_TEST_REQUEST:
@@ -4896,15 +4538,6 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_DETAILS_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_DETAILS_DESCRIPTION,
               HFILL } },
-        { &hf_coinbasederivatives_ordersapi_details_string_55,
-            { COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_DETAILS_STRING_55_DESCRIPTION,
-              HFILL } },
         { &hf_coinbasederivatives_ordersapi_end_exec_id,
             { COINBASEDERIVATIVES_ORDERSAPI_END_EXEC_ID_NAME,
               COINBASEDERIVATIVES_ORDERSAPI_END_EXEC_ID_FILTER,
@@ -4931,6 +4564,15 @@ proto_register_coinbasederivatives_ordersapi(void)
               NULL,
               COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_DESCRIPTION,
+              HFILL } },
+        { &hf_coinbasederivatives_ordersapi_event_resend_reject_details_v15,
+            { COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_EVENT_RESEND_REJECT_DETAILS_V15_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_ordersapi_exec_id,
             { COINBASEDERIVATIVES_ORDERSAPI_EXEC_ID_NAME,
@@ -5139,6 +4781,15 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_LIMIT_PRICE_V13_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_LIMIT_PRICE_V13_DESCRIPTION,
               HFILL } },
+        { &hf_coinbasederivatives_ordersapi_logout_reason,
+            { COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_DISPLAY,
+              NULL,
+              COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_LOGOUT_REASON_DESCRIPTION,
+              HFILL } },
         { &hf_coinbasederivatives_ordersapi_match_id,
             { COINBASEDERIVATIVES_ORDERSAPI_MATCH_ID_NAME,
               COINBASEDERIVATIVES_ORDERSAPI_MATCH_ID_FILTER,
@@ -5309,24 +4960,6 @@ proto_register_coinbasederivatives_ordersapi(void)
               NULL,
               COINBASEDERIVATIVES_ORDERSAPI_QUANTITY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_QUANTITY_DESCRIPTION,
-              HFILL } },
-        { &hf_coinbasederivatives_ordersapi_reason,
-            { COINBASEDERIVATIVES_ORDERSAPI_REASON_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_MASK,
-              NULL,
-              HFILL } },
-        { &hf_coinbasederivatives_ordersapi_reason_string_64,
-            { COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_DISPLAY,
-              NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_REASON_STRING_64_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_ordersapi_receive_time,
             { COINBASEDERIVATIVES_ORDERSAPI_RECEIVE_TIME_NAME,
