@@ -176,7 +176,7 @@ static int hf_deribit_ordersapi_timestamp;
 static int hf_deribit_ordersapi_to_sequence_number;
 static int hf_deribit_ordersapi_total_order_count;
 static int hf_deribit_ordersapi_trigger;
-static int hf_deribit_ordersapi_unused_1;
+static int hf_deribit_ordersapi_unused_bit_0;
 static int hf_deribit_ordersapi_vega_level;
 
 /*
@@ -2461,13 +2461,13 @@ parse_deribit_ordersapi_trigger(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
     return offset + DERIBIT_ORDERSAPI_TRIGGER_SIZE;
 }
 
-/* Unused 1 */
-#define DERIBIT_ORDERSAPI_UNUSED_1_NAME        "Unused 1"
-#define DERIBIT_ORDERSAPI_UNUSED_1_DESCRIPTION "1 unused bit"
-#define DERIBIT_ORDERSAPI_UNUSED_1_FILTER      "deribit.ordersapi.unused1"
-#define DERIBIT_ORDERSAPI_UNUSED_1_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_UNUSED_1_DISPLAY     16
-#define DERIBIT_ORDERSAPI_UNUSED_1_MASK        0x01
+/* Unused Bit 0 */
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_NAME        "Unused Bit 0"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_DESCRIPTION "1 unused bit"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_FILTER      "deribit.ordersapi.unusedbit0"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_DISPLAY     16
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_MASK        0x01
 
 /* Vega Level */
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_NAME        "Vega Level"
@@ -2560,7 +2560,7 @@ static int * const deribit_ordersapi_flags_replace_order_flags_fields[] = {
     &hf_deribit_ordersapi_reserved_13,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_1,
+    &hf_deribit_ordersapi_unused_bit_0,
     NULL
 };
 
@@ -2808,7 +2808,7 @@ static int * const deribit_ordersapi_flags_order_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_1,
+    &hf_deribit_ordersapi_unused_bit_0,
     NULL
 };
 
@@ -2838,7 +2838,7 @@ static int * const deribit_ordersapi_bid_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_1,
+    &hf_deribit_ordersapi_unused_bit_0,
     NULL
 };
 
@@ -2868,7 +2868,7 @@ static int * const deribit_ordersapi_ask_flags_v10_fields[] = {
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_1,
+    &hf_deribit_ordersapi_unused_bit_0,
     NULL
 };
 
@@ -7180,14 +7180,14 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_RESET_MMP_MASK,
               DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_unused_1,
-            { DERIBIT_ORDERSAPI_UNUSED_1_NAME,
-              DERIBIT_ORDERSAPI_UNUSED_1_FILTER,
-              DERIBIT_ORDERSAPI_UNUSED_1_TYPE,
-              DERIBIT_ORDERSAPI_UNUSED_1_DISPLAY,
+        { &hf_deribit_ordersapi_unused_bit_0,
+            { DERIBIT_ORDERSAPI_UNUSED_BIT_0_NAME,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_0_FILTER,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_0_TYPE,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_0_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_UNUSED_1_MASK,
-              DERIBIT_ORDERSAPI_UNUSED_1_DESCRIPTION,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_0_MASK,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_0_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */

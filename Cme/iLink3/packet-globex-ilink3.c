@@ -320,7 +320,6 @@ static int hf_globex_ilink3_template_id;
 static int hf_globex_ilink3_termination_type;
 static int hf_globex_ilink3_text;
 static int hf_globex_ilink3_time_in_force;
-static int hf_globex_ilink3_time_in_force_v86;
 static int hf_globex_ilink3_tot_no_quote_entries;
 static int hf_globex_ilink3_tot_no_quote_entries_optional;
 static int hf_globex_ilink3_tot_num_parties;
@@ -6492,35 +6491,6 @@ parse_globex_ilink3_time_in_force(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
     return offset + GLOBEX_ILINK3_TIME_IN_FORCE_SIZE;
 }
 
-/* Time In Force V86 */
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_NAME        "Time In Force"
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_DESCRIPTION "Specifies how long the order remains in effect"
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_FIX         59
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_FILTER      "globex.ilink3.timeinforce"
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_TYPE        FT_UINT8
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_DISPLAY     BASE_DEC
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_MASK        0x0
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_ENCODING    ENC_LITTLE_ENDIAN
-#define GLOBEX_ILINK3_TIME_IN_FORCE_V86_SIZE        1
-
-static const value_string globex_ilink3_time_in_force_v86_vals[] = {
-    { 0, "Day" },
-    { 1, "Good Till Cancel" },
-    { 3, "Fill And Kill" },
-    { 4, "Fill Or Kill" },
-    { 6, "Good Till Date" },
-    { 99, "Good For Session" },
-    { 0, NULL }
-};
-
-static unsigned
-parse_globex_ilink3_time_in_force_v86(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, unsigned offset)
-{
-    proto_tree_add_item(tree, hf_globex_ilink3_time_in_force_v86, tvb, offset, GLOBEX_ILINK3_TIME_IN_FORCE_V86_SIZE, GLOBEX_ILINK3_TIME_IN_FORCE_V86_ENCODING);
-
-    return offset + GLOBEX_ILINK3_TIME_IN_FORCE_V86_SIZE;
-}
-
 /* Tot No Quote Entries */
 #define GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_NAME        "Tot No Quote Entries"
 #define GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_DESCRIPTION "Total number of quotes for the quote set across all messages. Should be the sum of all NoQuoteEntries in each message that has repeating quotes that are part of the same quote set. Required if NoQuoteEntries is not 0. Since fragmentation is not supported in practice this will always be equal to the value of NoQuoteEntries"
@@ -7228,7 +7198,6 @@ static unsigned dissect_globex_ilink3_security_definition_response_v87(tvbuff_t 
 static unsigned dissect_globex_ilink3_order_mass_action_report_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_quote_cancel_ack_v87(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_new_order_single_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
-static unsigned dissect_globex_ilink3_order_cancel_replace_request_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_order_cancel_request_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_mass_quote_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
 static unsigned dissect_globex_ilink3_quote_cancel_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset);
@@ -12657,42 +12626,8 @@ dissect_globex_ilink3_new_order_single_v86(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_managed_order(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_short_sale_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_discretion_price(tvb, pinfo, tree, offset);
-
-    return offset;
-}
-
-/* Order Cancel Replace Request */
-static unsigned
-dissect_globex_ilink3_order_cancel_replace_request_v86(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, unsigned offset)
-{
-    offset = parse_globex_ilink3_price_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_security_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_seq_num(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sender_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_clordid(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_party_details_list_req_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_id_optional(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_stop_px(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_order_request_id(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_sending_time_epoch(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_location(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_min_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_ofm_override(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_liquidity_flag(tvb, pinfo, tree, offset);
@@ -12898,7 +12833,7 @@ dissect_globex_ilink3_execution_report_new_v86(tvbuff_t *tvb, packet_info *pinfo
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -12943,7 +12878,7 @@ dissect_globex_ilink3_execution_report_reject_v86(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -12986,7 +12921,7 @@ dissect_globex_ilink3_execution_report_elimination_v86(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_cross_type_v88(tvb, pinfo, tree, offset);
@@ -13034,7 +12969,7 @@ dissect_globex_ilink3_execution_report_trade_outright_v86(tvbuff_t *tvb, packet_
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -13092,7 +13027,7 @@ dissect_globex_ilink3_execution_report_trade_spread_v86(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -13177,7 +13112,7 @@ dissect_globex_ilink3_execution_report_modify_v86(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -13225,7 +13160,7 @@ dissect_globex_ilink3_execution_report_status_v86(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_ord_status(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_last_rpt_requested(tvb, pinfo, tree, offset);
@@ -13268,7 +13203,7 @@ dissect_globex_ilink3_execution_report_cancel_v86(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -13565,7 +13500,7 @@ dissect_globex_ilink3_new_order_single_v85(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
@@ -13597,7 +13532,7 @@ dissect_globex_ilink3_order_cancel_replace_request_v85(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ofm_override(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
@@ -13804,7 +13739,7 @@ dissect_globex_ilink3_execution_report_new_v85(tvbuff_t *tvb, packet_info *pinfo
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -13848,7 +13783,7 @@ dissect_globex_ilink3_execution_report_reject_v85(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -13890,7 +13825,7 @@ dissect_globex_ilink3_execution_report_elimination_v85(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_cross_type_v88(tvb, pinfo, tree, offset);
@@ -13937,7 +13872,7 @@ dissect_globex_ilink3_execution_report_trade_outright_v85(tvbuff_t *tvb, packet_
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -14041,7 +13976,7 @@ dissect_globex_ilink3_execution_report_trade_spread_v85(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -14123,7 +14058,7 @@ dissect_globex_ilink3_execution_report_modify_v85(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -14170,7 +14105,7 @@ dissect_globex_ilink3_execution_report_status_v85(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_ord_status(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_last_rpt_requested(tvb, pinfo, tree, offset);
@@ -14212,7 +14147,7 @@ dissect_globex_ilink3_execution_report_cancel_v85(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -14552,7 +14487,7 @@ dissect_globex_ilink3_new_order_single_v84(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
@@ -14584,7 +14519,7 @@ dissect_globex_ilink3_order_cancel_replace_request_v84(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ofm_override(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
@@ -14810,7 +14745,7 @@ dissect_globex_ilink3_execution_report_new_v84(tvbuff_t *tvb, packet_info *pinfo
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -14854,7 +14789,7 @@ dissect_globex_ilink3_execution_report_reject_v84(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -14896,7 +14831,7 @@ dissect_globex_ilink3_execution_report_elimination_v84(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_cross_type_v88(tvb, pinfo, tree, offset);
@@ -14943,7 +14878,7 @@ dissect_globex_ilink3_execution_report_trade_outright_v84(tvbuff_t *tvb, packet_
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -14993,7 +14928,7 @@ dissect_globex_ilink3_execution_report_trade_spread_v84(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -15075,7 +15010,7 @@ dissect_globex_ilink3_execution_report_modify_v84(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -15122,7 +15057,7 @@ dissect_globex_ilink3_execution_report_status_v84(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_ord_status(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_last_rpt_requested(tvb, pinfo, tree, offset);
@@ -15164,7 +15099,7 @@ dissect_globex_ilink3_execution_report_cancel_v84(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -15448,7 +15383,7 @@ dissect_globex_ilink3_new_order_single_v83(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
@@ -15480,7 +15415,7 @@ dissect_globex_ilink3_order_cancel_replace_request_v83(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ofm_override(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
@@ -15773,7 +15708,7 @@ dissect_globex_ilink3_execution_report_new_v83(tvbuff_t *tvb, packet_info *pinfo
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -15816,7 +15751,7 @@ dissect_globex_ilink3_execution_report_reject_v83(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -15857,7 +15792,7 @@ dissect_globex_ilink3_execution_report_elimination_v83(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_cross_type_v88(tvb, pinfo, tree, offset);
@@ -15904,7 +15839,7 @@ dissect_globex_ilink3_execution_report_trade_outright_v83(tvbuff_t *tvb, packet_
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -15954,7 +15889,7 @@ dissect_globex_ilink3_execution_report_trade_spread_v83(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -16036,7 +15971,7 @@ dissect_globex_ilink3_execution_report_modify_v83(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -16082,7 +16017,7 @@ dissect_globex_ilink3_execution_report_status_v83(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_ord_status(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_last_rpt_requested(tvb, pinfo, tree, offset);
@@ -16124,7 +16059,7 @@ dissect_globex_ilink3_execution_report_cancel_v83(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -16480,7 +16415,7 @@ dissect_globex_ilink3_new_order_single_v82(tvbuff_t *tvb, packet_info *pinfo, pr
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_execution_mode(tvb, pinfo, tree, offset);
@@ -16512,7 +16447,7 @@ dissect_globex_ilink3_order_cancel_replace_request_v82(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_display_qty(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ofm_override(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_exec_inst(tvb, pinfo, tree, offset);
@@ -16764,7 +16699,7 @@ dissect_globex_ilink3_execution_report_new_v82(tvbuff_t *tvb, packet_info *pinfo
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -16807,7 +16742,7 @@ dissect_globex_ilink3_execution_report_reject_v82(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -16848,7 +16783,7 @@ dissect_globex_ilink3_execution_report_elimination_v82(tvbuff_t *tvb, packet_inf
     offset = parse_globex_ilink3_expire_date(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_cross_type_v88(tvb, pinfo, tree, offset);
@@ -16895,7 +16830,7 @@ dissect_globex_ilink3_execution_report_trade_outright_v82(tvbuff_t *tvb, packet_
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -16945,7 +16880,7 @@ dissect_globex_ilink3_execution_report_trade_spread_v82(tvbuff_t *tvb, packet_in
     offset = parse_globex_ilink3_ord_status_trd(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_aggressor_indicator(tvb, pinfo, tree, offset);
@@ -17027,7 +16962,7 @@ dissect_globex_ilink3_execution_report_modify_v82(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -17073,7 +17008,7 @@ dissect_globex_ilink3_execution_report_status_v82(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_ord_status(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_last_rpt_requested(tvb, pinfo, tree, offset);
@@ -17115,7 +17050,7 @@ dissect_globex_ilink3_execution_report_cancel_v82(tvbuff_t *tvb, packet_info *pi
     offset = parse_globex_ilink3_delay_duration(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_ord_type_optional_v86(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_side(tvb, pinfo, tree, offset);
-    offset = parse_globex_ilink3_time_in_force_v86(tvb, pinfo, tree, offset);
+    offset = parse_globex_ilink3_time_in_force(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_manual_order_indicator(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_poss_retrans_flag(tvb, pinfo, tree, offset);
     offset = parse_globex_ilink3_split_msg(tvb, pinfo, tree, offset);
@@ -17886,7 +17821,7 @@ dissect_globex_ilink3_client_packet_client_payload_v86(tvbuff_t *tvb, packet_inf
     case GLOBEX_ILINK3_TEMPLATE_ID_NEW_ORDER_SINGLE:
         return dissect_globex_ilink3_new_order_single_v86(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_ORDER_CANCEL_REPLACE_REQUEST:
-        return dissect_globex_ilink3_order_cancel_replace_request_v86(tvb, pinfo, tree, offset);
+        return dissect_globex_ilink3_order_cancel_replace_request(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_ORDER_CANCEL_REQUEST:
         return dissect_globex_ilink3_order_cancel_request_v86(tvb, pinfo, tree, offset);
     case GLOBEX_ILINK3_TEMPLATE_ID_MASS_QUOTE:
@@ -21883,15 +21818,6 @@ proto_register_globex_ilink3(void)
               CF_FUNC(globex_ilink3_format_time_in_force),
               GLOBEX_ILINK3_TIME_IN_FORCE_MASK,
               GLOBEX_ILINK3_TIME_IN_FORCE_DESCRIPTION,
-              HFILL } },
-        { &hf_globex_ilink3_time_in_force_v86,
-            { GLOBEX_ILINK3_TIME_IN_FORCE_V86_NAME,
-              GLOBEX_ILINK3_TIME_IN_FORCE_V86_FILTER,
-              GLOBEX_ILINK3_TIME_IN_FORCE_V86_TYPE,
-              GLOBEX_ILINK3_TIME_IN_FORCE_V86_DISPLAY,
-              VALS(globex_ilink3_time_in_force_v86_vals),
-              GLOBEX_ILINK3_TIME_IN_FORCE_V86_MASK,
-              GLOBEX_ILINK3_TIME_IN_FORCE_V86_DESCRIPTION,
               HFILL } },
         { &hf_globex_ilink3_tot_no_quote_entries,
             { GLOBEX_ILINK3_TOT_NO_QUOTE_ENTRIES_NAME,
