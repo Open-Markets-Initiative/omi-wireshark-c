@@ -151,11 +151,11 @@ static int hf_deribit_ordersapi_reason_length;
 static int hf_deribit_ordersapi_receive_time;
 static int hf_deribit_ordersapi_ref_sequence_number;
 static int hf_deribit_ordersapi_reject_reason;
-static int hf_deribit_ordersapi_reserved_10;
-static int hf_deribit_ordersapi_reserved_13;
-static int hf_deribit_ordersapi_reserved_5;
-static int hf_deribit_ordersapi_reserved_6;
-static int hf_deribit_ordersapi_reserved_7;
+static int hf_deribit_ordersapi_reserved_2_to_8;
+static int hf_deribit_ordersapi_reserved_3_to_8;
+static int hf_deribit_ordersapi_reserved_4_to_16;
+static int hf_deribit_ordersapi_reserved_4_to_8;
+static int hf_deribit_ordersapi_reserved_7_to_16;
 static int hf_deribit_ordersapi_reserved_bits;
 static int hf_deribit_ordersapi_reset_mmp;
 static int hf_deribit_ordersapi_reset_seq_num;
@@ -176,7 +176,7 @@ static int hf_deribit_ordersapi_timestamp;
 static int hf_deribit_ordersapi_to_sequence_number;
 static int hf_deribit_ordersapi_total_order_count;
 static int hf_deribit_ordersapi_trigger;
-static int hf_deribit_ordersapi_unused_bit_0;
+static int hf_deribit_ordersapi_unused_bit_1;
 static int hf_deribit_ordersapi_vega_level;
 
 /*
@@ -1971,45 +1971,45 @@ parse_deribit_ordersapi_reject_reason(tvbuff_t *tvb, packet_info *pinfo _U_, pro
     return offset + DERIBIT_ORDERSAPI_REJECT_REASON_SIZE;
 }
 
-/* Reserved 10 */
-#define DERIBIT_ORDERSAPI_RESERVED_10_NAME        "Reserved 10"
-#define DERIBIT_ORDERSAPI_RESERVED_10_DESCRIPTION "10 reserved bits"
-#define DERIBIT_ORDERSAPI_RESERVED_10_FILTER      "deribit.ordersapi.reserved10"
-#define DERIBIT_ORDERSAPI_RESERVED_10_TYPE        FT_UINT16
-#define DERIBIT_ORDERSAPI_RESERVED_10_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_RESERVED_10_MASK        0xFFC0
+/* Reserved 2 To 8 */
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_NAME        "Reserved 2 To 8"
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_DESCRIPTION "7 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_FILTER      "deribit.ordersapi.reserved2to8"
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_2_TO_8_MASK        0xFE
 
-/* Reserved 13 */
-#define DERIBIT_ORDERSAPI_RESERVED_13_NAME        "Reserved 13"
-#define DERIBIT_ORDERSAPI_RESERVED_13_DESCRIPTION "13 reserved bits"
-#define DERIBIT_ORDERSAPI_RESERVED_13_FILTER      "deribit.ordersapi.reserved13"
-#define DERIBIT_ORDERSAPI_RESERVED_13_TYPE        FT_UINT16
-#define DERIBIT_ORDERSAPI_RESERVED_13_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_RESERVED_13_MASK        0xFFF8
+/* Reserved 3 To 8 */
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_NAME        "Reserved 3 To 8"
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_DESCRIPTION "6 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_FILTER      "deribit.ordersapi.reserved3to8"
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_3_TO_8_MASK        0xFC
 
-/* Reserved 5 */
-#define DERIBIT_ORDERSAPI_RESERVED_5_NAME        "Reserved 5"
-#define DERIBIT_ORDERSAPI_RESERVED_5_DESCRIPTION "5 reserved bits"
-#define DERIBIT_ORDERSAPI_RESERVED_5_FILTER      "deribit.ordersapi.reserved5"
-#define DERIBIT_ORDERSAPI_RESERVED_5_TYPE        FT_UINT8
-#define DERIBIT_ORDERSAPI_RESERVED_5_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_RESERVED_5_MASK        0xF8
+/* Reserved 4 To 16 */
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_NAME        "Reserved 4 To 16"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_DESCRIPTION "13 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_FILTER      "deribit.ordersapi.reserved4to16"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_TYPE        FT_UINT16
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_16_MASK        0xFFF8
 
-/* Reserved 6 */
-#define DERIBIT_ORDERSAPI_RESERVED_6_NAME        "Reserved 6"
-#define DERIBIT_ORDERSAPI_RESERVED_6_DESCRIPTION "6 reserved bits"
-#define DERIBIT_ORDERSAPI_RESERVED_6_FILTER      "deribit.ordersapi.reserved6"
-#define DERIBIT_ORDERSAPI_RESERVED_6_TYPE        FT_UINT8
-#define DERIBIT_ORDERSAPI_RESERVED_6_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_RESERVED_6_MASK        0xFC
+/* Reserved 4 To 8 */
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_NAME        "Reserved 4 To 8"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_DESCRIPTION "5 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_FILTER      "deribit.ordersapi.reserved4to8"
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_TYPE        FT_UINT8
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_4_TO_8_MASK        0xF8
 
-/* Reserved 7 */
-#define DERIBIT_ORDERSAPI_RESERVED_7_NAME        "Reserved 7"
-#define DERIBIT_ORDERSAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
-#define DERIBIT_ORDERSAPI_RESERVED_7_FILTER      "deribit.ordersapi.reserved7"
-#define DERIBIT_ORDERSAPI_RESERVED_7_TYPE        FT_UINT8
-#define DERIBIT_ORDERSAPI_RESERVED_7_DISPLAY     BASE_DEC
-#define DERIBIT_ORDERSAPI_RESERVED_7_MASK        0xFE
+/* Reserved 7 To 16 */
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_NAME        "Reserved 7 To 16"
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_DESCRIPTION "10 reserved bits"
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_FILTER      "deribit.ordersapi.reserved7to16"
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_TYPE        FT_UINT16
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_DISPLAY     BASE_DEC
+#define DERIBIT_ORDERSAPI_RESERVED_7_TO_16_MASK        0xFFC0
 
 /* Reserved Bits */
 #define DERIBIT_ORDERSAPI_RESERVED_BITS_NAME        "Reserved Bits"
@@ -2461,13 +2461,13 @@ parse_deribit_ordersapi_trigger(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tre
     return offset + DERIBIT_ORDERSAPI_TRIGGER_SIZE;
 }
 
-/* Unused Bit 0 */
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_NAME        "Unused Bit 0"
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_DESCRIPTION "1 unused bit"
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_FILTER      "deribit.ordersapi.unusedbit0"
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_TYPE        FT_BOOLEAN
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_DISPLAY     16
-#define DERIBIT_ORDERSAPI_UNUSED_BIT_0_MASK        0x01
+/* Unused Bit 1 */
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_NAME        "Unused Bit 1"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_DESCRIPTION "1 unused bit"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_FILTER      "deribit.ordersapi.unusedbit1"
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_TYPE        FT_BOOLEAN
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_DISPLAY     16
+#define DERIBIT_ORDERSAPI_UNUSED_BIT_1_MASK        0x01
 
 /* Vega Level */
 #define DERIBIT_ORDERSAPI_VEGA_LEVEL_NAME        "Vega Level"
@@ -2527,7 +2527,7 @@ parse_deribit_ordersapi_session_flags(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_flags_order_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2557,10 +2557,10 @@ parse_deribit_ordersapi_flags_order_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_ORDERSAPI_FLAGS_REPLACE_ORDER_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_flags_replace_order_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_13,
+    &hf_deribit_ordersapi_reserved_4_to_16,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_bit_0,
+    &hf_deribit_ordersapi_unused_bit_1,
     NULL
 };
 
@@ -2584,7 +2584,7 @@ parse_deribit_ordersapi_flags_replace_order_flags(tvbuff_t *tvb, packet_info *pi
 #define DERIBIT_ORDERSAPI_FLAGS_MASS_QUOTE_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_mass_quote_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_7,
+    &hf_deribit_ordersapi_reserved_2_to_8,
     &hf_deribit_ordersapi_reset_mmp,
     NULL
 };
@@ -2609,7 +2609,7 @@ parse_deribit_ordersapi_flags_mass_quote_flags(tvbuff_t *tvb, packet_info *pinfo
 #define DERIBIT_ORDERSAPI_BID_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_bid_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2639,7 +2639,7 @@ parse_deribit_ordersapi_bid_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_ORDERSAPI_ASK_FLAGS_SIZE        2
 
 static int * const deribit_ordersapi_ask_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2669,7 +2669,7 @@ parse_deribit_ordersapi_ask_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V15_SIZE        2
 
 static int * const deribit_ordersapi_flags_order_flags_v15_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
@@ -2699,7 +2699,7 @@ parse_deribit_ordersapi_flags_order_flags_v15(tvbuff_t *tvb, packet_info *pinfo 
 #define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_fill_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_5,
+    &hf_deribit_ordersapi_reserved_4_to_8,
     &hf_deribit_ordersapi_is_liquidation,
     &hf_deribit_ordersapi_is_fully_filled,
     &hf_deribit_ordersapi_is_quote,
@@ -2726,7 +2726,7 @@ parse_deribit_ordersapi_flags_fill_flags(tvbuff_t *tvb, packet_info *pinfo _U_, 
 #define DERIBIT_ORDERSAPI_FLAGS_MULTI_PART_EVENT_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_multi_part_event_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_7,
+    &hf_deribit_ordersapi_reserved_2_to_8,
     &hf_deribit_ordersapi_is_last_message,
     NULL
 };
@@ -2751,7 +2751,7 @@ parse_deribit_ordersapi_flags_multi_part_event_flags(tvbuff_t *tvb, packet_info 
 #define DERIBIT_ORDERSAPI_FLAGS_CANCEL_FLAGS_SIZE        1
 
 static int * const deribit_ordersapi_flags_cancel_flags_fields[] = {
-    &hf_deribit_ordersapi_reserved_7,
+    &hf_deribit_ordersapi_reserved_2_to_8,
     &hf_deribit_ordersapi_is_quote,
     NULL
 };
@@ -2776,7 +2776,7 @@ parse_deribit_ordersapi_flags_cancel_flags(tvbuff_t *tvb, packet_info *pinfo _U_
 #define DERIBIT_ORDERSAPI_FLAGS_FILL_FLAGS_V14_SIZE        1
 
 static int * const deribit_ordersapi_flags_fill_flags_v14_fields[] = {
-    &hf_deribit_ordersapi_reserved_6,
+    &hf_deribit_ordersapi_reserved_3_to_8,
     &hf_deribit_ordersapi_is_fully_filled,
     &hf_deribit_ordersapi_is_quote,
     NULL
@@ -2802,13 +2802,13 @@ parse_deribit_ordersapi_flags_fill_flags_v14(tvbuff_t *tvb, packet_info *pinfo _
 #define DERIBIT_ORDERSAPI_FLAGS_ORDER_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_flags_order_flags_v10_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_bit_0,
+    &hf_deribit_ordersapi_unused_bit_1,
     NULL
 };
 
@@ -2832,13 +2832,13 @@ parse_deribit_ordersapi_flags_order_flags_v10(tvbuff_t *tvb, packet_info *pinfo 
 #define DERIBIT_ORDERSAPI_BID_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_bid_flags_v10_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_bit_0,
+    &hf_deribit_ordersapi_unused_bit_1,
     NULL
 };
 
@@ -2862,13 +2862,13 @@ parse_deribit_ordersapi_bid_flags_v10(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define DERIBIT_ORDERSAPI_ASK_FLAGS_V10_SIZE        2
 
 static int * const deribit_ordersapi_ask_flags_v10_fields[] = {
-    &hf_deribit_ordersapi_reserved_10,
+    &hf_deribit_ordersapi_reserved_7_to_16,
     &hf_deribit_ordersapi_reset_mmp,
     &hf_deribit_ordersapi_mmp,
     &hf_deribit_ordersapi_market_limit,
     &hf_deribit_ordersapi_post_only_reject,
     &hf_deribit_ordersapi_post_only,
-    &hf_deribit_ordersapi_unused_bit_0,
+    &hf_deribit_ordersapi_unused_bit_1,
     NULL
 };
 
@@ -7117,50 +7117,50 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_POST_ONLY_REJECT_MASK,
               DERIBIT_ORDERSAPI_POST_ONLY_REJECT_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reserved_10,
-            { DERIBIT_ORDERSAPI_RESERVED_10_NAME,
-              DERIBIT_ORDERSAPI_RESERVED_10_FILTER,
-              DERIBIT_ORDERSAPI_RESERVED_10_TYPE,
-              DERIBIT_ORDERSAPI_RESERVED_10_DISPLAY,
+        { &hf_deribit_ordersapi_reserved_2_to_8,
+            { DERIBIT_ORDERSAPI_RESERVED_2_TO_8_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_2_TO_8_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_2_TO_8_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_2_TO_8_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_RESERVED_10_MASK,
-              DERIBIT_ORDERSAPI_RESERVED_10_DESCRIPTION,
+              DERIBIT_ORDERSAPI_RESERVED_2_TO_8_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_2_TO_8_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reserved_13,
-            { DERIBIT_ORDERSAPI_RESERVED_13_NAME,
-              DERIBIT_ORDERSAPI_RESERVED_13_FILTER,
-              DERIBIT_ORDERSAPI_RESERVED_13_TYPE,
-              DERIBIT_ORDERSAPI_RESERVED_13_DISPLAY,
+        { &hf_deribit_ordersapi_reserved_3_to_8,
+            { DERIBIT_ORDERSAPI_RESERVED_3_TO_8_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_3_TO_8_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_3_TO_8_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_3_TO_8_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_RESERVED_13_MASK,
-              DERIBIT_ORDERSAPI_RESERVED_13_DESCRIPTION,
+              DERIBIT_ORDERSAPI_RESERVED_3_TO_8_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_3_TO_8_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reserved_5,
-            { DERIBIT_ORDERSAPI_RESERVED_5_NAME,
-              DERIBIT_ORDERSAPI_RESERVED_5_FILTER,
-              DERIBIT_ORDERSAPI_RESERVED_5_TYPE,
-              DERIBIT_ORDERSAPI_RESERVED_5_DISPLAY,
+        { &hf_deribit_ordersapi_reserved_4_to_16,
+            { DERIBIT_ORDERSAPI_RESERVED_4_TO_16_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_16_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_16_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_16_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_RESERVED_5_MASK,
-              DERIBIT_ORDERSAPI_RESERVED_5_DESCRIPTION,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_16_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_16_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reserved_6,
-            { DERIBIT_ORDERSAPI_RESERVED_6_NAME,
-              DERIBIT_ORDERSAPI_RESERVED_6_FILTER,
-              DERIBIT_ORDERSAPI_RESERVED_6_TYPE,
-              DERIBIT_ORDERSAPI_RESERVED_6_DISPLAY,
+        { &hf_deribit_ordersapi_reserved_4_to_8,
+            { DERIBIT_ORDERSAPI_RESERVED_4_TO_8_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_8_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_8_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_8_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_RESERVED_6_MASK,
-              DERIBIT_ORDERSAPI_RESERVED_6_DESCRIPTION,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_8_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_4_TO_8_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_reserved_7,
-            { DERIBIT_ORDERSAPI_RESERVED_7_NAME,
-              DERIBIT_ORDERSAPI_RESERVED_7_FILTER,
-              DERIBIT_ORDERSAPI_RESERVED_7_TYPE,
-              DERIBIT_ORDERSAPI_RESERVED_7_DISPLAY,
+        { &hf_deribit_ordersapi_reserved_7_to_16,
+            { DERIBIT_ORDERSAPI_RESERVED_7_TO_16_NAME,
+              DERIBIT_ORDERSAPI_RESERVED_7_TO_16_FILTER,
+              DERIBIT_ORDERSAPI_RESERVED_7_TO_16_TYPE,
+              DERIBIT_ORDERSAPI_RESERVED_7_TO_16_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_RESERVED_7_MASK,
-              DERIBIT_ORDERSAPI_RESERVED_7_DESCRIPTION,
+              DERIBIT_ORDERSAPI_RESERVED_7_TO_16_MASK,
+              DERIBIT_ORDERSAPI_RESERVED_7_TO_16_DESCRIPTION,
               HFILL } },
         { &hf_deribit_ordersapi_reserved_bits,
             { DERIBIT_ORDERSAPI_RESERVED_BITS_NAME,
@@ -7180,14 +7180,14 @@ proto_register_deribit_ordersapi(void)
               DERIBIT_ORDERSAPI_RESET_MMP_MASK,
               DERIBIT_ORDERSAPI_RESET_MMP_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_ordersapi_unused_bit_0,
-            { DERIBIT_ORDERSAPI_UNUSED_BIT_0_NAME,
-              DERIBIT_ORDERSAPI_UNUSED_BIT_0_FILTER,
-              DERIBIT_ORDERSAPI_UNUSED_BIT_0_TYPE,
-              DERIBIT_ORDERSAPI_UNUSED_BIT_0_DISPLAY,
+        { &hf_deribit_ordersapi_unused_bit_1,
+            { DERIBIT_ORDERSAPI_UNUSED_BIT_1_NAME,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_1_FILTER,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_1_TYPE,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_1_DISPLAY,
               NULL,
-              DERIBIT_ORDERSAPI_UNUSED_BIT_0_MASK,
-              DERIBIT_ORDERSAPI_UNUSED_BIT_0_DESCRIPTION,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_1_MASK,
+              DERIBIT_ORDERSAPI_UNUSED_BIT_1_DESCRIPTION,
               HFILL } },
 
         /* Bitfields */

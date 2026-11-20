@@ -142,7 +142,7 @@ static int hf_coinbasederivatives_ordersapi_request_trading_lock;
 static int hf_coinbasederivatives_ordersapi_resend_reject_reason;
 static int hf_coinbasederivatives_ordersapi_resent_event_count;
 static int hf_coinbasederivatives_ordersapi_reserved;
-static int hf_coinbasederivatives_ordersapi_reserved_7;
+static int hf_coinbasederivatives_ordersapi_reserved_2_to_8;
 static int hf_coinbasederivatives_ordersapi_reserved_bits;
 static int hf_coinbasederivatives_ordersapi_reserved_byte;
 static int hf_coinbasederivatives_ordersapi_reset_seq_num;
@@ -1797,13 +1797,13 @@ parse_coinbasederivatives_ordersapi_reserved(tvbuff_t *tvb, packet_info *pinfo _
     return offset + COINBASEDERIVATIVES_ORDERSAPI_RESERVED_SIZE;
 }
 
-/* Reserved 7 */
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME        "Reserved 7"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION "7 reserved bits"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER      "coinbasederivatives.ordersapi.reserved7"
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE        FT_UINT8
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY     BASE_DEC
-#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK        0xFE
+/* Reserved 2 To 8 */
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_NAME        "Reserved 2 To 8"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_DESCRIPTION "7 reserved bits"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_FILTER      "coinbasederivatives.ordersapi.reserved2to8"
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_TYPE        FT_UINT8
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_DISPLAY     BASE_DEC
+#define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_MASK        0xFE
 
 /* Reserved Bits */
 #define COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_NAME        "Reserved Bits"
@@ -2340,7 +2340,7 @@ parse_coinbasederivatives_ordersapi_session_flags(tvbuff_t *tvb, packet_info *pi
 #define COINBASEDERIVATIVES_ORDERSAPI_NEW_ORDER_FLAGS_SIZE        1
 
 static int * const coinbasederivatives_ordersapi_new_order_flags_fields[] = {
-    &hf_coinbasederivatives_ordersapi_reserved_7,
+    &hf_coinbasederivatives_ordersapi_reserved_2_to_8,
     &hf_coinbasederivatives_ordersapi_post_only,
     NULL
 };
@@ -5224,14 +5224,14 @@ proto_register_coinbasederivatives_ordersapi(void)
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_MASK,
               COINBASEDERIVATIVES_ORDERSAPI_POST_ONLY_DESCRIPTION,
               HFILL } },
-        { &hf_coinbasederivatives_ordersapi_reserved_7,
-            { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_NAME,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_FILTER,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_TYPE,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DISPLAY,
+        { &hf_coinbasederivatives_ordersapi_reserved_2_to_8,
+            { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_NAME,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_FILTER,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_TYPE,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_DISPLAY,
               NULL,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_MASK,
-              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_7_DESCRIPTION,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_MASK,
+              COINBASEDERIVATIVES_ORDERSAPI_RESERVED_2_TO_8_DESCRIPTION,
               HFILL } },
         { &hf_coinbasederivatives_ordersapi_reserved_bits,
             { COINBASEDERIVATIVES_ORDERSAPI_RESERVED_BITS_NAME,

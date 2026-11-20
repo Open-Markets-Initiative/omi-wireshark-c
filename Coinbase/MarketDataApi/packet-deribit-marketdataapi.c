@@ -138,9 +138,9 @@ static int hf_deribit_marketdataapi_quantity_mantissa;
 static int hf_deribit_marketdataapi_quote_currency;
 static int hf_deribit_marketdataapi_ratio;
 static int hf_deribit_marketdataapi_reason;
-static int hf_deribit_marketdataapi_reserved_29;
-static int hf_deribit_marketdataapi_reserved_30;
-static int hf_deribit_marketdataapi_reserved_5;
+static int hf_deribit_marketdataapi_reserved_3_to_32;
+static int hf_deribit_marketdataapi_reserved_4_to_32;
+static int hf_deribit_marketdataapi_reserved_4_to_8;
 static int hf_deribit_marketdataapi_reserved_bits;
 static int hf_deribit_marketdataapi_retransmit;
 static int hf_deribit_marketdataapi_retry_delay_nanos;
@@ -1645,29 +1645,29 @@ parse_deribit_marketdataapi_reason(tvbuff_t *tvb, packet_info *pinfo _U_, proto_
     return offset + DERIBIT_MARKETDATAAPI_REASON_SIZE;
 }
 
-/* Reserved 29 */
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_NAME        "Reserved 29"
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_DESCRIPTION "29 reserved bits"
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_FILTER      "deribit.marketdataapi.reserved29"
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_TYPE        FT_UINT32
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_DISPLAY     BASE_DEC
-#define DERIBIT_MARKETDATAAPI_RESERVED_29_MASK        0xFFFFFFF8
+/* Reserved 3 To 32 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_NAME        "Reserved 3 To 32"
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_DESCRIPTION "30 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_FILTER      "deribit.marketdataapi.reserved3to32"
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_MASK        0xFFFFFFFC
 
-/* Reserved 30 */
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_NAME        "Reserved 30"
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_DESCRIPTION "30 reserved bits"
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_FILTER      "deribit.marketdataapi.reserved30"
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_TYPE        FT_UINT32
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_DISPLAY     BASE_DEC
-#define DERIBIT_MARKETDATAAPI_RESERVED_30_MASK        0xFFFFFFFC
+/* Reserved 4 To 32 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_NAME        "Reserved 4 To 32"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_DESCRIPTION "29 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_FILTER      "deribit.marketdataapi.reserved4to32"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_TYPE        FT_UINT32
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_MASK        0xFFFFFFF8
 
-/* Reserved 5 */
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_NAME        "Reserved 5"
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_DESCRIPTION "5 reserved bits"
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_FILTER      "deribit.marketdataapi.reserved5"
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_TYPE        FT_UINT8
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_DISPLAY     BASE_DEC
-#define DERIBIT_MARKETDATAAPI_RESERVED_5_MASK        0xF8
+/* Reserved 4 To 8 */
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_NAME        "Reserved 4 To 8"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_DESCRIPTION "5 reserved bits"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_FILTER      "deribit.marketdataapi.reserved4to8"
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_TYPE        FT_UINT8
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_DISPLAY     BASE_DEC
+#define DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_MASK        0xF8
 
 /* Reserved Bits */
 #define DERIBIT_MARKETDATAAPI_RESERVED_BITS_NAME        "Reserved Bits"
@@ -2251,7 +2251,7 @@ parse_deribit_marketdataapi_message_flags(tvbuff_t *tvb, packet_info *pinfo _U_,
 #define DERIBIT_MARKETDATAAPI_FLAGS_SIZE        1
 
 static int * const deribit_marketdataapi_flags_fields[] = {
-    &hf_deribit_marketdataapi_reserved_5,
+    &hf_deribit_marketdataapi_reserved_4_to_8,
     &hf_deribit_marketdataapi_is_perpetual,
     &hf_deribit_marketdataapi_is_put_option,
     &hf_deribit_marketdataapi_is_reversed,
@@ -2278,7 +2278,7 @@ parse_deribit_marketdataapi_flags(tvbuff_t *tvb, packet_info *pinfo _U_, proto_t
 #define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_SIZE        4
 
 static int * const deribit_marketdataapi_taker_flags_fields[] = {
-    &hf_deribit_marketdataapi_reserved_29,
+    &hf_deribit_marketdataapi_reserved_4_to_32,
     &hf_deribit_marketdataapi_was_delayed,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
@@ -2305,7 +2305,7 @@ parse_deribit_marketdataapi_taker_flags(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_SIZE        4
 
 static int * const deribit_marketdataapi_maker_flags_fields[] = {
-    &hf_deribit_marketdataapi_reserved_29,
+    &hf_deribit_marketdataapi_reserved_4_to_32,
     &hf_deribit_marketdataapi_was_delayed,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
@@ -2332,7 +2332,7 @@ parse_deribit_marketdataapi_maker_flags(tvbuff_t *tvb, packet_info *pinfo _U_, p
 #define DERIBIT_MARKETDATAAPI_FLAGS_V01_SIZE        4
 
 static int * const deribit_marketdataapi_flags_v01_fields[] = {
-    &hf_deribit_marketdataapi_reserved_29,
+    &hf_deribit_marketdataapi_reserved_4_to_32,
     &hf_deribit_marketdataapi_is_perpetual,
     &hf_deribit_marketdataapi_is_put_option,
     &hf_deribit_marketdataapi_is_reversed,
@@ -2359,7 +2359,7 @@ parse_deribit_marketdataapi_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U_, pro
 #define DERIBIT_MARKETDATAAPI_TAKER_FLAGS_V01_SIZE        4
 
 static int * const deribit_marketdataapi_taker_flags_v01_fields[] = {
-    &hf_deribit_marketdataapi_reserved_30,
+    &hf_deribit_marketdataapi_reserved_3_to_32,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
     NULL
@@ -2385,7 +2385,7 @@ parse_deribit_marketdataapi_taker_flags_v01(tvbuff_t *tvb, packet_info *pinfo _U
 #define DERIBIT_MARKETDATAAPI_MAKER_FLAGS_V01_SIZE        4
 
 static int * const deribit_marketdataapi_maker_flags_v01_fields[] = {
-    &hf_deribit_marketdataapi_reserved_30,
+    &hf_deribit_marketdataapi_reserved_3_to_32,
     &hf_deribit_marketdataapi_is_liquidation,
     &hf_deribit_marketdataapi_is_sell,
     NULL
@@ -4161,32 +4161,32 @@ proto_register_deribit_marketdataapi(void)
               DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_MASK,
               DERIBIT_MARKETDATAAPI_PACKET_RESERVED_BITS_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_marketdataapi_reserved_29,
-            { DERIBIT_MARKETDATAAPI_RESERVED_29_NAME,
-              DERIBIT_MARKETDATAAPI_RESERVED_29_FILTER,
-              DERIBIT_MARKETDATAAPI_RESERVED_29_TYPE,
-              DERIBIT_MARKETDATAAPI_RESERVED_29_DISPLAY,
+        { &hf_deribit_marketdataapi_reserved_3_to_32,
+            { DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_DISPLAY,
               NULL,
-              DERIBIT_MARKETDATAAPI_RESERVED_29_MASK,
-              DERIBIT_MARKETDATAAPI_RESERVED_29_DESCRIPTION,
+              DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_3_TO_32_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_marketdataapi_reserved_30,
-            { DERIBIT_MARKETDATAAPI_RESERVED_30_NAME,
-              DERIBIT_MARKETDATAAPI_RESERVED_30_FILTER,
-              DERIBIT_MARKETDATAAPI_RESERVED_30_TYPE,
-              DERIBIT_MARKETDATAAPI_RESERVED_30_DISPLAY,
+        { &hf_deribit_marketdataapi_reserved_4_to_32,
+            { DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_DISPLAY,
               NULL,
-              DERIBIT_MARKETDATAAPI_RESERVED_30_MASK,
-              DERIBIT_MARKETDATAAPI_RESERVED_30_DESCRIPTION,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_32_DESCRIPTION,
               HFILL } },
-        { &hf_deribit_marketdataapi_reserved_5,
-            { DERIBIT_MARKETDATAAPI_RESERVED_5_NAME,
-              DERIBIT_MARKETDATAAPI_RESERVED_5_FILTER,
-              DERIBIT_MARKETDATAAPI_RESERVED_5_TYPE,
-              DERIBIT_MARKETDATAAPI_RESERVED_5_DISPLAY,
+        { &hf_deribit_marketdataapi_reserved_4_to_8,
+            { DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_NAME,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_FILTER,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_TYPE,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_DISPLAY,
               NULL,
-              DERIBIT_MARKETDATAAPI_RESERVED_5_MASK,
-              DERIBIT_MARKETDATAAPI_RESERVED_5_DESCRIPTION,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_MASK,
+              DERIBIT_MARKETDATAAPI_RESERVED_4_TO_8_DESCRIPTION,
               HFILL } },
         { &hf_deribit_marketdataapi_reserved_bits,
             { DERIBIT_MARKETDATAAPI_RESERVED_BITS_NAME,
